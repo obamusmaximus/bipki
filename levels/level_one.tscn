@@ -1,0 +1,448 @@
+[gd_scene format=3 uid="uid://n0twtxgum4ky"]
+
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://world/tower.tscn" id="2_tower"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sunny"]
+sky_top_color = Color(0.2, 0.5, 0.95, 1)
+sky_horizon_color = Color(0.7, 0.85, 1, 1)
+ground_horizon_color = Color(0.55, 0.7, 0.45, 1)
+ground_bottom_color = Color(0.3, 0.45, 0.2, 1)
+
+[sub_resource type="Sky" id="Sky_sunny"]
+sky_material = SubResource("ProceduralSkyMaterial_sunny")
+
+[sub_resource type="Environment" id="Environment_level"]
+background_mode = 2
+sky = SubResource("Sky_sunny")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_grass"]
+frequency = 0.08
+fractal_octaves = 4
+
+[sub_resource type="Gradient" id="Gradient_grass"]
+colors = PackedColorArray(0.16, 0.38, 0.12, 1, 0.34, 0.62, 0.22, 1)
+offsets = PackedFloat32Array(0, 1)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_grass"]
+width = 256
+height = 256
+seamless = true
+color_ramp = SubResource("Gradient_grass")
+noise = SubResource("FastNoiseLite_grass")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_texture = SubResource("NoiseTexture2D_grass")
+uv1_scale = Vector3(60, 60, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_grass"]
+size = Vector2(400, 400)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_grass"]
+size = Vector3(400, 1, 400)
+
+[node name="LevelOne" type="Node3D" unique_id=867797899]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1849571795]
+environment = SubResource("Environment_level")
+
+[node name="Grass" type="StaticBody3D" parent="." unique_id=2094882803]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Grass" unique_id=1067712699]
+material_override = SubResource("StandardMaterial3D_grass")
+mesh = SubResource("PlaneMesh_grass")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Grass" unique_id=867915846]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_grass")
+
+[node name="Tower1" parent="." unique_id=1000000001 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.4, 7, -26.2)
+size = Vector3(4, 14, 6)
+
+[node name="Tower2" parent="." unique_id=1000000002 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 7, -30.2)
+size = Vector3(5, 14, 4)
+
+[node name="Tower3" parent="." unique_id=1000000003 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.1, 7, 24.4)
+size = Vector3(4, 14, 6)
+
+[node name="Tower4" parent="." unique_id=1000000004 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 7, 46.8)
+size = Vector3(5, 14, 4)
+
+[node name="Tower5" parent="." unique_id=1000000005 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 127.3, 8.55, -10.3)
+size = Vector3(5.3, 17.1, 3.7)
+
+[node name="Tower6" parent="." unique_id=1000000006 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 87.9, 6.75, -121.8)
+size = Vector3(3.4, 13.5, 6.2)
+
+[node name="Tower7" parent="." unique_id=1000000007 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 144.7, 25.60, 139.4)
+size = Vector3(5.5, 51.2, 3.6)
+
+[node name="Tower8" parent="." unique_id=1000000008 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -145.5, 4.55, 8.5)
+size = Vector3(3.8, 9.1, 4.0)
+
+[node name="Tower9" parent="." unique_id=1000000009 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.8, 8.65, 102.7)
+size = Vector3(5.6, 17.3, 5.0)
+
+[node name="Tower10" parent="." unique_id=1000000010 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -66.6, 27.95, 149.3)
+size = Vector3(6.4, 55.9, 5.8)
+
+[node name="Tower11" parent="." unique_id=1000000011 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.4, 6.60, -81.1)
+size = Vector3(3.3, 13.2, 6.1)
+
+[node name="Tower12" parent="." unique_id=1000000012 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.0, 7.60, 144.1)
+size = Vector3(3.3, 15.2, 5.5)
+
+[node name="Tower13" parent="." unique_id=1000000013 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 83.6, 21.60, -69.1)
+size = Vector3(4.3, 43.2, 6.9)
+
+[node name="Tower14" parent="." unique_id=1000000014 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.1, 21.40, -119.7)
+size = Vector3(6.2, 42.8, 3.7)
+
+[node name="Tower15" parent="." unique_id=1000000015 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49.3, 14.15, -97.8)
+size = Vector3(5.3, 28.3, 3.5)
+
+[node name="Tower16" parent="." unique_id=1000000016 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37.6, 12.3, -123.8)
+size = Vector3(4.9, 24.6, 3.4)
+
+[node name="Tower17" parent="." unique_id=1000000017 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -120.4, 6.75, -114.6)
+size = Vector3(4.6, 13.5, 5.7)
+
+[node name="Tower18" parent="." unique_id=1000000018 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -77.5, 11.65, 35.7)
+size = Vector3(6.2, 23.3, 5.0)
+
+[node name="Tower19" parent="." unique_id=1000000019 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 133.4, 7.1, -127.0)
+size = Vector3(6.0, 14.2, 4.1)
+
+[node name="Tower20" parent="." unique_id=1000000020 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -107.0, 14.95, -53.6)
+size = Vector3(5.8, 29.9, 3.8)
+
+[node name="Tower21" parent="." unique_id=1000000021 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.4, 16.75, -122.4)
+size = Vector3(3.5, 33.5, 3.9)
+
+[node name="Tower22" parent="." unique_id=1000000022 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.3, 9.9, -52.0)
+size = Vector3(5.1, 19.8, 4.6)
+
+[node name="Tower23" parent="." unique_id=1000000023 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 82.4, 13.95, 55.7)
+size = Vector3(4.1, 27.9, 5.0)
+
+[node name="Tower24" parent="." unique_id=1000000024 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 105.0, 6.65, 64.2)
+size = Vector3(4.2, 13.3, 6.1)
+
+[node name="Tower25" parent="." unique_id=1000000025 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.3, 12.35, 16.7)
+size = Vector3(6.2, 24.7, 4.7)
+
+[node name="Tower26" parent="." unique_id=1000000026 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.5, 16.8, -88.3)
+size = Vector3(4.9, 33.6, 5.1)
+
+[node name="Tower27" parent="." unique_id=1000000027 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -114.6, 19.7, 86.7)
+size = Vector3(5.4, 39.4, 3.4)
+
+[node name="Tower28" parent="." unique_id=1000000028 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130.1, 4.75, 43.1)
+size = Vector3(5.2, 9.5, 3.8)
+
+[node name="Tower29" parent="." unique_id=1000000029 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -86.7, 11.35, -72.3)
+size = Vector3(3.4, 22.7, 4.6)
+
+[node name="Tower30" parent="." unique_id=1000000030 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95.9, 14.75, 5.4)
+size = Vector3(5.3, 29.5, 4.7)
+
+[node name="Tower31" parent="." unique_id=1000000031 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.9, 17.5, -62.1)
+size = Vector3(6.4, 35.0, 6.2)
+
+[node name="Tower32" parent="." unique_id=1000000032 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.2, 5.6, -51.7)
+size = Vector3(4.0, 11.2, 4.1)
+
+[node name="Tower33" parent="." unique_id=1000000033 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 74.6, 19.35, -27.9)
+size = Vector3(5.9, 38.7, 4.4)
+
+[node name="Tower34" parent="." unique_id=1000000034 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 97.2, 11.8, -139.8)
+size = Vector3(4.0, 23.6, 5.9)
+
+[node name="Tower35" parent="." unique_id=1000000035 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 134.5, 16.55, -28.7)
+size = Vector3(3.5, 33.1, 5.1)
+
+[node name="Tower36" parent="." unique_id=1000000036 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64.5, 16.25, -115.6)
+size = Vector3(4.3, 32.5, 6.1)
+
+[node name="Tower37" parent="." unique_id=1000000037 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -107.0, 16.85, -71.0)
+size = Vector3(3.6, 33.7, 3.5)
+
+[node name="Tower38" parent="." unique_id=1000000038 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -90.3, 15.85, 16.6)
+size = Vector3(4.7, 31.7, 3.9)
+
+[node name="Tower39" parent="." unique_id=1000000039 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -103.3, 7.8, 40.2)
+size = Vector3(3.7, 15.6, 4.5)
+
+[node name="Tower40" parent="." unique_id=1000000040 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64.5, 18.2, 131.9)
+size = Vector3(5.8, 36.4, 4.2)
+
+[node name="Tower41" parent="." unique_id=1000000041 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -81.0, 6.05, -29.6)
+size = Vector3(5.9, 12.1, 5.2)
+
+[node name="Tower42" parent="." unique_id=1000000042 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 137.0, 9.6, -80.3)
+size = Vector3(4.1, 19.2, 5.5)
+
+[node name="Tower43" parent="." unique_id=1000000043 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -114.8, 10.25, 23.2)
+size = Vector3(4.1, 20.5, 5.0)
+
+[node name="Tower44" parent="." unique_id=1000000044 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.1, 17.95, 128.6)
+size = Vector3(4.8, 35.9, 5.0)
+
+[node name="Tower45" parent="." unique_id=1000000045 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -88.8, 8.35, -96.8)
+size = Vector3(6.1, 16.7, 5.7)
+
+[node name="Tower46" parent="." unique_id=1000000046 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -86.9, 19.25, 67.0)
+size = Vector3(6.2, 38.5, 3.9)
+
+[node name="Tower47" parent="." unique_id=1000000047 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 107.0, 5.1, 29.0)
+size = Vector3(4.6, 10.2, 3.6)
+
+[node name="Tower48" parent="." unique_id=1000000048 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.3, 9.05, -68.0)
+size = Vector3(5.9, 18.1, 5.0)
+
+[node name="Tower49" parent="." unique_id=1000000049 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49.2, 10.65, 154.9)
+size = Vector3(4.1, 21.3, 5.7)
+
+[node name="Tower50" parent="." unique_id=1000000050 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 98.3, 4.85, 75.3)
+size = Vector3(4.6, 9.7, 4.3)
+
+[node name="Tower51" parent="." unique_id=1000000051 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -93.1, 8.8, -61.2)
+size = Vector3(4.9, 17.6, 3.5)
+
+[node name="Tower52" parent="." unique_id=1000000052 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.1, 12.0, 182.8)
+size = Vector3(4.4, 24.0, 5.4)
+
+[node name="Tower53" parent="." unique_id=1000000053 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 144.9, 12.45, 113.7)
+size = Vector3(3.6, 24.9, 3.7)
+
+[node name="Tower54" parent="." unique_id=1000000054 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.7, 10.25, 124.0)
+size = Vector3(6.1, 20.5, 5.1)
+
+[node name="Tower55" parent="." unique_id=1000000055 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -146.7, 19.7, 20.2)
+size = Vector3(4.3, 39.4, 5.7)
+
+[node name="Tower56" parent="." unique_id=1000000056 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.3, 16.9, -94.0)
+size = Vector3(4.0, 33.8, 4.7)
+
+[node name="Tower57" parent="." unique_id=1000000057 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 102.5, 17.95, -171.5)
+size = Vector3(4.5, 35.9, 5.3)
+
+[node name="Tower58" parent="." unique_id=1000000058 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.3, 10.8, 182.6)
+size = Vector3(5.5, 21.6, 5.1)
+
+[node name="Tower59" parent="." unique_id=1000000059 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -113.0, 19.7, -12.9)
+size = Vector3(6.0, 39.4, 4.1)
+
+[node name="Tower60" parent="." unique_id=1000000060 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.0, 8.0, -73.4)
+size = Vector3(4.0, 16.0, 4.7)
+
+[node name="Tower61" parent="." unique_id=1000000061 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.7, 19.7, -126.0)
+size = Vector3(3.5, 39.4, 4.7)
+
+[node name="Tower62" parent="." unique_id=1000000062 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.7, 16.95, 100.2)
+size = Vector3(5.3, 33.9, 4.4)
+
+[node name="Tower63" parent="." unique_id=1000000063 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.2, 8.65, -162.7)
+size = Vector3(4.1, 17.3, 4.0)
+
+[node name="Tower64" parent="." unique_id=1000000064 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -145.4, 16.45, -59.9)
+size = Vector3(5.3, 32.9, 3.7)
+
+[node name="Tower65" parent="." unique_id=1000000065 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 187.3, 13.55, -102.6)
+size = Vector3(4.7, 27.1, 4.3)
+
+[node name="Tower66" parent="." unique_id=1000000066 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 119.8, 17.35, 57.0)
+size = Vector3(3.6, 34.7, 4.9)
+
+[node name="Tower67" parent="." unique_id=1000000067 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110.7, 9.75, 164.7)
+size = Vector3(3.9, 19.5, 4.0)
+
+[node name="Tower68" parent="." unique_id=1000000068 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.4, 9.0, 67.2)
+size = Vector3(5.0, 18.0, 4.8)
+
+[node name="Tower69" parent="." unique_id=1000000069 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.8, 14.5, 53.2)
+size = Vector3(3.7, 29.0, 3.9)
+
+[node name="Tower70" parent="." unique_id=1000000070 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.8, 16.35, -118.4)
+size = Vector3(6.0, 32.7, 4.6)
+
+[node name="Tower71" parent="." unique_id=1000000071 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.6, 12.4, -142.7)
+size = Vector3(5.9, 24.8, 6.2)
+
+[node name="Tower72" parent="." unique_id=1000000072 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.0, 6.65, -17.4)
+size = Vector3(4.6, 13.3, 5.7)
+
+[node name="Tower73" parent="." unique_id=1000000073 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -123.7, 7.15, 75.7)
+size = Vector3(4.4, 14.3, 4.8)
+
+[node name="Tower74" parent="." unique_id=1000000074 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.7, 5.75, 12.3)
+size = Vector3(5.3, 11.5, 4.3)
+
+[node name="Tower75" parent="." unique_id=1000000075 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 155.7, 8.1, 27.5)
+size = Vector3(4.1, 16.2, 3.9)
+
+[node name="Tower76" parent="." unique_id=1000000076 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -93.5, 9.2, -27.9)
+size = Vector3(3.9, 18.4, 4.6)
+
+[node name="Tower77" parent="." unique_id=1000000077 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 10.4, -82.4)
+size = Vector3(5.6, 20.8, 6.0)
+
+[node name="Tower78" parent="." unique_id=1000000078 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -101.6, 16.9, 167.5)
+size = Vector3(4.4, 33.8, 3.7)
+
+[node name="Tower79" parent="." unique_id=1000000079 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -186.7, 10.4, -126.4)
+size = Vector3(4.0, 20.8, 4.8)
+
+[node name="Tower80" parent="." unique_id=1000000080 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 136.2, 9.9, -158.7)
+size = Vector3(6.1, 19.8, 5.8)
+
+[node name="Tower81" parent="." unique_id=1000000081 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -67.5, 14.95, -60.3)
+size = Vector3(5.9, 29.9, 4.9)
+
+[node name="Tower82" parent="." unique_id=1000000082 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 104.9, 14.6, -96.5)
+size = Vector3(4.3, 29.2, 4.6)
+
+[node name="Tower83" parent="." unique_id=1000000083 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 142.8, 13.1, 82.5)
+size = Vector3(5.1, 26.2, 4.9)
+
+[node name="Tower84" parent="." unique_id=1000000084 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -85.9, 11.35, 92.9)
+size = Vector3(4.4, 22.7, 4.8)
+
+[node name="Tower85" parent="." unique_id=1000000085 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -82.3, 8.25, -148.9)
+size = Vector3(4.5, 16.5, 5.3)
+
+[node name="Tower86" parent="." unique_id=1000000086 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 167.3, 15.3, 35.3)
+size = Vector3(4.4, 30.6, 5.1)
+
+[node name="Tower87" parent="." unique_id=1000000087 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.6, 17.35, 169.8)
+size = Vector3(4.5, 34.7, 3.9)
+
+[node name="Tower88" parent="." unique_id=1000000088 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -110.3, 9.15, 99.1)
+size = Vector3(5.6, 18.3, 4.5)
+
+[node name="Tower89" parent="." unique_id=1000000089 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.6, 13.45, 68.0)
+size = Vector3(4.5, 26.9, 4.2)
+
+[node name="Tower90" parent="." unique_id=1000000090 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 114.8, 8.15, -138.8)
+size = Vector3(3.6, 16.3, 5.1)
+
+[node name="Tower91" parent="." unique_id=1000000091 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -183.8, 7.2, -77.8)
+size = Vector3(4.4, 14.4, 5.7)
+
+[node name="Tower92" parent="." unique_id=1000000092 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -142.4, 15.55, 82.8)
+size = Vector3(3.8, 31.1, 3.6)
+
+[node name="Tower93" parent="." unique_id=1000000093 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 155.0, 8.5, 57.1)
+size = Vector3(3.6, 17.0, 4.2)
+
+[node name="Tower94" parent="." unique_id=1000000094 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 187.0, 6.3, -121.6)
+size = Vector3(4.9, 12.6, 5.3)
+
+[node name="Tower95" parent="." unique_id=1000000095 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130.7, 13.25, -179.8)
+size = Vector3(4.8, 26.5, 5.3)
+
+[node name="Tower96" parent="." unique_id=1000000096 instance=ExtResource("2_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.9, 12.25, 116.1)
+size = Vector3(4.8, 24.5, 5.0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1034850629]
+transform = Transform3D(1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0, 4, 0)
+shadow_enabled = true
+
+[node name="Player" parent="." unique_id=1038691161 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

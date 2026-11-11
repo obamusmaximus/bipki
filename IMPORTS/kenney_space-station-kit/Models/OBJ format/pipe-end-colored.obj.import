@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b0lp5w0sma248"
+path="res://.godot/imported/pipe-end-colored.obj-042e46b35ff39b26401714401ade63ac.mesh"
+
+[deps]
+
+files=["res://.godot/imported/pipe-end-colored.obj-042e46b35ff39b26401714401ade63ac.mesh"]
+
+source_file="res://IMPORTS/kenney_space-station-kit/Models/OBJ format/pipe-end-colored.obj"
+dest_files=["res://.godot/imported/pipe-end-colored.obj-042e46b35ff39b26401714401ade63ac.mesh", "res://.godot/imported/pipe-end-colored.obj-042e46b35ff39b26401714401ade63ac.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

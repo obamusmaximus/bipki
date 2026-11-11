@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://cjhvxm7i5uhmu"]
+
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://world/ground/ground.tscn" id="2_ground"]
+[ext_resource type="Script" uid="uid://dt3bwtbtfaiml" path="res://levels/city/city_generator.gd" id="3_generator"]
+[ext_resource type="Script" uid="uid://d2ku74ns5rxh0" path="res://levels/city/city_settings.gd" id="3_mcn2j"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sunny"]
+sky_top_color = Color(0.32, 0.52, 0.86, 1)
+sky_horizon_color = Color(0.98, 0.8, 0.6, 1)
+sky_curve = 0.12
+ground_bottom_color = Color(0.22, 0.32, 0.16, 1)
+ground_horizon_color = Color(0.82, 0.72, 0.5, 1)
+
+[sub_resource type="Sky" id="Sky_sunny"]
+sky_material = SubResource("ProceduralSkyMaterial_sunny")
+
+[sub_resource type="Environment" id="Environment_city"]
+background_mode = 2
+sky = SubResource("Sky_sunny")
+ambient_light_source = 3
+ambient_light_energy = 0.7
+tonemap_mode = 2
+tonemap_exposure = 0.95
+glow_enabled = true
+glow_intensity = 0.5
+glow_bloom = 0.05
+glow_hdr_threshold = 0.9
+fog_enabled = true
+fog_light_color = Color(0.98, 0.84, 0.68, 1)
+fog_density = 0.0015
+adjustment_enabled = true
+adjustment_contrast = 1.08
+adjustment_saturation = 1.15
+
+[sub_resource type="Resource" id="Resource_bl6cj"]
+script = ExtResource("3_mcn2j")
+
+[node name="City" type="Node3D" unique_id=951056476]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2135825757]
+environment = SubResource("Environment_city")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1415099463]
+transform = Transform3D(-0.9397, -0.0827, 0.3319, 0, 0.9703, 0.2419, -0.342, 0.2273, -0.9118, 0, 4, 0)
+light_color = Color(1, 0.8, 0.58, 1)
+light_energy = 1.5
+shadow_enabled = true
+
+[node name="Ground" parent="." unique_id=456383441 instance=ExtResource("2_ground")]
+
+[node name="CityGenerator" type="Node3D" parent="." unique_id=126174780]
+script = ExtResource("3_generator")
+settings = SubResource("Resource_bl6cj")
+
+[node name="Player" parent="." unique_id=770892310 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

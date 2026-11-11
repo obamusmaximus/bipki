@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_grass"]
+frequency = 0.08
+fractal_octaves = 4
+
+[sub_resource type="Gradient" id="Gradient_grass"]
+colors = PackedColorArray(0.16, 0.38, 0.12, 1, 0.34, 0.62, 0.22, 1)
+offsets = PackedFloat32Array(0, 1)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_grass"]
+width = 256
+height = 256
+seamless = true
+color_ramp = SubResource("Gradient_grass")
+noise = SubResource("FastNoiseLite_grass")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_texture = SubResource("NoiseTexture2D_grass")
+uv1_scale = Vector3(150, 150, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_grass"]
+size = Vector2(1000, 1000)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_grass"]
+size = Vector3(1000, 1, 1000)
+
+[node name="Ground" type="StaticBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+material_override = SubResource("StandardMaterial3D_grass")
+mesh = SubResource("PlaneMesh_grass")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_grass")
