@@ -41,6 +41,8 @@ var _double_jump_ready: bool = true
 @onready var _effects: EffectsDirector = $Effects
 @onready var _detector: EdgeDetector = $EdgeDetector
 @onready var _mantle: Mantle = $Mantle
+@onready var _health: Health = $Health
+@onready var _pause_menu: PauseMenu = $PauseMenu
 
 ## Wall normals beside the body from the last frame, as [left, right]. ZERO means no wall.
 var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO])
@@ -58,7 +60,8 @@ func _ready() -> void:
 	_mantle.finished.connect(_on_mantle_finished)
 	_fov.setup(self)
 	_landing.setup(self)
-	_hud.setup(self, _grapple)
+	_hud.setup(self, _grapple, _health)
+	_health.died.connect(_on_died)
 	_effects.setup(self, _grapple, _landing, _camera)
 
 
@@ -189,3 +192,8 @@ func _on_grapple_launched(launch_velocity: Vector3) -> void:
 	velocity = velocity * momentum_carry + launch_velocity
 	_keeps_momentum = true
 	_fov.kick(launch_fov_kick)
+
+
+## The Hud's death screen freezes the game; ESC must not unpause it again.
+func _on_died() -> void:
+	_pause_menu.set_process_unhandled_input(false)

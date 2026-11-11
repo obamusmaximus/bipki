@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://player/walk_bob.gd" id="7_bob"]
 [ext_resource type="Script" path="res://player/edge_detector.gd" id="14_edge"]
 [ext_resource type="Script" path="res://player/mantle.gd" id="15_mantle"]
+[ext_resource type="Script" path="res://player/health.gd" id="16_health"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 height = 1.8
@@ -87,6 +88,9 @@ script = ExtResource("14_edge")
 
 [node name="Mantle" type="Node" parent="."]
 script = ExtResource("15_mantle")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("16_health")
 
 [node name="Hud" parent="." instance=ExtResource("5_hud")]
 

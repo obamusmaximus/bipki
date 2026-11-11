@@ -5,9 +5,21 @@
 [ext_resource type="Script" path="res://hud/mode_label.gd" id="3_mode"]
 [ext_resource type="Script" path="res://hud/reel_bar.gd" id="4_reel"]
 [ext_resource type="Script" path="res://hud/speed_readout.gd" id="5_speed"]
+[ext_resource type="Script" path="res://hud/damage_flash.gd" id="6_flash"]
+[ext_resource type="Script" path="res://hud/health_bar.gd" id="7_health"]
+[ext_resource type="Script" path="res://hud/death_screen.gd" id="8_death"]
 
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
+
+[node name="DamageFlash" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_flash")
 
 [node name="Crosshair" type="Control" parent="."]
 layout_mode = 3
@@ -69,3 +81,25 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 script = ExtResource("5_speed")
+
+[node name="HealthBar" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -84.0
+offset_right = 224.0
+offset_bottom = -68.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("7_health")
+
+[node name="DeathScreen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("8_death")

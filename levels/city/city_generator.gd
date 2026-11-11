@@ -11,6 +11,9 @@ const CHUNK_SIZE: float = 100.0
 @export var settings: CitySettings = CitySettings.new()
 @export_tool_button("Regenerate") var _regenerate_button: Callable = regenerate
 
+## The open air of the generated city, for flying enemies. Built at runtime only (not in the editor).
+var flight_grid: FlightGrid
+
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
@@ -33,3 +36,5 @@ func regenerate() -> void:
 	buildings.name = "Buildings"
 	add_child(buildings)
 	BuildingBuilder.build(buildings, plan, CHUNK_SIZE)
+	if not Engine.is_editor_hint():
+		flight_grid = FlightGrid.from_plan(plan)
