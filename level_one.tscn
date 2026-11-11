@@ -1,0 +1,660 @@
+[gd_scene format=3 uid="uid://n0twtxgum4ky"]
+
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sunny"]
+sky_top_color = Color(0.2, 0.5, 0.95, 1)
+sky_horizon_color = Color(0.7, 0.85, 1, 1)
+ground_horizon_color = Color(0.55, 0.7, 0.45, 1)
+ground_bottom_color = Color(0.3, 0.45, 0.2, 1)
+
+[sub_resource type="Sky" id="Sky_sunny"]
+sky_material = SubResource("ProceduralSkyMaterial_sunny")
+
+[sub_resource type="Environment" id="Environment_level"]
+background_mode = 2
+sky = SubResource("Sky_sunny")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_grass"]
+frequency = 0.08
+fractal_octaves = 4
+
+[sub_resource type="Gradient" id="Gradient_grass"]
+colors = PackedColorArray(0.16, 0.38, 0.12, 1, 0.34, 0.62, 0.22, 1)
+offsets = PackedFloat32Array(0, 1)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_grass"]
+width = 256
+height = 256
+seamless = true
+color_ramp = SubResource("Gradient_grass")
+noise = SubResource("FastNoiseLite_grass")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_texture = SubResource("NoiseTexture2D_grass")
+uv1_scale = Vector3(60, 60, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_grass"]
+size = Vector2(400, 400)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_grass"]
+size = Vector3(400, 1, 400)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_tower"]
+frequency = 0.15
+fractal_octaves = 3
+
+[sub_resource type="Gradient" id="Gradient_tower"]
+colors = PackedColorArray(0.42, 0.28, 0.16, 1, 0.56, 0.4, 0.26, 1)
+offsets = PackedFloat32Array(0, 1)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_tower"]
+width = 256
+height = 256
+seamless = true
+color_ramp = SubResource("Gradient_tower")
+noise = SubResource("FastNoiseLite_tower")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tower"]
+albedo_texture = SubResource("NoiseTexture2D_tower")
+uv1_triplanar = true
+uv1_world_triplanar = true
+uv1_scale = Vector3(0.2, 0.2, 0.2)
+
+[node name="LevelOne" type="Node3D" unique_id=867797899]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1849571795]
+environment = SubResource("Environment_level")
+
+[node name="Grass" type="StaticBody3D" parent="." unique_id=2094882803]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Grass" unique_id=1067712699]
+material_override = SubResource("StandardMaterial3D_grass")
+mesh = SubResource("PlaneMesh_grass")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Grass" unique_id=867915846]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_grass")
+
+[node name="Tower1" type="CSGBox3D" parent="." unique_id=1000000001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.4, 7, -26.2)
+use_collision = true
+size = Vector3(4, 14, 6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower2" type="CSGBox3D" parent="." unique_id=1000000002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 7, -30.2)
+use_collision = true
+size = Vector3(5, 14, 4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower3" type="CSGBox3D" parent="." unique_id=1000000003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.1, 7, 24.4)
+use_collision = true
+size = Vector3(4, 14, 6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower4" type="CSGBox3D" parent="." unique_id=1000000004]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 7, 46.8)
+use_collision = true
+size = Vector3(5, 14, 4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower5" type="CSGBox3D" parent="." unique_id=1000000005]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 127.3, 8.55, -10.3)
+use_collision = true
+size = Vector3(5.3, 17.1, 3.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower6" type="CSGBox3D" parent="." unique_id=1000000006]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 87.9, 6.75, -121.8)
+use_collision = true
+size = Vector3(3.4, 13.5, 6.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower7" type="CSGBox3D" parent="." unique_id=1000000007]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 144.7, 25.60, 139.4)
+use_collision = true
+size = Vector3(5.5, 51.2, 3.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower8" type="CSGBox3D" parent="." unique_id=1000000008]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -145.5, 4.55, 8.5)
+use_collision = true
+size = Vector3(3.8, 9.1, 4.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower9" type="CSGBox3D" parent="." unique_id=1000000009]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.8, 8.65, 102.7)
+use_collision = true
+size = Vector3(5.6, 17.3, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower10" type="CSGBox3D" parent="." unique_id=1000000010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -66.6, 27.95, 149.3)
+use_collision = true
+size = Vector3(6.4, 55.9, 5.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower11" type="CSGBox3D" parent="." unique_id=1000000011]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.4, 6.60, -81.1)
+use_collision = true
+size = Vector3(3.3, 13.2, 6.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower12" type="CSGBox3D" parent="." unique_id=1000000012]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.0, 7.60, 144.1)
+use_collision = true
+size = Vector3(3.3, 15.2, 5.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower13" type="CSGBox3D" parent="." unique_id=1000000013]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 83.6, 21.60, -69.1)
+use_collision = true
+size = Vector3(4.3, 43.2, 6.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower14" type="CSGBox3D" parent="." unique_id=1000000014]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.1, 21.40, -119.7)
+use_collision = true
+size = Vector3(6.2, 42.8, 3.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower15" type="CSGBox3D" parent="." unique_id=1000000015]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49.3, 14.15, -97.8)
+use_collision = true
+size = Vector3(5.3, 28.3, 3.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower16" type="CSGBox3D" parent="." unique_id=1000000016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37.6, 12.3, -123.8)
+use_collision = true
+size = Vector3(4.9, 24.6, 3.4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower17" type="CSGBox3D" parent="." unique_id=1000000017]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -120.4, 6.75, -114.6)
+use_collision = true
+size = Vector3(4.6, 13.5, 5.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower18" type="CSGBox3D" parent="." unique_id=1000000018]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -77.5, 11.65, 35.7)
+use_collision = true
+size = Vector3(6.2, 23.3, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower19" type="CSGBox3D" parent="." unique_id=1000000019]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 133.4, 7.1, -127.0)
+use_collision = true
+size = Vector3(6.0, 14.2, 4.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower20" type="CSGBox3D" parent="." unique_id=1000000020]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -107.0, 14.95, -53.6)
+use_collision = true
+size = Vector3(5.8, 29.9, 3.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower21" type="CSGBox3D" parent="." unique_id=1000000021]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.4, 16.75, -122.4)
+use_collision = true
+size = Vector3(3.5, 33.5, 3.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower22" type="CSGBox3D" parent="." unique_id=1000000022]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.3, 9.9, -52.0)
+use_collision = true
+size = Vector3(5.1, 19.8, 4.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower23" type="CSGBox3D" parent="." unique_id=1000000023]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 82.4, 13.95, 55.7)
+use_collision = true
+size = Vector3(4.1, 27.9, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower24" type="CSGBox3D" parent="." unique_id=1000000024]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 105.0, 6.65, 64.2)
+use_collision = true
+size = Vector3(4.2, 13.3, 6.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower25" type="CSGBox3D" parent="." unique_id=1000000025]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.3, 12.35, 16.7)
+use_collision = true
+size = Vector3(6.2, 24.7, 4.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower26" type="CSGBox3D" parent="." unique_id=1000000026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.5, 16.8, -88.3)
+use_collision = true
+size = Vector3(4.9, 33.6, 5.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower27" type="CSGBox3D" parent="." unique_id=1000000027]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -114.6, 19.7, 86.7)
+use_collision = true
+size = Vector3(5.4, 39.4, 3.4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower28" type="CSGBox3D" parent="." unique_id=1000000028]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130.1, 4.75, 43.1)
+use_collision = true
+size = Vector3(5.2, 9.5, 3.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower29" type="CSGBox3D" parent="." unique_id=1000000029]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -86.7, 11.35, -72.3)
+use_collision = true
+size = Vector3(3.4, 22.7, 4.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower30" type="CSGBox3D" parent="." unique_id=1000000030]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95.9, 14.75, 5.4)
+use_collision = true
+size = Vector3(5.3, 29.5, 4.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower31" type="CSGBox3D" parent="." unique_id=1000000031]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.9, 17.5, -62.1)
+use_collision = true
+size = Vector3(6.4, 35.0, 6.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower32" type="CSGBox3D" parent="." unique_id=1000000032]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.2, 5.6, -51.7)
+use_collision = true
+size = Vector3(4.0, 11.2, 4.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower33" type="CSGBox3D" parent="." unique_id=1000000033]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 74.6, 19.35, -27.9)
+use_collision = true
+size = Vector3(5.9, 38.7, 4.4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower34" type="CSGBox3D" parent="." unique_id=1000000034]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 97.2, 11.8, -139.8)
+use_collision = true
+size = Vector3(4.0, 23.6, 5.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower35" type="CSGBox3D" parent="." unique_id=1000000035]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 134.5, 16.55, -28.7)
+use_collision = true
+size = Vector3(3.5, 33.1, 5.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower36" type="CSGBox3D" parent="." unique_id=1000000036]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64.5, 16.25, -115.6)
+use_collision = true
+size = Vector3(4.3, 32.5, 6.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower37" type="CSGBox3D" parent="." unique_id=1000000037]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -107.0, 16.85, -71.0)
+use_collision = true
+size = Vector3(3.6, 33.7, 3.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower38" type="CSGBox3D" parent="." unique_id=1000000038]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -90.3, 15.85, 16.6)
+use_collision = true
+size = Vector3(4.7, 31.7, 3.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower39" type="CSGBox3D" parent="." unique_id=1000000039]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -103.3, 7.8, 40.2)
+use_collision = true
+size = Vector3(3.7, 15.6, 4.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower40" type="CSGBox3D" parent="." unique_id=1000000040]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64.5, 18.2, 131.9)
+use_collision = true
+size = Vector3(5.8, 36.4, 4.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower41" type="CSGBox3D" parent="." unique_id=1000000041]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -81.0, 6.05, -29.6)
+use_collision = true
+size = Vector3(5.9, 12.1, 5.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower42" type="CSGBox3D" parent="." unique_id=1000000042]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 137.0, 9.6, -80.3)
+use_collision = true
+size = Vector3(4.1, 19.2, 5.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower43" type="CSGBox3D" parent="." unique_id=1000000043]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -114.8, 10.25, 23.2)
+use_collision = true
+size = Vector3(4.1, 20.5, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower44" type="CSGBox3D" parent="." unique_id=1000000044]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.1, 17.95, 128.6)
+use_collision = true
+size = Vector3(4.8, 35.9, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower45" type="CSGBox3D" parent="." unique_id=1000000045]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -88.8, 8.35, -96.8)
+use_collision = true
+size = Vector3(6.1, 16.7, 5.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower46" type="CSGBox3D" parent="." unique_id=1000000046]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -86.9, 19.25, 67.0)
+use_collision = true
+size = Vector3(6.2, 38.5, 3.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower47" type="CSGBox3D" parent="." unique_id=1000000047]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 107.0, 5.1, 29.0)
+use_collision = true
+size = Vector3(4.6, 10.2, 3.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower48" type="CSGBox3D" parent="." unique_id=1000000048]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.3, 9.05, -68.0)
+use_collision = true
+size = Vector3(5.9, 18.1, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower49" type="CSGBox3D" parent="." unique_id=1000000049]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49.2, 10.65, 154.9)
+use_collision = true
+size = Vector3(4.1, 21.3, 5.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower50" type="CSGBox3D" parent="." unique_id=1000000050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 98.3, 4.85, 75.3)
+use_collision = true
+size = Vector3(4.6, 9.7, 4.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower51" type="CSGBox3D" parent="." unique_id=1000000051]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -93.1, 8.8, -61.2)
+use_collision = true
+size = Vector3(4.9, 17.6, 3.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower52" type="CSGBox3D" parent="." unique_id=1000000052]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.1, 12.0, 182.8)
+use_collision = true
+size = Vector3(4.4, 24.0, 5.4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower53" type="CSGBox3D" parent="." unique_id=1000000053]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 144.9, 12.45, 113.7)
+use_collision = true
+size = Vector3(3.6, 24.9, 3.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower54" type="CSGBox3D" parent="." unique_id=1000000054]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.7, 10.25, 124.0)
+use_collision = true
+size = Vector3(6.1, 20.5, 5.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower55" type="CSGBox3D" parent="." unique_id=1000000055]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -146.7, 19.7, 20.2)
+use_collision = true
+size = Vector3(4.3, 39.4, 5.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower56" type="CSGBox3D" parent="." unique_id=1000000056]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.3, 16.9, -94.0)
+use_collision = true
+size = Vector3(4.0, 33.8, 4.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower57" type="CSGBox3D" parent="." unique_id=1000000057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 102.5, 17.95, -171.5)
+use_collision = true
+size = Vector3(4.5, 35.9, 5.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower58" type="CSGBox3D" parent="." unique_id=1000000058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.3, 10.8, 182.6)
+use_collision = true
+size = Vector3(5.5, 21.6, 5.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower59" type="CSGBox3D" parent="." unique_id=1000000059]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -113.0, 19.7, -12.9)
+use_collision = true
+size = Vector3(6.0, 39.4, 4.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower60" type="CSGBox3D" parent="." unique_id=1000000060]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.0, 8.0, -73.4)
+use_collision = true
+size = Vector3(4.0, 16.0, 4.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower61" type="CSGBox3D" parent="." unique_id=1000000061]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.7, 19.7, -126.0)
+use_collision = true
+size = Vector3(3.5, 39.4, 4.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower62" type="CSGBox3D" parent="." unique_id=1000000062]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.7, 16.95, 100.2)
+use_collision = true
+size = Vector3(5.3, 33.9, 4.4)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower63" type="CSGBox3D" parent="." unique_id=1000000063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.2, 8.65, -162.7)
+use_collision = true
+size = Vector3(4.1, 17.3, 4.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower64" type="CSGBox3D" parent="." unique_id=1000000064]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -145.4, 16.45, -59.9)
+use_collision = true
+size = Vector3(5.3, 32.9, 3.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower65" type="CSGBox3D" parent="." unique_id=1000000065]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 187.3, 13.55, -102.6)
+use_collision = true
+size = Vector3(4.7, 27.1, 4.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower66" type="CSGBox3D" parent="." unique_id=1000000066]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 119.8, 17.35, 57.0)
+use_collision = true
+size = Vector3(3.6, 34.7, 4.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower67" type="CSGBox3D" parent="." unique_id=1000000067]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110.7, 9.75, 164.7)
+use_collision = true
+size = Vector3(3.9, 19.5, 4.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower68" type="CSGBox3D" parent="." unique_id=1000000068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.4, 9.0, 67.2)
+use_collision = true
+size = Vector3(5.0, 18.0, 4.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower69" type="CSGBox3D" parent="." unique_id=1000000069]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.8, 14.5, 53.2)
+use_collision = true
+size = Vector3(3.7, 29.0, 3.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower70" type="CSGBox3D" parent="." unique_id=1000000070]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.8, 16.35, -118.4)
+use_collision = true
+size = Vector3(6.0, 32.7, 4.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower71" type="CSGBox3D" parent="." unique_id=1000000071]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.6, 12.4, -142.7)
+use_collision = true
+size = Vector3(5.9, 24.8, 6.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower72" type="CSGBox3D" parent="." unique_id=1000000072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 183.0, 6.65, -17.4)
+use_collision = true
+size = Vector3(4.6, 13.3, 5.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower73" type="CSGBox3D" parent="." unique_id=1000000073]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -123.7, 7.15, 75.7)
+use_collision = true
+size = Vector3(4.4, 14.3, 4.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower74" type="CSGBox3D" parent="." unique_id=1000000074]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.7, 5.75, 12.3)
+use_collision = true
+size = Vector3(5.3, 11.5, 4.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower75" type="CSGBox3D" parent="." unique_id=1000000075]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 155.7, 8.1, 27.5)
+use_collision = true
+size = Vector3(4.1, 16.2, 3.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower76" type="CSGBox3D" parent="." unique_id=1000000076]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -93.5, 9.2, -27.9)
+use_collision = true
+size = Vector3(3.9, 18.4, 4.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower77" type="CSGBox3D" parent="." unique_id=1000000077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 10.4, -82.4)
+use_collision = true
+size = Vector3(5.6, 20.8, 6.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower78" type="CSGBox3D" parent="." unique_id=1000000078]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -101.6, 16.9, 167.5)
+use_collision = true
+size = Vector3(4.4, 33.8, 3.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower79" type="CSGBox3D" parent="." unique_id=1000000079]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -186.7, 10.4, -126.4)
+use_collision = true
+size = Vector3(4.0, 20.8, 4.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower80" type="CSGBox3D" parent="." unique_id=1000000080]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 136.2, 9.9, -158.7)
+use_collision = true
+size = Vector3(6.1, 19.8, 5.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower81" type="CSGBox3D" parent="." unique_id=1000000081]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -67.5, 14.95, -60.3)
+use_collision = true
+size = Vector3(5.9, 29.9, 4.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower82" type="CSGBox3D" parent="." unique_id=1000000082]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 104.9, 14.6, -96.5)
+use_collision = true
+size = Vector3(4.3, 29.2, 4.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower83" type="CSGBox3D" parent="." unique_id=1000000083]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 142.8, 13.1, 82.5)
+use_collision = true
+size = Vector3(5.1, 26.2, 4.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower84" type="CSGBox3D" parent="." unique_id=1000000084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -85.9, 11.35, 92.9)
+use_collision = true
+size = Vector3(4.4, 22.7, 4.8)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower85" type="CSGBox3D" parent="." unique_id=1000000085]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -82.3, 8.25, -148.9)
+use_collision = true
+size = Vector3(4.5, 16.5, 5.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower86" type="CSGBox3D" parent="." unique_id=1000000086]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 167.3, 15.3, 35.3)
+use_collision = true
+size = Vector3(4.4, 30.6, 5.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower87" type="CSGBox3D" parent="." unique_id=1000000087]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.6, 17.35, 169.8)
+use_collision = true
+size = Vector3(4.5, 34.7, 3.9)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower88" type="CSGBox3D" parent="." unique_id=1000000088]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -110.3, 9.15, 99.1)
+use_collision = true
+size = Vector3(5.6, 18.3, 4.5)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower89" type="CSGBox3D" parent="." unique_id=1000000089]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.6, 13.45, 68.0)
+use_collision = true
+size = Vector3(4.5, 26.9, 4.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower90" type="CSGBox3D" parent="." unique_id=1000000090]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 114.8, 8.15, -138.8)
+use_collision = true
+size = Vector3(3.6, 16.3, 5.1)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower91" type="CSGBox3D" parent="." unique_id=1000000091]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -183.8, 7.2, -77.8)
+use_collision = true
+size = Vector3(4.4, 14.4, 5.7)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower92" type="CSGBox3D" parent="." unique_id=1000000092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -142.4, 15.55, 82.8)
+use_collision = true
+size = Vector3(3.8, 31.1, 3.6)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower93" type="CSGBox3D" parent="." unique_id=1000000093]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 155.0, 8.5, 57.1)
+use_collision = true
+size = Vector3(3.6, 17.0, 4.2)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower94" type="CSGBox3D" parent="." unique_id=1000000094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 187.0, 6.3, -121.6)
+use_collision = true
+size = Vector3(4.9, 12.6, 5.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower95" type="CSGBox3D" parent="." unique_id=1000000095]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130.7, 13.25, -179.8)
+use_collision = true
+size = Vector3(4.8, 26.5, 5.3)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="Tower96" type="CSGBox3D" parent="." unique_id=1000000096]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.9, 12.25, 116.1)
+use_collision = true
+size = Vector3(4.8, 24.5, 5.0)
+material = SubResource("StandardMaterial3D_tower")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1034850629]
+transform = Transform3D(1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0, 4, 0)
+shadow_enabled = true
+
+[node name="Player" parent="." unique_id=1038691161 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

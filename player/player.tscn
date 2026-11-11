@@ -1,0 +1,86 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://player/grapple_sfx.gd" id="8_sfx"]
+[ext_resource type="Script" path="res://player/footsteps.gd" id="9_steps"]
+[ext_resource type="Script" path="res://player/head_look.gd" id="2_look"]
+[ext_resource type="Script" path="res://player/grapple_hook.gd" id="3_hook"]
+[ext_resource type="Script" path="res://player/grapple_rope.gd" id="4_rope"]
+[ext_resource type="Script" path="res://player/crosshair.gd" id="5_cross"]
+[ext_resource type="Script" path="res://player/shake_camera.gd" id="6_shake"]
+[ext_resource type="Script" path="res://player/walk_bob.gd" id="7_bob"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+height = 1.8
+radius = 0.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+height = 1.8
+radius = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.9, 0.5, 0.1, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rope"]
+top_radius = 0.01
+bottom_radius = 0.01
+height = 1.0
+radial_segments = 6
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rope"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.6, 0.6, 0.6, 0.5)
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_body")
+material_override = SubResource("StandardMaterial3D_body")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+script = ExtResource("2_look")
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+current = true
+script = ExtResource("6_shake")
+
+[node name="WalkBob" type="Node" parent="Head/Camera3D"]
+script = ExtResource("7_bob")
+
+[node name="GrappleHook" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+script = ExtResource("3_hook")
+
+[node name="Rope" type="MeshInstance3D" parent="GrappleHook"]
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_rope")
+material_override = SubResource("StandardMaterial3D_rope")
+script = ExtResource("4_rope")
+
+[node name="Sfx" type="Node" parent="GrappleHook"]
+script = ExtResource("8_sfx")
+
+[node name="Footsteps" type="Node" parent="."]
+script = ExtResource("9_steps")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Crosshair" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_cross")
