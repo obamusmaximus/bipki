@@ -56,6 +56,7 @@ func start(anchor: Vector3, hit_point: Vector3, ground_height: float, margin: fl
 
 func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) -> Correction:
 	is_reeling = reeling and length > min_length
+	var length_before: float = length
 	if is_reeling:
 		length = maxf(min_length, length - reel_speed * delta)
 	fully_reeled = reeling and length <= min_length
@@ -70,15 +71,31 @@ func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) 
 	correction.velocity = velocity
 	var offset: Vector3 = anchor - _hit_point
 	var distance: float = offset.length()
+	if distance < 0.001:
+		return correction
+	var outward: Vector3 = offset / distance
+	# Reeling in while the rope is taut turns the shortening into real momentum, so it carries on
+	# after the reel stops or the hook detaches.
+	if is_reeling and distance >= length_before - 0.5:
+		correction.velocity = _reel_momentum(velocity, outward, length_before, length)
 	if distance <= length:
 		return correction
 
-	var outward: Vector3 = offset / distance
 	correction.offset = outward * length - offset
-	var outward_speed: float = velocity.dot(outward)
+	var outward_speed: float = correction.velocity.dot(outward)
 	if outward_speed > 0.0:
 		correction.velocity -= outward * outward_speed
 	return correction
+
+
+## Shortening the rope speeds the swing up like a skater pulling in their arms (the sideways speed
+## grows by old length / new length), and the player is also pulled toward the hit point at reel speed.
+## Both stay in the velocity, so they carry on after the reel stops or the hook detaches.
+func _reel_momentum(velocity: Vector3, outward: Vector3, length_before: float, length_after: float) -> Vector3:
+	var radial: float = velocity.dot(outward)
+	var sideways: Vector3 = (velocity - outward * radial) * (length_before / maxf(length_after, 0.001))
+	radial = minf(radial, -reel_speed)
+	return sideways + outward * radial
 
 
 ## While the player drops below the hit point's height, shortens the rope in proportion to the descent.
