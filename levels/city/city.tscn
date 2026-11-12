@@ -3,9 +3,9 @@
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://world/ground/ground.tscn" id="2_ground"]
 [ext_resource type="Script" uid="uid://dt3bwtbtfaiml" path="res://levels/city/city_generator.gd" id="3_generator"]
-[ext_resource type="PackedScene" path="res://enemy/drone.tscn" id="4_drone"]
-[ext_resource type="Script" path="res://levels/city/city_level.gd" id="5_level"]
 [ext_resource type="Script" uid="uid://d2ku74ns5rxh0" path="res://levels/city/city_settings.gd" id="3_mcn2j"]
+[ext_resource type="PackedScene" path="res://enemy/drone.tscn" id="4_drone"]
+[ext_resource type="Script" uid="uid://c8g7acm28ewym" path="res://levels/city/city_level.gd" id="5_level"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sunny"]
 sky_top_color = Color(0.32, 0.52, 0.86, 1)
@@ -51,6 +51,7 @@ light_energy = 1.5
 shadow_enabled = true
 
 [node name="Ground" parent="." unique_id=456383441 instance=ExtResource("2_ground")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.30494595, -0.5043249, 0.10969639)
 
 [node name="CityGenerator" type="Node3D" parent="." unique_id=126174780]
 script = ExtResource("3_generator")
@@ -59,5 +60,5 @@ settings = SubResource("Resource_bl6cj")
 [node name="Player" parent="." unique_id=770892310 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
-[node name="Drone" parent="." instance=ExtResource("4_drone")]
+[node name="Drone" parent="." unique_id=390199146 instance=ExtResource("4_drone")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 90, 40, 90)
