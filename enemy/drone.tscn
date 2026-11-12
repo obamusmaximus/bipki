@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://enemy/drone.gd" id="1_drone"]
+[ext_resource type="Script" path="res://enemy/drone_flight.gd" id="2_flight"]
+[ext_resource type="Script" path="res://enemy/beam_attack.gd" id="3_beam"]
+[ext_resource type="Script" path="res://enemy/beam_visual.gd" id="4_visual"]
+[ext_resource type="Script" path="res://enemy/drone_sfx.gd" id="5_sfx"]
+[ext_resource type="Resource" path="res://tuning/drone_default.tres" id="6_stats"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 1.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_body"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.18, 0.19, 0.22, 1)
+metallic = 0.7
+roughness = 0.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_eye"]
+radius = 0.35
+height = 0.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye"]
+albedo_color = Color(1, 0.1, 0.05, 1)
+emission_enabled = true
+emission = Color(1, 0.15, 0.05, 1)
+emission_energy_multiplier = 2.5
+
+[node name="Drone" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("1_drone")
+stats = ExtResource("6_stats")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_body")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_body")
+material_override = SubResource("StandardMaterial3D_body")
+
+[node name="Eye" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.75)
+mesh = SubResource("SphereMesh_eye")
+material_override = SubResource("StandardMaterial3D_eye")
+
+[node name="Flight" type="Node" parent="."]
+script = ExtResource("2_flight")
+
+[node name="BeamAttack" type="Node" parent="."]
+script = ExtResource("3_beam")
+
+[node name="BeamVisual" type="Node3D" parent="."]
+script = ExtResource("4_visual")
+
+[node name="Sfx" type="Node3D" parent="."]
+script = ExtResource("5_sfx")

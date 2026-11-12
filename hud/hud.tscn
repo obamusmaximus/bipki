@@ -1,0 +1,99 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://hud/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://hud/crosshair.gd" id="2_cross"]
+[ext_resource type="Script" path="res://hud/mode_label.gd" id="3_mode"]
+[ext_resource type="Script" path="res://hud/reel_bar.gd" id="4_reel"]
+[ext_resource type="Script" path="res://hud/speed_readout.gd" id="5_speed"]
+[ext_resource type="Script" path="res://hud/damage_flash.gd" id="6_flash"]
+[ext_resource type="Script" path="res://hud/health_bar.gd" id="7_health"]
+[ext_resource type="Script" path="res://hud/death_screen.gd" id="8_death"]
+
+[node name="Hud" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="DamageFlash" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_flash")
+
+[node name="Crosshair" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_cross")
+
+[node name="BottomCenter" type="VBoxContainer" parent="."]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_top = -52.0
+offset_bottom = -52.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="ModeLabel" type="Label" parent="BottomCenter"]
+custom_minimum_size = Vector2(320, 28)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+script = ExtResource("3_mode")
+
+[node name="ReelBar" type="Control" parent="BottomCenter"]
+custom_minimum_size = Vector2(200, 8)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+script = ExtResource("4_reel")
+
+[node name="BottomLeft" type="VBoxContainer" parent="."]
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = -24.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="HealthBar" type="Control" parent="BottomLeft"]
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+script = ExtResource("7_health")
+
+[node name="SpeedReadout" type="Label" parent="BottomLeft"]
+custom_minimum_size = Vector2(160, 28)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+script = ExtResource("5_speed")
+
+[node name="DeathScreen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("8_death")

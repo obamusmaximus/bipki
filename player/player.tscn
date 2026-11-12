@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://player/grapple_sfx.gd" id="8_sfx"]
@@ -6,9 +6,20 @@
 [ext_resource type="Script" path="res://player/head_look.gd" id="2_look"]
 [ext_resource type="Script" path="res://player/grapple_hook.gd" id="3_hook"]
 [ext_resource type="Script" path="res://player/grapple_rope.gd" id="4_rope"]
-[ext_resource type="Script" path="res://player/crosshair.gd" id="5_cross"]
+[ext_resource type="PackedScene" path="res://hud/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://menus/pause_menu.tscn" id="10_pause"]
+[ext_resource type="Script" path="res://player/dynamic_fov.gd" id="11_fov"]
+[ext_resource type="Script" path="res://player/landing_watcher.gd" id="12_landing"]
+[ext_resource type="Script" path="res://effects/effects_director.gd" id="13_effects"]
 [ext_resource type="Script" path="res://player/shake_camera.gd" id="6_shake"]
 [ext_resource type="Script" path="res://player/walk_bob.gd" id="7_bob"]
+[ext_resource type="Script" path="res://player/edge_detector.gd" id="14_edge"]
+[ext_resource type="Script" path="res://player/mantle.gd" id="15_mantle"]
+[ext_resource type="Script" path="res://player/health.gd" id="16_health"]
+[ext_resource type="Resource" path="res://tuning/player_default.tres" id="18_player"]
+[ext_resource type="Resource" path="res://tuning/grapple_default.tres" id="19_grapple"]
+[ext_resource type="Resource" path="res://tuning/camera_feel_default.tres" id="20_feel"]
+[ext_resource type="Resource" path="res://tuning/hud_default.tres" id="21_hud"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 height = 1.8
@@ -21,13 +32,6 @@ radius = 0.4
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
 albedo_color = Color(0.9, 0.5, 0.1, 1)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_rope"]
-top_radius = 0.01
-bottom_radius = 0.01
-height = 1.0
-radial_segments = 6
-rings = 1
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rope"]
 transparency = 1
 cull_mode = 2
@@ -35,7 +39,13 @@ shading_mode = 0
 albedo_color = Color(0.6, 0.6, 0.6, 0.5)
 
 [node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
 script = ExtResource("1_player")
+stats = ExtResource("18_player")
+grapple_stats = ExtResource("19_grapple")
+feel = ExtResource("20_feel")
+hud_stats = ExtResource("21_hud")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -57,13 +67,15 @@ script = ExtResource("6_shake")
 [node name="WalkBob" type="Node" parent="Head/Camera3D"]
 script = ExtResource("7_bob")
 
+[node name="DynamicFov" type="Node" parent="Head/Camera3D"]
+script = ExtResource("11_fov")
+
 [node name="GrappleHook" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 script = ExtResource("3_hook")
 
 [node name="Rope" type="MeshInstance3D" parent="GrappleHook"]
 cast_shadow = 0
-mesh = SubResource("CylinderMesh_rope")
 material_override = SubResource("StandardMaterial3D_rope")
 script = ExtResource("4_rope")
 
@@ -73,14 +85,21 @@ script = ExtResource("8_sfx")
 [node name="Footsteps" type="Node" parent="."]
 script = ExtResource("9_steps")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="LandingWatcher" type="Node" parent="."]
+script = ExtResource("12_landing")
 
-[node name="Crosshair" type="Control" parent="HUD"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("5_cross")
+[node name="Effects" type="Node" parent="."]
+script = ExtResource("13_effects")
+
+[node name="EdgeDetector" type="Node3D" parent="."]
+script = ExtResource("14_edge")
+
+[node name="Mantle" type="Node" parent="."]
+script = ExtResource("15_mantle")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("16_health")
+
+[node name="Hud" parent="." instance=ExtResource("5_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("10_pause")]

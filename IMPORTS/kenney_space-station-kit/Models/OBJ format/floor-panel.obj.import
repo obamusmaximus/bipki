@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://saglkmu7pkcw"
+path="res://.godot/imported/floor-panel.obj-6a6b9417d2dd77b7df97d6b03026e65b.mesh"
+
+[deps]
+
+files=["res://.godot/imported/floor-panel.obj-6a6b9417d2dd77b7df97d6b03026e65b.mesh"]
+
+source_file="res://IMPORTS/kenney_space-station-kit/Models/OBJ format/floor-panel.obj"
+dest_files=["res://.godot/imported/floor-panel.obj-6a6b9417d2dd77b7df97d6b03026e65b.mesh", "res://.godot/imported/floor-panel.obj-6a6b9417d2dd77b7df97d6b03026e65b.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
