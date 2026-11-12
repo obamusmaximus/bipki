@@ -29,6 +29,7 @@ const BODY_RADIUS: float = 0.4
 
 var _origin: Node3D
 var _target: Node3D
+var _target_health: Health
 var _state: State = State.COOLDOWN
 var _timer: float = 0.0
 var _latched: Vector3 = Vector3.ZERO
@@ -37,6 +38,7 @@ var _latched: Vector3 = Vector3.ZERO
 func setup(origin: Node3D, target: Node3D) -> void:
 	_origin = origin
 	_target = target
+	_target_health = target.get_node_or_null("Health") as Health
 	_timer = cooldown
 
 
@@ -93,9 +95,8 @@ func _fire() -> void:
 	var to: Vector3 = get_aim_end()
 	var hit: bool = _beam_hits_target(from, to)
 	if hit:
-		var health: Health = _target.get_node_or_null("Health") as Health
-		if health != null:
-			health.take_damage(damage)
+		if _target_health != null:
+			_target_health.take_damage(damage)
 	fired.emit(from, to, hit)
 
 

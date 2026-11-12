@@ -2,7 +2,7 @@
 
 Read at the start of every session. Update at the end. Keep it short. Mechanics are in the CLAUDE.md glossary and in script doc comments. Tuning values are `@export` vars on their scripts, so don't copy them here.
 
-_Last updated: 2026-11-12 (player `Health`, HUD damage flash, `FlightGrid`, flying `Drone` with a beam attack)_
+_Last updated: 2026-11-12 (cleanup: removed test range and Tower, stripped pack previews; player `Health`, HUD damage flash, `FlightGrid`, flying `Drone` with a beam attack)_
 
 ## Current state
 - **Main scene:** `levels/city/city.tscn`, a seeded procedural city about 400 m across on a 1000 m grass ground, fogged at the edge. Built at runtime by `CityGenerator`. Headless-verified (no overlaps, same seed gives the same city). Street and skyline screenshots checked.
@@ -12,7 +12,6 @@ _Last updated: 2026-11-12 (player `Health`, HUD damage flash, `FlightGrid`, flyi
 - **Health:** `player/health.gd` (`Health` node on the player: `take_damage`, signals `damaged`, `health_changed`, `died`; nothing handles death yet). `hud/damage_flash.gd` shows a red edge vignette on `damaged`. Headless-tested; look not checked by eye.
 - **Health bar and death:** `hud/health_bar.gd` (bottom left, above speed) and `hud/death_screen.gd`: on `Health.died` the tree pauses, a dark red "YOU DIED" veil with a Restart button shows (reloads the scene), and the pause menu's ESC is disabled (`Player._on_died`). Headless-tested; not seen.
 - **Drone:** `enemy/`: `Drone` (CharacterBody3D, layer 3, mask 1) owns `DroneFlight`, `BeamAttack`, `BeamVisual`, `DroneSfx`. `DroneFlight` picks a goal on a ring just outside `standoff` (now 15 m) that sees the player, and flies there on an A* path that never enters the standoff sphere; inside the standoff it holds still (no backing away). `BeamAttack`: 7 s cooldown after each shot, then waits for line of sight, charges 1.5 s (rising whine), latches the player's chest position, 0.5 s aim delay (thin red warning line, lock blip), then fires a 1.8 m radius beam that stops at the first building and deals 35 damage to a `Health` it touches. Charge carries on if sight is lost. `levels/city/flight_grid.gd` is a 4x6x4 m voxel grid of open air with `AStar3D`, built from `CityPlan` boxes (about 0.5 s at load; `CityGenerator.flight_grid`, runtime only); `CityLevel` hands it to the drone. Headless-tested: paths never cross a building; timings 1.5 s / 0.5 s / 7 s; hit when still, miss when moved 6 m at lock; no charge behind a wall. Not seen or heard in play (placeholder sphere, synthesized sounds, orb and beam are first passes).
-- `levels/level_one.tscn`: old test range (96 `Tower`s). Still loads.
 
 ## Current goals
 1. **Make the grapple fun, snappy and responsive.** Tune by playtesting. Swing needs the most attention.
@@ -24,7 +23,7 @@ _Last updated: 2026-11-12 (player `Health`, HUD damage flash, `FlightGrid`, flyi
 - `menus/`: `PauseMenu` (ESC), `GameSettings` (volume, sensitivity, fullscreen, saved to `user://settings.cfg`). No main menu yet.
 - `effects/`: `EffectsDirector` wires `AttachBurst`, `LandingDust` and `SpeedStreaks`. All `CPUParticles3D`, built in code by `ParticleKit`.
 - `levels/city/`: `CitySettings`, `CityLayout` (pure data, runs headless), `CityPlan`, `BuildingBuilder`, `CityGenerator` (@tool; press Regenerate in the editor).
-- `world/`: `Tower`, `BuildingCatalog` (Kenney City Kit GLBs in `IMPORTS/`, 1 unit = 10 m), `roads/`, `batching/` (chunked `KitBatch`, `BoxColliders`), `ground/`.
+- `world/`: `BuildingCatalog` (Kenney City Kit GLBs in `IMPORTS/`, 1 unit = 10 m; the space-kit and space-station-kit packs there are kept for later, unused; previews, samples and isometric renders were stripped), `roads/`, `batching/` (chunked `KitBatch`, `BoxColliders`), `ground/`.
 - Input: `grapple` (RMB), `swing` (LMB), `reel` (Shift). Layers: 1 World, 2 Player, 3 Enemy, 4 Bullet.
 
 ## Known issues
@@ -52,4 +51,4 @@ _Last updated: 2026-11-12 (player `Health`, HUD damage flash, `FlightGrid`, flyi
 7. **Code:** move sound parameters out of `_ready`. Ask before any Asset Library or addon use.
 
 ## Project layout
-Feature folders: `hud/`, `menus/`, `effects/`, `player/`, `levels/`, `world/`. Git repo on `main`. The baseline commit `8f51d62` is from before the structure cleanup. `main.tscn` and the stray root `level_one.tscn` are gone.
+Feature folders: `hud/`, `menus/`, `effects/`, `player/`, `levels/`, `world/`. Git repo on `main`. The baseline commit `8f51d62` is from before the structure cleanup. `main.tscn`, `level_one.tscn` (old test range) and `Tower` are gone.
