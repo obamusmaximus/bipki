@@ -27,28 +27,8 @@ enum Mode { NONE, LAUNCH, SWING }
 ## What the crosshair points at: nothing in reach, a valid hook target, or the ground plane (rejected).
 enum Aim { NONE, VALID, GROUND }
 
-## Speed of the hook tip, for both functions.
-@export var extend_speed: float = 150.0
-@export var launch_speed: float = 25.0
-## A launch aims this many meters above the hit point.
-@export var launch_height_offset: float = 6.0
-## A launch aim point can shift sideways by up to this many meters, following the crosshair.
-@export var launch_side_offset: float = 6.0
-## Seconds between attaching and launching (the player's window to steer the sideways shift).
-@export var launch_grace: float = 0.3
-@export var max_distance: float = 10000.0
-## Hits within this height of the player's feet count as "the ground plane" and are rejected.
-@export var ground_tolerance: float = 0.1
-## Swing rope: how fast it shortens while reel (Shift) is held, and the shortest it can get
-## (metres). Reeling down to min_rope_length detaches the hook.
-@export var reel_speed: float = 25.0
-## Fastest the rope shortens by itself while the player drops below the hit point (m/s).
-@export var descent_speed: float = 6.0
-@export var min_rope_length: float = 4.0
-## A swing rope that is too long retracts so the player passes this far below the hit point's height above the terrain.
-@export var swing_ground_margin: float = 2.0
-## The rope must be down to clearGround by the time the player is inside this horizontal radius (metres) of the point below the hit point.
-@export var clear_ground_radius: float = 3.0
+## Tunable numbers. Set by Player through setup().
+var stats: GrappleStats
 
 ## Set by Player: the camera the fire raycast and launch aim come from.
 var camera: Camera3D
@@ -95,7 +75,7 @@ func _physics_process(delta: float) -> void:
 
 	if _state == State.ATTACHED and _mode == Mode.LAUNCH:
 		_attached_time += delta
-		if _attached_time >= launch_grace:
+		if _attached_time >= stats.launch_grace:
 			_launch()
 
 
@@ -107,6 +87,13 @@ func _process(_delta: float) -> void:
 
 
 ## True while the player hangs from a swing rope.
+## Called once by Player with the grapple's tuning, which is handed on to the rope and the sounds.
+func setup(grapple_stats: GrappleStats) -> void:
+	stats = grapple_stats
+	_rope.setup(stats)
+	_sfx.setup(stats)
+
+
 func is_swinging() -> bool:
 	return _state == State.ATTACHED and _mode == Mode.SWING
 
@@ -159,18 +146,18 @@ func constrain_swing(body_velocity: Vector3, delta: float) -> SwingRope.Correcti
 ## Creates the swing rope, fixing its length at the current distance to the hit point.
 func _start_swing() -> void:
 	var ground_height: float = GroundProbe.find_ground_height(get_world_3d().direct_space_state,
-			_hit_point, _hit_normal, clear_ground_radius, WORLD_MASK, max_distance)
+			_hit_point, _hit_normal, stats.clear_ground_radius, WORLD_MASK, stats.max_distance)
 	_swing = SwingRope.new()
-	_swing.min_length = min_rope_length
-	_swing.reel_speed = reel_speed
-	_swing.descent_speed = descent_speed
-	_swing.start(global_position, _hit_point, ground_height, swing_ground_margin, clear_ground_radius)
+	_swing.min_length = stats.min_rope_length
+	_swing.reel_speed = stats.reel_speed
+	_swing.descent_speed = stats.descent_speed
+	_swing.start(global_position, _hit_point, ground_height, stats.swing_ground_margin, stats.clear_ground_radius)
 
 
 ## The raycast from the crosshair against the world. Empty if it hits nothing.
 func _cast_aim() -> Dictionary:
 	var origin: Vector3 = camera.global_position
-	var target: Vector3 = origin - camera.global_basis.z * max_distance
+	var target: Vector3 = origin - camera.global_basis.z * stats.max_distance
 	var query := PhysicsRayQueryParameters3D.create(origin, target, WORLD_MASK)
 	return get_world_3d().direct_space_state.intersect_ray(query)
 
@@ -178,7 +165,7 @@ func _cast_aim() -> Dictionary:
 ## True if the point is on the ground plane the player stands on (the hook can't connect there).
 func _is_ground(point: Vector3) -> bool:
 	var feet_y: float = global_position.y - position.y # This node sits at mid-body.
-	return absf(point.y - feet_y) <= ground_tolerance
+	return absf(point.y - feet_y) <= stats.ground_tolerance
 
 
 func _try_fire(is_swing: bool) -> void:
@@ -199,7 +186,7 @@ func _try_fire(is_swing: bool) -> void:
 
 	_hit_point = point
 	_hit_normal = normal
-	_flight_speed = extend_speed
+	_flight_speed = stats.extend_speed
 	_tip = global_position
 	_attached_time = 0.0
 	_state = State.EXTENDING
@@ -214,11 +201,11 @@ func _try_fire(is_swing: bool) -> void:
 
 func _launch() -> void:
 	var aim_point: Vector3 = LaunchAim.aim_point(global_position, _hit_point, camera.global_position,
-			-camera.global_basis.z, launch_height_offset, launch_side_offset)
+			-camera.global_basis.z, stats.launch_height_offset, stats.launch_side_offset)
 	var direction: Vector3 = (aim_point - global_position).normalized()
 	_reset()
 	_sfx.play_launch()
-	launched.emit(direction * launch_speed)
+	launched.emit(direction * stats.launch_speed)
 	detached.emit()
 
 

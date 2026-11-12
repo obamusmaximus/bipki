@@ -31,18 +31,22 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_cross")
 
-[node name="ModeLabel" type="Label" parent="."]
+[node name="BottomCenter" type="VBoxContainer" parent="."]
 anchors_preset = -1
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -160.0
-offset_top = -96.0
-offset_right = 160.0
-offset_bottom = -68.0
+offset_top = -52.0
+offset_bottom = -52.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="ModeLabel" type="Label" parent="BottomCenter"]
+custom_minimum_size = Vector2(320, 28)
+layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 theme_override_constants/outline_size = 4
@@ -50,50 +54,40 @@ theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 script = ExtResource("3_mode")
 
-[node name="ReelBar" type="Control" parent="."]
-visible = false
-layout_mode = 3
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -60.0
-offset_right = 100.0
-offset_bottom = -52.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="ReelBar" type="Control" parent="BottomCenter"]
+custom_minimum_size = Vector2(200, 8)
+layout_mode = 2
+size_flags_horizontal = 4
 mouse_filter = 2
 script = ExtResource("4_reel")
 
-[node name="SpeedReadout" type="Label" parent="."]
+[node name="BottomLeft" type="VBoxContainer" parent="."]
 anchors_preset = -1
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = -52.0
-offset_right = 184.0
+offset_top = -24.0
+offset_right = 24.0
 offset_bottom = -24.0
 grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="HealthBar" type="Control" parent="BottomLeft"]
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+script = ExtResource("7_health")
+
+[node name="SpeedReadout" type="Label" parent="BottomLeft"]
+custom_minimum_size = Vector2(160, 28)
+layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 script = ExtResource("5_speed")
-
-[node name="HealthBar" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = -1
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = -84.0
-offset_right = 224.0
-offset_bottom = -68.0
-grow_vertical = 0
-mouse_filter = 2
-script = ExtResource("7_health")
 
 [node name="DeathScreen" type="Control" parent="."]
 layout_mode = 3

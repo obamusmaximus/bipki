@@ -4,10 +4,15 @@ extends Control
 ## level. It keeps running while the tree is paused (process mode "always").
 
 var _restart_button: Button
+var _column: VBoxContainer
+var _stats: HudStats
 
 
-func setup(health: Health) -> void:
+func setup(health: Health, hud_stats: HudStats) -> void:
 	health.died.connect(_on_died)
+	_stats = hud_stats
+	_stats.changed.connect(_apply_scale)
+	_apply_scale()
 
 
 func _ready() -> void:
@@ -28,6 +33,7 @@ func _ready() -> void:
 	column.grow_vertical = Control.GROW_DIRECTION_BOTH
 	column.add_theme_constant_override("separation", 24)
 	add_child(column)
+	_column = column
 
 	var title := Label.new()
 	title.text = "YOU DIED"
@@ -42,6 +48,12 @@ func _ready() -> void:
 	_restart_button.custom_minimum_size = Vector2(200.0, 48.0)
 	_restart_button.pressed.connect(_restart)
 	column.add_child(_restart_button)
+
+
+## Scales the title and button around the screen centre. The veil still fills the screen.
+func _apply_scale() -> void:
+	_column.pivot_offset_ratio = Vector2(0.5, 0.5)
+	_column.scale = Vector2.ONE * _stats.hud_scale
 
 
 func _on_died() -> void:

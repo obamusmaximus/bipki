@@ -12,15 +12,7 @@ signal fired(from: Vector3, to: Vector3, hit_target: bool)
 
 enum State { COOLDOWN, READY, CHARGING, AIMING }
 
-## Seconds from one shot to the next charge becoming possible.
-@export var cooldown: float = 7.0
-@export var charge_time: float = 1.5
-## Seconds between the aim locking and the shot.
-@export var aim_delay: float = 0.5
-@export var damage: float = 35.0
-## Beam thickness (radius, metres).
-@export var beam_radius: float = 1.8
-@export var beam_range: float = 400.0
+var stats: DroneStats
 
 const WORLD_LAYER: int = 1  ## Collision layer 1 (World) as a mask bit.
 ## Heights above the target's feet that count as the body when checking a hit.
@@ -35,11 +27,12 @@ var _timer: float = 0.0
 var _latched: Vector3 = Vector3.ZERO
 
 
-func setup(origin: Node3D, target: Node3D) -> void:
+func setup(origin: Node3D, target: Node3D, drone_stats: DroneStats) -> void:
+	stats = drone_stats
 	_origin = origin
 	_target = target
 	_target_health = target.get_node_or_null("Health") as Health
-	_timer = cooldown
+	_timer = stats.cooldown
 
 
 func get_state() -> State:
@@ -50,14 +43,14 @@ func get_state() -> State:
 func get_charge_fraction() -> float:
 	if _state != State.CHARGING:
 		return 0.0
-	return 1.0 - _timer / charge_time
+	return 1.0 - _timer / stats.charge_time
 
 
 ## Where the beam would end if fired now: along the line to the latched point, stopped by the first building.
 func get_aim_end() -> Vector3:
 	var from: Vector3 = _origin.global_position
 	var dir: Vector3 = from.direction_to(_latched)
-	var far: Vector3 = from + dir * beam_range
+	var far: Vector3 = from + dir * stats.beam_range
 	var hit: Dictionary = _raycast(from, far)
 	return far if hit.is_empty() else hit["position"]
 
@@ -73,21 +66,21 @@ func _physics_process(delta: float) -> void:
 		State.READY:
 			if _has_line_of_sight():
 				_state = State.CHARGING
-				_timer = charge_time
+				_timer = stats.charge_time
 				charge_started.emit()
 		State.CHARGING:
 			_timer -= delta
 			if _timer <= 0.0:
 				_latched = _target_point()
 				_state = State.AIMING
-				_timer = aim_delay
+				_timer = stats.aim_delay
 				aim_started.emit(_latched)
 		State.AIMING:
 			_timer -= delta
 			if _timer <= 0.0:
 				_fire()
 				_state = State.COOLDOWN
-				_timer = cooldown
+				_timer = stats.cooldown
 
 
 func _fire() -> void:
@@ -96,7 +89,7 @@ func _fire() -> void:
 	var hit: bool = _beam_hits_target(from, to)
 	if hit:
 		if _target_health != null:
-			_target_health.take_damage(damage)
+			_target_health.take_damage(stats.damage)
 	fired.emit(from, to, hit)
 
 
@@ -105,7 +98,7 @@ func _beam_hits_target(from: Vector3, to: Vector3) -> bool:
 	for height: float in BODY_HEIGHTS:
 		var point: Vector3 = _target.global_position + Vector3.UP * height
 		var nearest: Vector3 = Geometry3D.get_closest_point_to_segment(point, from, to)
-		if nearest.distance_to(point) <= beam_radius + BODY_RADIUS:
+		if nearest.distance_to(point) <= stats.beam_radius + BODY_RADIUS:
 			return true
 	return false
 

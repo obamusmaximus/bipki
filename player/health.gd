@@ -7,13 +7,15 @@ signal damaged(amount: float)
 signal health_changed(current: float, maximum: float)
 signal died
 
-@export var max_health: float = 100.0
+var max_health: float = 100.0
 
-var _current: float
+var _current: float = 0.0
 
 
-func _ready() -> void:
-	_current = max_health
+## Sets the maximum and fills health. Called once by the owner with its tuned value.
+func setup(max_hp: float) -> void:
+	max_health = max_hp
+	_current = max_hp
 
 
 func take_damage(amount: float) -> void:

@@ -3,27 +3,11 @@ extends CharacterBody3D
 ## Ground and air movement for the first-person player. Mouse look lives in HeadLook,
 ## the grappling hook in GrappleHook.
 
-@export var move_speed: float = 15.0
-## Air control: WASD pushes the horizontal speed toward this value in the input direction.
-@export var air_speed: float = 10.0
-## How fast air control adds speed toward air_speed (m/s per second).
-@export var air_acceleration: float = 30.0
-## Jump velocity (m/s). Three times the old 1 m jump (about 4.4 m/s).
-@export var jump_speed: float = 13.3
-## Double jump velocity as a multiple of jump_speed.
-@export var double_jump_factor: float = 1.2
-## Sideways speed (m/s) a double jump adds while A or D is held.
-@export var double_jump_sideways: float = 3.0
-## Camera shake strength (0-1) when the grapple attaches or detaches.
-@export var grapple_shake: float = 0.8
-## Extra FOV (degrees) punched in when a launch fires.
-@export var launch_fov_kick: float = 8.0
-## WASD pushes the body along the swing rope's tangent at this acceleration (m/s per second).
-@export var swing_steer_acceleration: float = 15.0
-## Top speed (m/s) the swing steering adds along the tangent.
-@export var swing_steer_speed: float = 8.0
-## Share of the player's velocity kept when a launch begins. The rest is lost.
-@export_range(0.0, 1.0) var momentum_carry: float = 0.4
+## Tunable numbers (see the stats resources in tuning/). Edited live from the pause menu's tuning panel.
+@export var stats: PlayerStats
+@export var grapple_stats: GrappleStats
+@export var feel: CameraFeel
+@export var hud_stats: HudStats
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 ## True after a launch fires or a swing releases: velocity is preserved (no input override) until landing.
@@ -31,6 +15,7 @@ var _keeps_momentum: bool = false
 ## One double jump per airtime; restored on landing.
 var _double_jump_ready: bool = true
 
+@onready var _head: HeadLook = $Head
 @onready var _grapple: GrappleHook = $GrappleHook
 @onready var _camera: ShakeCamera = $Head/Camera3D
 @onready var _walk_bob: WalkBob = $Head/Camera3D/WalkBob
@@ -49,18 +34,26 @@ var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO]
 
 
 func _ready() -> void:
+	# Hand the tuning resources down first: later setup calls and the HUD read them.
+	_health.setup(stats.max_health)
+	_head.setup(feel)
+	_camera.setup(feel)
+	_walk_bob.setup(feel)
+	_footsteps.setup(stats)
+	_grapple.setup(grapple_stats)
+	_pause_menu.setup(hud_stats)
 	_grapple.camera = _camera
 	_grapple.attached.connect(_on_grapple_attached)
 	_grapple.detached.connect(_on_grapple_detached)
 	_grapple.launched.connect(_on_grapple_launched)
-	_detector.setup(self)
+	_detector.setup(self, stats)
 	_detector.ledge_ahead.connect(_on_ledge_ahead)
 	_detector.walls_beside.connect(_on_walls_beside)
-	_mantle.setup(self)
+	_mantle.setup(self, stats)
 	_mantle.finished.connect(_on_mantle_finished)
-	_fov.setup(self)
+	_fov.setup(self, feel)
 	_landing.setup(self)
-	_hud.setup(self, _grapple, _health)
+	_hud.setup(self, _grapple, _health, hud_stats)
 	_health.died.connect(_on_died)
 	_effects.setup(self, _grapple, _landing, _camera)
 
@@ -106,9 +99,9 @@ func _physics_process(delta: float) -> void:
 
 	if is_on_floor():
 		if Input.is_action_just_pressed("jump"):
-			velocity.y = jump_speed
-		velocity.x = direction.x * move_speed
-		velocity.z = direction.z * move_speed
+			velocity.y = stats.jump_speed
+		velocity.x = direction.x * stats.move_speed
+		velocity.z = direction.z * stats.move_speed
 	else:
 		velocity.y -= _gravity * delta
 		_try_double_jump(input_dir.x)
@@ -122,9 +115,9 @@ func _try_double_jump(side: float) -> void:
 	if not _double_jump_ready or not Input.is_action_just_pressed("jump") or is_on_floor():
 		return
 	_double_jump_ready = false
-	velocity.y = jump_speed * double_jump_factor
+	velocity.y = stats.jump_speed * stats.double_jump_factor
 	if side != 0.0:
-		velocity += transform.basis.x * side * double_jump_sideways
+		velocity += transform.basis.x * side * stats.double_jump_sideways
 
 
 ## WASD steers a swing by pushing along the rope's tangent. That adds swing without
@@ -141,9 +134,9 @@ func _steer_swing(direction: Vector3, delta: float) -> void:
 		return
 	tangent = tangent.normalized()
 	var along: float = velocity.dot(tangent)
-	if along >= swing_steer_speed:
+	if along >= stats.swing_steer_speed:
 		return
-	velocity += tangent * minf(swing_steer_acceleration * delta, swing_steer_speed - along)
+	velocity += tangent * minf(stats.swing_steer_acceleration * delta, stats.swing_steer_speed - along)
 
 
 ## In the air, WASD only adds speed in the input direction, up to air_speed. It never slows the
@@ -152,9 +145,9 @@ func _air_control(direction: Vector3, delta: float) -> void:
 	if direction.is_zero_approx():
 		return
 	var along: float = Vector2(velocity.x, velocity.z).dot(Vector2(direction.x, direction.z))
-	if along >= air_speed:
+	if along >= stats.air_speed:
 		return
-	velocity += direction * minf(air_acceleration * delta, air_speed - along)
+	velocity += direction * minf(stats.air_acceleration * delta, stats.air_speed - along)
 
 
 ## Walk bob and footsteps both follow the same walking state.
@@ -179,19 +172,19 @@ func _on_mantle_finished() -> void:
 
 
 func _on_grapple_attached() -> void:
-	_camera.shake(grapple_shake)
+	_camera.shake(feel.grapple_shake)
 
 
 func _on_grapple_detached() -> void:
 	_keeps_momentum = true
-	_camera.shake(grapple_shake)
+	_camera.shake(feel.grapple_shake)
 
 
 ## The launch adds its boost on top of the momentum the player keeps.
 func _on_grapple_launched(launch_velocity: Vector3) -> void:
-	velocity = velocity * momentum_carry + launch_velocity
+	velocity = velocity * stats.momentum_carry + launch_velocity
 	_keeps_momentum = true
-	_fov.kick(launch_fov_kick)
+	_fov.kick(feel.launch_fov_kick)
 
 
 ## The Hud's death screen freezes the game; ESC must not unpause it again.

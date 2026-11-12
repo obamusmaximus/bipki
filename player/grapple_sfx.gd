@@ -3,7 +3,7 @@ extends Node
 ## Plays the grapple's sound effects. GrappleHook calls the play_* methods directly.
 ## Each sound gets its own player so that overlapping sounds (a launch's attach and whoosh) don't cut each other off.
 
-@export var volume_db: float = -6.0
+var stats: GrappleStats
 
 var _fire_player: AudioStreamPlayer
 var _attach_player: AudioStreamPlayer
@@ -23,6 +23,12 @@ func _ready() -> void:
 	_reel_player = _make_player(Synth.make_loop(0.5, 240.0, 0.4, 0.3))
 	# Thwip: a fast, sharp whip for the swing firing and releasing.
 	_thwip_player = _make_player(Synth.make_sound(0.1, 1800.0, 250.0, 0.35, 0.7, 0.001, 2.5))
+
+
+func setup(grapple_stats: GrappleStats) -> void:
+	stats = grapple_stats
+	stats.changed.connect(_apply_volume)
+	_apply_volume()
 
 
 func play_fire() -> void:
@@ -50,9 +56,13 @@ func set_reeling(reeling: bool) -> void:
 		_reel_player.stop()
 
 
+func _apply_volume() -> void:
+	for player: AudioStreamPlayer in [_fire_player, _attach_player, _launch_player, _reel_player, _thwip_player]:
+		player.volume_db = stats.volume_db
+
+
 func _make_player(stream: AudioStreamWAV) -> AudioStreamPlayer:
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
-	player.volume_db = volume_db
 	add_child(player)
 	return player

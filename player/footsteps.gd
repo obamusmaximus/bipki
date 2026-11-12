@@ -3,10 +3,7 @@ extends Node
 ## Plays a footstep sound at a steady interval while the player walks on the ground.
 ## Player calls set_walking() each physics frame. Steps are synthesized in code (see Synth).
 
-## Steps per second while walking (1.75x the old 1 / 0.45 s). A walking animation should read this
-## so its footfalls stay in sync with the sound.
-@export var steps_per_second: float = 1.75 / 0.45
-@export var volume_db: float = -10.0
+var stats: PlayerStats
 
 var _walking: bool = false
 var _timer: float = 0.0
@@ -16,13 +13,22 @@ var _player: AudioStreamPlayer
 func _ready() -> void:
 	_player = AudioStreamPlayer.new()
 	_player.stream = Synth.make_sound(0.09, 110.0, 60.0, 0.9, 0.7, 0.002, 4.0)
-	_player.volume_db = volume_db
 	add_child(_player)
+
+
+func setup(player_stats: PlayerStats) -> void:
+	stats = player_stats
+	stats.changed.connect(_apply_volume)
+	_apply_volume()
+
+
+func _apply_volume() -> void:
+	_player.volume_db = stats.footsteps_volume_db
 
 
 ## Seconds between steps while walking.
 func get_step_interval() -> float:
-	return 1.0 / steps_per_second
+	return 1.0 / stats.steps_per_second
 
 
 func set_walking(walking: bool) -> void:

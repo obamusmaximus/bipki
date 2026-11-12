@@ -3,10 +3,7 @@ extends Node3D
 ## Draws the drone's beam attack: a growing orb while it charges, a thin warning line while the aim is
 ## locked, and a bright beam for a moment when it fires. Everything is built in code.
 
-@export var charge_orb_size: float = 0.7
-@export var warning_radius: float = 0.05
-## Seconds the fired beam stays visible while it fades.
-@export var fire_fade_time: float = 0.3
+var stats: DroneStats
 
 var _beam: BeamAttack
 var _drone: Node3D
@@ -18,7 +15,8 @@ var _blast_to: Vector3
 var _blast_left: float = 0.0
 
 
-func setup(beam: BeamAttack, drone: Node3D) -> void:
+func setup(beam: BeamAttack, drone: Node3D, drone_stats: DroneStats) -> void:
+	stats = drone_stats
 	_beam = beam
 	_drone = drone
 	_beam.fired.connect(_on_fired)
@@ -37,24 +35,24 @@ func _process(delta: float) -> void:
 	var state: BeamAttack.State = _beam.get_state()
 	_orb.visible = state == BeamAttack.State.CHARGING
 	if _orb.visible:
-		var size: float = charge_orb_size * maxf(_beam.get_charge_fraction(), 0.05)
+		var size: float = stats.charge_orb_size * maxf(_beam.get_charge_fraction(), 0.05)
 		_orb.global_position = _drone.global_position - _drone.global_basis.z * 1.1
 		_orb.scale = Vector3.ONE * size
 	_warning.visible = state == BeamAttack.State.AIMING
 	if _warning.visible:
 		var pulse: float = 1.0 + 0.5 * sin(Time.get_ticks_msec() * 0.03)
-		_place_beam(_warning, _drone.global_position, _beam.get_aim_end(), warning_radius * pulse)
+		_place_beam(_warning, _drone.global_position, _beam.get_aim_end(), stats.warning_radius * pulse)
 	_blast_left = maxf(_blast_left - delta, 0.0)
 	_blast.visible = _blast_left > 0.0
 	if _blast.visible:
-		var fade: float = _blast_left / fire_fade_time
-		_place_beam(_blast, _blast_from, _blast_to, _beam.beam_radius * fade)
+		var fade: float = _blast_left / stats.fire_fade_time
+		_place_beam(_blast, _blast_from, _blast_to, stats.beam_radius * fade)
 
 
 func _on_fired(from: Vector3, to: Vector3, _hit_target: bool) -> void:
 	_blast_from = from
 	_blast_to = to
-	_blast_left = fire_fade_time
+	_blast_left = stats.fire_fade_time
 
 
 ## Stretches a unit cylinder (height 1, radius 1, along Y) between two points.
