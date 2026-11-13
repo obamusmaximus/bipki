@@ -43,6 +43,8 @@ var _flight_speed: float = 0.0
 var _hit_normal: Vector3 = Vector3.UP
 var _attached_time: float = 0.0
 var _swing: SwingRope
+## The point the swing rope hangs from. The hit point, or pushed out from a wall by the tuned distance.
+var _swing_anchor: Vector3 = Vector3.ZERO
 ## Set when the hit is on a lip or an edge: the open direction. ZERO otherwise.
 var _lip: Vector3 = Vector3.ZERO
 
@@ -114,6 +116,21 @@ func get_hit_normal() -> Vector3:
 	return _hit_normal
 
 
+## The point a swing physically hangs from (see `_swing_anchor`). The hit point when not swinging.
+func get_swing_anchor() -> Vector3:
+	return _swing_anchor if is_swinging() else _hit_point
+
+
+## Lets go of the hook whatever it is doing: a swing detaches, a hook in flight retracts.
+func release() -> void:
+	if _state == State.IDLE:
+		return
+	if _mode == Mode.SWING:
+		_end_swing()
+	else:
+		_reset()
+
+
 ## Current swing rope length, or 0 when not swinging.
 func get_rope_length() -> float:
 	return _swing.length if is_swinging() else 0.0
@@ -151,7 +168,10 @@ func _start_swing() -> void:
 	_swing.min_length = stats.min_rope_length
 	_swing.reel_speed = stats.reel_speed
 	_swing.descent_speed = stats.descent_speed
-	_swing.start(global_position, _hit_point, ground_height, stats.swing_ground_margin, stats.clear_ground_radius)
+	_swing_anchor = _hit_point
+	if stats.anchor_push_out_enabled and absf(_hit_normal.y) < EdgeProbe.WALL_MAX_NORMAL_Y:
+		_swing_anchor = _hit_point + _hit_normal * stats.anchor_push_out
+	_swing.start(global_position, _swing_anchor, ground_height, stats.swing_ground_margin, stats.clear_ground_radius)
 
 
 ## The raycast from the crosshair against the world. Empty if it hits nothing.

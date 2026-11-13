@@ -30,6 +30,10 @@ extends Resource
 @export var swing_ground_margin: float = 2.0
 ## The rope must be clear of the ground by the time the player is inside this horizontal radius (m) of the point below the hit point.
 @export var clear_ground_radius: float = 3.0
+## When the hook lands on a vertical wall, hang from a point pushed out from the wall instead, so the swing arcs away from the building. Off: hang from the exact hit point.
+@export var anchor_push_out_enabled: bool = true
+## How far out from the wall that anchor sits (m).
+@export var anchor_push_out: float = 2.0
 
 @export_group("Rope look")
 ## Rope thickness in metres.

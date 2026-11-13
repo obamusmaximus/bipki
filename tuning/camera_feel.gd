@@ -41,3 +41,19 @@ extends Resource
 @export_group("Mouse look")
 ## Radians per pixel at the default setting. The player's sensitivity option (GameSettings) scales it.
 @export var mouse_sensitivity: float = 0.002
+
+@export_group("Camera lean")
+## Lean the camera into sideways movement.
+@export var lean_enabled: bool = true
+## Largest lean (degrees).
+@export var lean_degrees: float = 4.0
+## Sideways speed (m/s) at which the lean is at its largest.
+@export var lean_reference_speed: float = 20.0
+## How quickly the camera roll follows (per second). Also used for the wall run tilt.
+@export var lean_smoothing: float = 8.0
+
+@export_group("Wall run camera")
+## Camera roll away from the wall while wall running (degrees).
+@export var wall_run_roll_degrees: float = 20.0
+## Steady camera shake while wall running (0-1).
+@export_range(0.0, 1.0, 0.01) var wall_run_shake: float = 0.12

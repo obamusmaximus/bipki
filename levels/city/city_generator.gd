@@ -13,6 +13,8 @@ const CHUNK_SIZE: float = 100.0
 
 ## The open air of the generated city, for flying enemies. Built at runtime only (not in the editor).
 var flight_grid: FlightGrid
+## The solid box of every building in world space, for the HUD minimap.
+var building_boxes: Array[AABB] = []
 
 
 func _ready() -> void:
@@ -26,6 +28,9 @@ func regenerate() -> void:
 	for child: Node in get_children():
 		child.free()
 	var plan: CityPlan = CityLayout.build(settings)
+	building_boxes.clear()
+	for site: CityPlan.Site in plan.sites:
+		building_boxes.append(site.world_box())
 
 	var roads := Node3D.new()
 	roads.name = "Roads"

@@ -8,6 +8,9 @@
 [ext_resource type="Script" path="res://hud/damage_flash.gd" id="6_flash"]
 [ext_resource type="Script" path="res://hud/health_bar.gd" id="7_health"]
 [ext_resource type="Script" path="res://hud/death_screen.gd" id="8_death"]
+[ext_resource type="Script" path="res://hud/minimap.gd" id="9_minimap"]
+[ext_resource type="Script" path="res://hud/minimap_wire.gd" id="10_wire"]
+[ext_resource type="Script" path="res://hud/trajectory_arc.gd" id="11_arc"]
 
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -20,6 +23,16 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("6_flash")
+
+[node name="TrajectoryArc" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("11_arc")
 
 [node name="Crosshair" type="Control" parent="."]
 layout_mode = 3
@@ -73,13 +86,6 @@ grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="HealthBar" type="Control" parent="BottomLeft"]
-custom_minimum_size = Vector2(200, 16)
-layout_mode = 2
-size_flags_horizontal = 0
-mouse_filter = 2
-script = ExtResource("7_health")
-
 [node name="SpeedReadout" type="Label" parent="BottomLeft"]
 custom_minimum_size = Vector2(160, 28)
 layout_mode = 2
@@ -88,6 +94,49 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 script = ExtResource("5_speed")
+
+[node name="HealthBar" type="Control" parent="BottomLeft"]
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+script = ExtResource("7_health")
+
+[node name="Minimap" type="Control" parent="."]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -324.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 244.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("9_minimap")
+
+[node name="Background" type="ColorRect" parent="Minimap"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.27, 0.28, 0.3, 1)
+
+[node name="Wire" type="Control" parent="Minimap"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10_wire")
 
 [node name="DeathScreen" type="Control" parent="."]
 layout_mode = 3

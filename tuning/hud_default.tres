@@ -4,3 +4,4 @@
 
 [resource]
 script = ExtResource("1_stats")
+hud_scale = 2.15
