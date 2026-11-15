@@ -1,6 +1,6 @@
 class_name PlayerStats
 extends Resource
-## Tunable numbers for the player's body: movement, swing steering, mantle, edge detection, footstep audio and health.
+## Tunable numbers for the player's body: movement, swing steering, edge detection, footstep audio and health.
 ## One .tres per preset (tuning/player_default.tres). The Player scene holds it in `stats` and hands it to its components.
 ## The debug tuning panel (pause menu) edits these live and can save them back to the .tres.
 
@@ -26,16 +26,6 @@ extends Resource
 ## Top speed (m/s) the swing steering adds along the tangent.
 @export var swing_steer_speed: float = 8.0
 
-@export_group("Mantle")
-## Seconds for the whole climb.
-@export var mantle_duration: float = 0.2
-## Share of the climb spent rising before moving forward onto the top.
-@export_range(0.1, 0.9) var mantle_rise_share: float = 0.45
-## Speed (m/s) toward the face needed to start a climb.
-@export var mantle_min_speed_into_wall: float = 0.5
-## How far in from the top edge the feet land (m). Must clear the body's radius (0.4 m).
-@export var mantle_land_inset: float = 0.5
-
 @export_group("Edge detection")
 ## How far past the body's surface the wall checks reach (m).
 @export var edge_reach: float = 0.6
@@ -57,3 +47,71 @@ extends Resource
 @export_group("Health")
 ## Player hit points. Read once at startup (needs a restart).
 @export var max_health: float = 100.0
+
+@export_group("Air steering")
+## Steer in the air by turning the velocity toward the input at a maximum turn rate, so steering feels the same
+## at any speed and never adds energy. Off: the older way, adding sideways speed with a fixed acceleration.
+@export var air_turn_rate_enabled: bool = true
+## Maximum turn rate in the air (degrees per second).
+@export var air_turn_rate_degrees: float = 120.0
+## Below this horizontal speed (m/s) the older acceleration is used, so a standing start can still move.
+@export var air_turn_min_speed: float = 6.0
+
+@export_group("Wall run")
+## Horizontal speed (m/s) needed to latch onto a wall.
+@export var wall_run_min_speed: float = 12.0
+## The run ends when the speed drops below this (m/s).
+@export var wall_run_end_speed: float = 6.0
+## The speed is limited to this while wall running (m/s).
+@export var wall_run_max_speed: float = 50.0
+## Largest angle (degrees) between the travel direction and the wall for a hit to count as a graze. Steeper hits are head-on and just slide.
+@export_range(5.0, 89.0, 1.0) var wall_run_max_approach_degrees: float = 50.0
+## Share of gravity that still applies while wall running.
+@export_range(0.0, 1.0, 0.01) var wall_run_gravity_scale: float = 0.1
+## Speed pressed into the wall to keep touching it (m/s).
+@export var wall_run_stick_speed: float = 3.0
+## Seconds without touching the wall before the run ends.
+@export var wall_run_lose_grace: float = 0.12
+## Upward speed of a jump off the wall (m/s).
+@export var wall_run_jump_speed: float = 11.0
+## Speed away from the wall of a jump off it (m/s).
+@export var wall_run_jump_away_speed: float = 8.0
+## Seconds after a run ends before another can start.
+@export var wall_run_cooldown: float = 0.35
+
+@export_group("Trajectory prediction")
+## How far ahead the predicted path looks (seconds). Drives the HUD arc and the obstacle assist.
+@export var prediction_seconds: float = 1.5
+## Time step of the prediction (seconds). Smaller is smoother but costs more.
+@export var prediction_step: float = 0.06
+## Radius of the sphere swept along the predicted path to find hits (m). A little over the body radius.
+@export var prediction_probe_radius: float = 0.45
+
+@export_group("Obstacle assist")
+## How strongly the player is steered away from buildings (0 = off, 1 = full).
+@export_range(0.0, 2.0, 0.05) var assist_strength: float = 1.0
+## Only a predicted hit sooner than this (seconds) is acted on. Capped by prediction_seconds.
+@export var assist_lookahead: float = 0.9
+## Once a collision with a wall is predicted, the assist steers until the path passes at least this far from it (m). A bigger margin steers further to the side. Walls the player is merely passing or wall running along don't trigger it.
+@export var assist_clearance: float = 4.0
+## No assist below this speed (m/s).
+@export var assist_min_speed: float = 12.0
+## Strongest sideways push (m/s per second). The push is sized to clear the wall in the time left, up to this limit, so a high value is a firm snap.
+@export var assist_max_accel: float = 90.0
+## A predicted hit within this distance (m) of the hook's attach point is ignored: swinging up to that face is deliberate.
+@export var assist_anchor_radius: float = 6.0
+## Lift over a roof edge instead of steering sideways when one is within reach (0 = off).
+@export_range(0.0, 2.0, 0.05) var assist_lift_strength: float = 0.6
+## A roof edge counts as within reach if it is at most this high above the predicted hit (m).
+@export var assist_lift_height: float = 3.0
+## How much the assist backs off when the player already steers the same way (0 = ignores input, 1 = stops completely).
+@export_range(0.0, 1.0, 0.05) var assist_input_yield: float = 0.6
+
+@export_group("Speed limit")
+## Soft speed limit: above the limit a drag grows quickly with speed, so speed levels off near it instead of stopping dead. Off: no limit.
+@export var soft_speed_limit_enabled: bool = true
+## The speed (m/s) the drag levels the player off near. It is approximate: the drag does nothing below it, and
+## strong forces (a long fall, a reel) can push a little past it.
+@export_range(20.0, 200.0, 1.0) var soft_speed_limit: float = 60.0
+## How hard the drag pulls back (m/s per second at 1.25x the limit is about this value). Higher holds the limit tighter.
+@export var soft_speed_limit_strength: float = 40.0

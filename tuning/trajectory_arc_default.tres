@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TrajectoryArcStats" format=3]
+
+[ext_resource type="Script" path="res://tuning/trajectory_arc_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+arc_opacity = 0.82
+arc_width = 4.26
+arc_color = Color(0.34901962, 0.2509804, 1, 1)
+arc_fade_power = 0.6699999999999999
+arc_min_speed = 3.06

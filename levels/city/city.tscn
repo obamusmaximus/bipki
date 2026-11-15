@@ -51,7 +51,7 @@ light_energy = 1.5
 shadow_enabled = true
 
 [node name="Ground" parent="." unique_id=456383441 instance=ExtResource("2_ground")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.30494595, -0.5043249, 0.10969639)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14733505, 0.19155979, -0.05908394)
 
 [node name="CityGenerator" type="Node3D" parent="." unique_id=126174780]
 script = ExtResource("3_generator")
@@ -62,3 +62,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Drone" parent="." unique_id=390199146 instance=ExtResource("4_drone")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 90, 40, 90)
+
+[node name="Drone2" parent="." unique_id=427771736 instance=ExtResource("4_drone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -90, 40, 90)

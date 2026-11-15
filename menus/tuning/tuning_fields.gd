@@ -180,17 +180,21 @@ static func _apply(resource: Resource, prop: String, value: Variant) -> void:
 ## Maps property name to its `##` doc comment, read from the script's source, to use as a tooltip.
 static func _read_tooltips(script: Script) -> Dictionary:
 	var result: Dictionary = {}
-	var source: String = (script as GDScript).source_code if script is GDScript else ""
-	var pending: PackedStringArray = PackedStringArray()
-	for raw: String in source.split("\n"):
-		var line: String = raw.strip_edges()
-		if line.begins_with("##"):
-			pending.append(line.trim_prefix("##").strip_edges())
-		elif line.begins_with("@export") and " var " in line:
-			var prop: String = line.split(" var ")[1].split(":")[0].strip_edges()
-			if not pending.is_empty():
-				result[prop] = " ".join(pending)
-			pending.clear()
-		else:
-			pending.clear()
+	# Walk up the base scripts too, so a stats class that extends another shows the base's tooltips.
+	var current: Script = script
+	while current != null:
+		var source: String = (current as GDScript).source_code if current is GDScript else ""
+		var pending: PackedStringArray = PackedStringArray()
+		for raw: String in source.split("\n"):
+			var line: String = raw.strip_edges()
+			if line.begins_with("##"):
+				pending.append(line.trim_prefix("##").strip_edges())
+			elif line.begins_with("@export") and " var " in line:
+				var prop: String = line.split(" var ")[1].split(":")[0].strip_edges()
+				if not pending.is_empty() and not result.has(prop):
+					result[prop] = " ".join(pending)
+				pending.clear()
+			else:
+				pending.clear()
+		current = current.get_base_script()
 	return result

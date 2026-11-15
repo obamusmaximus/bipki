@@ -1,7 +1,7 @@
 class_name DroneStats
-extends Resource
+extends EnemyStats
 ## Tunable numbers for one kind of flying drone: flight, beam attack, visuals and sound.
-## One .tres per drone type or preset (tuning/default.tres). The Drone scene holds it in `stats` and hands it to its parts.
+## Extends EnemyStats (health, being thrown). One .tres per drone type or preset (tuning/drone_default.tres). The Drone scene holds it in `stats` and hands it to its parts.
 ## Make a new enemy variant by saving another .tres and assigning it to that drone's `stats`.
 
 @export_group("Flight")

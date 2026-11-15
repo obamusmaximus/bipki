@@ -3,6 +3,8 @@ extends Node3D
 ## Mouse look for a first-person player. Yaw rotates the parent body, pitch rotates this node.
 
 var feel: CameraFeel
+## Multiplies the mouse sensitivity. The throw lowers it while the player turns away from a held enemy.
+var sensitivity_scale: float = 1.0
 
 var _pitch_limit: float = deg_to_rad(89.0)
 var _pitch: float = 0.0
@@ -25,7 +27,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var motion := event as InputEventMouseMotion
 		var body := get_parent() as Node3D
-		var sensitivity: float = feel.mouse_sensitivity * GameSettings.mouse_sensitivity_scale
+		var sensitivity: float = feel.mouse_sensitivity * GameSettings.mouse_sensitivity_scale * sensitivity_scale
 		body.rotate_y(-motion.relative.x * sensitivity)
 		_pitch = clampf(_pitch - motion.relative.y * sensitivity, -_pitch_limit, _pitch_limit)
 		rotation.x = _pitch

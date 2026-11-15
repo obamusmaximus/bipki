@@ -21,6 +21,7 @@ func setup(beam: BeamAttack, drone_stats: DroneStats) -> void:
 	_zap = _make_player(Synth.make_sound(0.5, 2200.0, 70.0, 0.55, 0.9, 0.002, 2.0))
 	stats.changed.connect(_on_stats_changed)
 	beam.charge_started.connect(func() -> void: _charge.play())
+	beam.cancelled.connect(func() -> void: _charge.stop())
 	beam.aim_started.connect(func(_latched: Vector3) -> void: _lock.play())
 	beam.fired.connect(func(_from: Vector3, _to: Vector3, _hit: bool) -> void: _zap.play())
 
