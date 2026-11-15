@@ -14,6 +14,10 @@ var length: float = 0.0
 var start_length: float = 0.0
 var min_length: float = 2.0
 var reel_speed: float = 8.0
+## Share of the reel's sideways speed gain that is kept (see GrappleStats.reel_momentum_gain).
+var reel_gain: float = 1.0
+## Reeling adds no sideways speed beyond this (see GrappleStats.reel_momentum_speed_cap).
+var reel_speed_cap: float = 1.0e9
 ## Fastest the rope shortens while the player descends below the hit point (m/s). Slower than
 ## reeling, so a drop never snaps the rope in.
 var descent_speed: float = 6.0
@@ -21,6 +25,9 @@ var descent_speed: float = 6.0
 var fully_reeled: bool = false
 ## True while reeling is actually shortening the rope (not at min_length). Drives the reel sound.
 var is_reeling: bool = false
+
+## How fast the anchor itself is moving (an enemy). The rope holds the player relative to it.
+var anchor_velocity: Vector3 = Vector3.ZERO
 
 var _hit_point: Vector3 = Vector3.ZERO
 ## The rope length the player should have once inside the clearance area under the hit point.
@@ -54,6 +61,12 @@ func start(anchor: Vector3, hit_point: Vector3, ground_height: float, margin: fl
 	_retract_rate = maxf(0.0, length - _clear_length) / maxf(1.0, finish_depth - start_depth)
 
 
+## Moves the anchor (the rope hangs from an enemy). `velocity` is the anchor's own velocity.
+func move_anchor(point: Vector3, velocity: Vector3) -> void:
+	_hit_point = point
+	anchor_velocity = velocity
+
+
 func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) -> Correction:
 	is_reeling = reeling and length > min_length
 	var length_before: float = length
@@ -67,6 +80,8 @@ func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) 
 		_pending_retract -= taken
 		length = maxf(_clear_length, length - taken)
 
+	# The rope holds the player relative to the anchor, which may itself be moving.
+	var relative: Vector3 = velocity - anchor_velocity
 	var correction := Correction.new()
 	correction.velocity = velocity
 	var offset: Vector3 = anchor - _hit_point
@@ -77,12 +92,12 @@ func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) 
 	# Reeling in while the rope is taut turns the shortening into real momentum, so it carries on
 	# after the reel stops or the hook detaches.
 	if is_reeling and distance >= length_before - 0.5:
-		correction.velocity = _reel_momentum(velocity, outward, length_before, length)
+		correction.velocity = _reel_momentum(relative, outward, length_before, length) + anchor_velocity
 	if distance <= length:
 		return correction
 
 	correction.offset = outward * length - offset
-	var outward_speed: float = correction.velocity.dot(outward)
+	var outward_speed: float = (correction.velocity - anchor_velocity).dot(outward)
 	if outward_speed > 0.0:
 		correction.velocity -= outward * outward_speed
 	return correction
@@ -93,7 +108,13 @@ func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) 
 ## Both stay in the velocity, so they carry on after the reel stops or the hook detaches.
 func _reel_momentum(velocity: Vector3, outward: Vector3, length_before: float, length_after: float) -> Vector3:
 	var radial: float = velocity.dot(outward)
-	var sideways: Vector3 = (velocity - outward * radial) * (length_before / maxf(length_after, 0.001))
+	var sideways: Vector3 = velocity - outward * radial
+	var before: float = sideways.length()
+	var gain: float = 1.0 + (length_before / maxf(length_after, 0.001) - 1.0) * reel_gain
+	# The gain stops at the cap. Speed already past the cap is left alone, not cut.
+	var after: float = minf(before * gain, maxf(before, reel_speed_cap))
+	if before > 0.001:
+		sideways *= after / before
 	radial = minf(radial, -reel_speed)
 	return sideways + outward * radial
 

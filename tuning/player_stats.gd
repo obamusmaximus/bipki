@@ -92,8 +92,8 @@ extends Resource
 @export_range(0.0, 2.0, 0.05) var assist_strength: float = 1.0
 ## Only a predicted hit sooner than this (seconds) is acted on. Capped by prediction_seconds.
 @export var assist_lookahead: float = 0.9
-## The assist keeps the player at least this far from a wall on either side (m).
-@export var assist_clearance: float = 2.5
+## Once a collision with a wall is predicted, the assist steers until the path passes at least this far from it (m). A bigger margin steers further to the side. Walls the player is merely passing or wall running along don't trigger it.
+@export var assist_clearance: float = 4.0
 ## No assist below this speed (m/s).
 @export var assist_min_speed: float = 12.0
 ## Strongest sideways push (m/s per second). The push is sized to clear the wall in the time left, up to this limit, so a high value is a firm snap.
@@ -106,3 +106,12 @@ extends Resource
 @export var assist_lift_height: float = 3.0
 ## How much the assist backs off when the player already steers the same way (0 = ignores input, 1 = stops completely).
 @export_range(0.0, 1.0, 0.05) var assist_input_yield: float = 0.6
+
+@export_group("Speed limit")
+## Soft speed limit: above the limit a drag grows quickly with speed, so speed levels off near it instead of stopping dead. Off: no limit.
+@export var soft_speed_limit_enabled: bool = true
+## The speed (m/s) the drag levels the player off near. It is approximate: the drag does nothing below it, and
+## strong forces (a long fall, a reel) can push a little past it.
+@export_range(20.0, 200.0, 1.0) var soft_speed_limit: float = 60.0
+## How hard the drag pulls back (m/s per second at 1.25x the limit is about this value). Higher holds the limit tighter.
+@export var soft_speed_limit_strength: float = 40.0

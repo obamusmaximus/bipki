@@ -48,6 +48,8 @@ func _ready() -> void:
 	_grapple.setup(grapple_stats)
 	_pause_menu.setup(hud_stats)
 	_grapple.camera = _camera
+	_grapple.get_throw().setup(grapple_stats, _camera, _head, _fov)
+	_grapple.thrown.connect(_on_grapple_thrown)
 	_grapple.attached.connect(_on_grapple_attached)
 	_grapple.detached.connect(_on_grapple_detached)
 	_grapple.launched.connect(_on_grapple_launched)
@@ -63,6 +65,8 @@ func _ready() -> void:
 	_landing.setup(self)
 	_hud.setup(self, _grapple, _health, hud_stats, minimap_stats)
 	_hud.setup_arc(_camera, _predictor, self, arc_stats)
+	_hud.setup_throw(_grapple.get_throw(), _camera, arc_stats)
+	_hud.setup_damage_numbers(_camera)
 	_health.died.connect(_on_died)
 	_effects.setup(self, _grapple, _landing, _camera)
 
@@ -95,6 +99,7 @@ func _physics_process(delta: float) -> void:
 				velocity = velocity.slide(wall)
 		_steer_swing(direction, delta)
 		velocity += _assist.get_acceleration(direction) * delta
+		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		var velocity_before: Vector3 = velocity
 		move_and_slide()
 		if _wall_run.try_start(velocity_before):
@@ -118,6 +123,7 @@ func _physics_process(delta: float) -> void:
 		# Air control only adds speed toward the input, so it steers without cutting the momentum.
 		_air_control(direction, delta)
 		velocity += _assist.get_acceleration(direction) * delta
+		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		var velocity_before: Vector3 = velocity
 		move_and_slide()
 		if _wall_run.try_start(velocity_before):
@@ -138,6 +144,7 @@ func _physics_process(delta: float) -> void:
 		_air_control(direction, delta)
 	if not is_on_floor():
 		velocity += _assist.get_acceleration(direction) * delta
+		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 	var velocity_before: Vector3 = velocity
 	move_and_slide()
 	_wall_run.try_start(velocity_before)
@@ -230,6 +237,12 @@ func _on_grapple_launched(launch_velocity: Vector3) -> void:
 	_fov.kick(feel.launch_fov_kick)
 
 
+## A thrown enemy leaves the rope with a kick, harder for a harder throw.
+func _on_grapple_thrown(_launch_velocity: Vector3, power: float) -> void:
+	_camera.shake(feel.grapple_shake * lerpf(0.5, 1.0, power))
+
+
 ## The Hud's death screen freezes the game; ESC must not unpause it again.
 func _on_died() -> void:
+	_grapple.get_throw().cancel()
 	_pause_menu.set_process_unhandled_input(false)

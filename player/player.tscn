@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://player/avoidance_assist.gd" id="23_assist"]
 [ext_resource type="Script" path="res://player/trajectory_predictor.gd" id="24_predictor"]
 [ext_resource type="Script" path="res://player/camera_lean.gd" id="25_lean"]
+[ext_resource type="Script" path="res://player/enemy_throw.gd" id="27_throw"]
 [ext_resource type="Resource" path="res://tuning/trajectory_arc_default.tres" id="26_arc"]
 [ext_resource type="Script" path="res://player/health.gd" id="16_health"]
 [ext_resource type="Resource" path="res://tuning/player_default.tres" id="18_player"]
@@ -91,6 +92,9 @@ script = ExtResource("4_rope")
 
 [node name="Sfx" type="Node" parent="GrappleHook"]
 script = ExtResource("8_sfx")
+
+[node name="Throw" type="Node" parent="GrappleHook"]
+script = ExtResource("27_throw")
 
 [node name="Footsteps" type="Node" parent="."]
 script = ExtResource("9_steps")

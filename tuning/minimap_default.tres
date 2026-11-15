@@ -4,15 +4,14 @@
 
 [resource]
 script = ExtResource("1_stats")
-minimap_scale = 1.0
 minimap_margin = 24.00116
 minimap_opacity = 0.82
 pitch_degrees = 32.0
 yaw_degrees = 77.0
 view_padding = 0.0
 view_headroom = 32.0
-dot_radius = 0.19999999999999998
+dot_radius = 0.2
 glow_radius = 21.9
-glow_strength = 0.049999999999999996
+glow_strength = 0.04999999999999999
 trail_seconds = 6.9799999999999995
 trail_width = 2.25

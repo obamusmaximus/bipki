@@ -13,6 +13,9 @@ var _ribbons := ImmediateMesh.new()
 var _tip: MeshInstance3D
 var _wobble: float = 0.0
 var _time: float = 0.0
+## While the rope retracts after a release, a loose-rope sim draws it instead of the formula.
+var _sim: RopeSim
+var _hand: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
@@ -33,6 +36,30 @@ func setup(grapple_stats: GrappleStats) -> void:
 ## Starts a decaying wobble, for when the hook bites in.
 func kick() -> void:
 	_wobble = 1.0
+
+
+## Lets go of the rope's end: it springs back to the hand with the slack whipping about, then hides itself.
+## Call set_hand() each frame while it runs.
+func retract(hand: Vector3, end: Vector3) -> void:
+	_sim = RopeSim.new()
+	_sim.begin(hand, end, stats.rope_segments, stats.rope_retract_whip)
+	_hand = hand
+	visible = true
+
+
+## Stops a retract at once (a new fire takes the rope over) and hides the rope.
+func stop_retract() -> void:
+	_sim = null
+	visible = false
+
+
+## The hand position the retracting rope is pinned to. Called every frame by GrappleHook.
+func set_hand(hand: Vector3) -> void:
+	_hand = hand
+
+
+func is_retracting() -> bool:
+	return _sim != null
 
 
 ## Draws the rope from `from` to `to`. Pass `flying` while the tip is still in flight to sag the rope.
@@ -69,10 +96,53 @@ func stretch_between(from: Vector3, to: Vector3, flying: bool = false) -> void:
 func _process(delta: float) -> void:
 	if stats == null:
 		return
+	if _sim != null:
+		_step_retract(delta)
 	_time += delta
 	_wobble *= exp(-stats.rope_wobble_decay * delta)
 	if _tip.visible:
 		_tip.scale = Vector3.ONE * (1.0 + 0.15 * sin(_time * 20.0))
+
+
+## Runs the retract sim on real time (so it stays lively in bullet time) and draws it. Ends when it has settled.
+func _step_retract(delta: float) -> void:
+	var real_delta: float = minf(delta / maxf(Engine.time_scale, 0.001), 0.05)
+	_sim.step(real_delta, _hand, stats.rope_retract_stiffness, stats.rope_retract_damping,
+			stats.rope_retract_speed, stats.rope_retract_gravity)
+	var settled: bool = _sim.get_end().distance_to(_hand) < 0.6 and _sim.get_end_speed() < 6.0
+	if settled or _sim.age >= stats.rope_retract_max_time:
+		stop_retract()
+		return
+	_draw_loose(_sim.points)
+
+
+## Draws a rope that bends anywhere: two crossed ribbons whose axes follow the line at each point.
+func _draw_loose(points: PackedVector3Array) -> void:
+	var count: int = points.size()
+	var firsts := PackedVector3Array()
+	var seconds := PackedVector3Array()
+	for i: int in count:
+		var tangent: Vector3 = points[mini(i + 1, count - 1)] - points[maxi(i - 1, 0)]
+		if tangent.is_zero_approx():
+			tangent = Vector3.FORWARD
+		tangent = tangent.normalized()
+		var helper: Vector3 = Vector3.RIGHT if absf(tangent.y) > 0.99 else Vector3.UP
+		var first: Vector3 = tangent.cross(helper).normalized()
+		firsts.append(first)
+		seconds.append(tangent.cross(first))
+	_ribbons.clear_surfaces()
+	_add_ribbon_axes(points, firsts)
+	_add_ribbon_axes(points, seconds)
+	_tip.global_position = points[count - 1]
+
+
+func _add_ribbon_axes(points: PackedVector3Array, axes: PackedVector3Array) -> void:
+	var half_width: float = stats.rope_width * 0.5
+	_ribbons.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+	for i: int in points.size():
+		_ribbons.surface_add_vertex(points[i] - axes[i] * half_width)
+		_ribbons.surface_add_vertex(points[i] + axes[i] * half_width)
+	_ribbons.surface_end()
 
 
 ## One flat ribbon along the points, `axis` being the direction it is wide in.

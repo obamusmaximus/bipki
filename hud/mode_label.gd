@@ -25,4 +25,6 @@ func _text_for(state: GrappleHook.State, mode: GrappleHook.Mode) -> String:
 			return "LAUNCH"
 		GrappleHook.Mode.SWING:
 			return "SWING  (hold Shift to reel)"
+		GrappleHook.Mode.THROW:
+			return "THROW  (turn away, release to throw)"
 	return "HOOK"

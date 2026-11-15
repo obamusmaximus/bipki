@@ -37,6 +37,21 @@ func setup_arc(camera: Camera3D, predictor: TrajectoryPredictor, body: Character
 	_arc.setup(camera, predictor, body, arc_stats)
 
 
+## Gives the throw's HUD what it reads: the aiming gauges, and the release prediction on the trajectory arc.
+func setup_throw(throw: EnemyThrow, camera: Camera3D, arc_stats: TrajectoryArcStats) -> void:
+	var readout := ThrowReadout.new()
+	add_child(readout)
+	readout.setup(throw, camera, arc_stats, stats)
+	_arc.set_throw(throw)
+
+
+## Floating damage numbers over enemies. They project from world points, so like the arc they are full screen.
+func setup_damage_numbers(camera: Camera3D) -> void:
+	var numbers := DamageNumbers.new()
+	add_child(numbers)
+	numbers.setup(camera, stats)
+
+
 ## Gives the minimap the city's building boxes once the level has built the city.
 func set_city(boxes: Array[AABB]) -> void:
 	_minimap.set_city(boxes)

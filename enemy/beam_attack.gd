@@ -9,6 +9,8 @@ signal charge_started
 signal aim_started(latched: Vector3)
 ## `from` and `to` are the beam's ends: it stops at the first building. `hit_target` is true if it hurt the target.
 signal fired(from: Vector3, to: Vector3, hit_target: bool)
+## Emitted when a charge or aim is cut short (the drone was grabbed).
+signal cancelled
 
 enum State { COOLDOWN, READY, CHARGING, AIMING }
 
@@ -25,6 +27,7 @@ var _target_health: Health
 var _state: State = State.COOLDOWN
 var _timer: float = 0.0
 var _latched: Vector3 = Vector3.ZERO
+var _active: bool = true
 
 
 func setup(origin: Node3D, target: Node3D, drone_stats: DroneStats) -> void:
@@ -32,6 +35,19 @@ func setup(origin: Node3D, target: Node3D, drone_stats: DroneStats) -> void:
 	_origin = origin
 	_target = target
 	_target_health = target.get_node_or_null("Health") as Health
+	_timer = stats.cooldown
+
+
+## Switches the cycle on or off. While off, no timer runs and nothing fires.
+func set_active(active: bool) -> void:
+	_active = active
+
+
+## Drops whatever the beam was doing (a charge, a locked aim) and starts the cooldown over.
+func cancel() -> void:
+	if _state == State.CHARGING or _state == State.AIMING:
+		cancelled.emit()
+	_state = State.COOLDOWN
 	_timer = stats.cooldown
 
 
@@ -56,7 +72,7 @@ func get_aim_end() -> Vector3:
 
 
 func _physics_process(delta: float) -> void:
-	if _origin == null or _target == null:
+	if _origin == null or _target == null or not _active:
 		return
 	match _state:
 		State.COOLDOWN:
