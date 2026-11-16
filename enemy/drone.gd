@@ -20,13 +20,14 @@ func _ready() -> void:
 	_drone_stats = stats as DroneStats
 
 
-## Snaps the drone to open air, then starts it chasing `target` through `grid`.
-func setup(grid: FlightGrid, target: Node3D) -> void:
+## Snaps the drone to open air, then starts it chasing `target` through `grid`. The level's `coordinator`
+## (optional) spaces its beam out from the other drones'.
+func setup(grid: FlightGrid, target: Node3D, coordinator: AttackCoordinator = null) -> void:
 	_grid = grid
 	_target = target
 	global_position = grid.nearest_open_position(global_position)
 	_flight.setup(grid, target, _drone_stats)
-	_beam.setup(self, target, _drone_stats)
+	_beam.setup(self, target, _drone_stats, coordinator)
 	_visual.setup(_beam, self, _drone_stats)
 	_sfx.setup(_beam, _drone_stats)
 

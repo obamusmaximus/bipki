@@ -1,7 +1,8 @@
 class_name BeamAttack
 extends Node
-## The drone's beam: a timed cycle. After `cooldown` (the first one starts at a random point, so drones
-## don't fire in step) it waits for a clear line to the target within `seek_range`, charges,
+## The drone's beam: a timed cycle. After `cooldown` (the first one starts after `opening_delay` plus a random
+## share of the cooldown) it waits for a clear line to the target within `seek_range` and for the level's
+## AttackCoordinator to allow it (so drones don't fire together), charges,
 ## then latches the target's position and aims at it (even if the target has since moved out of sight),
 ## and after the aim delay fires. The aim delay is the player's grace period to get out of the line.
 ## It reports each step with signals; BeamVisual and DroneSfx listen.
@@ -23,6 +24,7 @@ const BODY_HEIGHTS: PackedFloat32Array = [0.4, 0.9, 1.4]
 const BODY_RADIUS: float = 0.4
 
 var _origin: Node3D
+var _coordinator: AttackCoordinator
 var _target: Node3D
 var _target_health: Health
 var _state: State = State.COOLDOWN
@@ -31,12 +33,15 @@ var _latched: Vector3 = Vector3.ZERO
 var _active: bool = true
 
 
-func setup(origin: Node3D, target: Node3D, drone_stats: DroneStats) -> void:
+## `coordinator` spaces this beam out from the level's other attackers; null means no limit.
+func setup(origin: Node3D, target: Node3D, drone_stats: DroneStats, coordinator: AttackCoordinator = null) -> void:
 	stats = drone_stats
 	_origin = origin
 	_target = target
+	_coordinator = coordinator
 	_target_health = target.get_node_or_null("Health") as Health
-	_timer = stats.cooldown * randf()
+	# Nothing fires as the level or the drone appears, and drones that appear together start at different points.
+	_timer = stats.opening_delay + stats.cooldown * randf()
 
 
 ## Switches the cycle on or off. While off, no timer runs and nothing fires.
@@ -50,6 +55,12 @@ func cancel() -> void:
 		cancelled.emit()
 	_state = State.COOLDOWN
 	_timer = stats.cooldown
+	_release_token()
+
+
+## A freed drone gives its attack token back.
+func _exit_tree() -> void:
+	_release_token()
 
 
 func get_state() -> State:
@@ -81,7 +92,7 @@ func _physics_process(delta: float) -> void:
 			if _timer <= 0.0:
 				_state = State.READY
 		State.READY:
-			if _in_seek_range() and _has_line_of_sight():
+			if _in_seek_range() and _has_line_of_sight() and _may_attack():
 				_state = State.CHARGING
 				_timer = stats.charge_time
 				charge_started.emit()
@@ -98,6 +109,18 @@ func _physics_process(delta: float) -> void:
 				_fire()
 				_state = State.COOLDOWN
 				_timer = stats.cooldown
+				_release_token()
+
+
+## True if the level lets this beam start an attack now (always, with no coordinator). Asked last, so a token
+## isn't spent on a drone that couldn't have fired anyway.
+func _may_attack() -> bool:
+	return _coordinator == null or _coordinator.request(self)
+
+
+func _release_token() -> void:
+	if _coordinator != null:
+		_coordinator.release(self)
 
 
 func _fire() -> void:

@@ -6,6 +6,8 @@
 [ext_resource type="Script" uid="uid://d2ku74ns5rxh0" path="res://levels/city/city_settings.gd" id="3_mcn2j"]
 [ext_resource type="PackedScene" path="res://enemy/drone.tscn" id="4_drone"]
 [ext_resource type="Script" uid="uid://c8g7acm28ewym" path="res://levels/city/city_level.gd" id="5_level"]
+[ext_resource type="Script" path="res://enemy/attack_coordinator.gd" id="6_coord"]
+[ext_resource type="Resource" path="res://tuning/attack_coordinator_default.tres" id="7_coord_stats"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sunny"]
 sky_top_color = Color(0.32, 0.52, 0.86, 1)
@@ -42,6 +44,10 @@ script = ExtResource("3_mcn2j")
 script = ExtResource("5_level")
 random_drones = 4
 drone_scene = ExtResource("4_drone")
+
+[node name="AttackCoordinator" type="Node" parent="."]
+script = ExtResource("6_coord")
+stats = ExtResource("7_coord_stats")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2135825757]
 environment = SubResource("Environment_city")

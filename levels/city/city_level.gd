@@ -13,6 +13,7 @@ const SPAWN_TRIES: int = 30
 
 @onready var _generator: CityGenerator = $CityGenerator
 @onready var _player: Player = $Player
+@onready var _coordinator: AttackCoordinator = $AttackCoordinator
 
 
 func _ready() -> void:
@@ -20,7 +21,7 @@ func _ready() -> void:
 	for node: Node in get_tree().get_nodes_in_group(Enemy.GROUP):
 		var drone: Drone = node as Drone
 		if drone != null:
-			drone.setup(_generator.flight_grid, _player)
+			drone.setup(_generator.flight_grid, _player, _coordinator)
 	_player.show_city(_generator.building_boxes)
 
 

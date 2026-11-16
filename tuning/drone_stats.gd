@@ -33,7 +33,9 @@ extends EnemyStats
 @export var waypoint_reach: float = 3.0
 
 @export_group("Beam")
-## Seconds from one shot to the next charge becoming possible (the reload). Each drone starts at a random point in it, so they don't fire together.
+## Seconds after the drone appears (the level loading, or a spawn) before it may start its first charge. The random share of the cooldown comes on top.
+@export var opening_delay: float = 3.0
+## Seconds from one shot to the next charge becoming possible (the reload). Before its first charge each drone also waits a random share of it, so drones that appear together start apart.
 @export var cooldown: float = 7.0
 ## Seconds the drone charges before locking its aim. The charge whine is built to this length at startup.
 @export var charge_time: float = 1.5
