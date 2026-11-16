@@ -114,6 +114,12 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wall_run_head_on_gravity_scale: float = 0.08
 ## Turning the look this close to parallel with the wall (degrees) starts the run.
 @export_range(0.0, 89.0, 1.0) var wall_run_head_on_turn_degrees: float = 35.0
+## A run needs W held unless the travel direction is more than this many degrees from the look (90 = sideways counts as forward, 180 = only exactly backwards is exempt).
+@export_range(90.0, 180.0, 1.0) var wall_run_no_key_degrees: float = 120.0
+## How far (degrees) the view turns away from the wall when a run starts, so the crosshair isn't left on the wall's edge.
+@export_range(0.0, 60.0, 1.0) var wall_run_look_nudge_degrees: float = 20.0
+## Seconds that turn takes.
+@export var wall_run_look_nudge_time: float = 0.15
 
 @export_group("Trajectory prediction")
 ## How far ahead the predicted path looks (seconds). Drives the HUD arc and the obstacle assist.

@@ -30,6 +30,8 @@ var _head_on_left: float = 0.0
 var _head_on_speed: float = 0.0
 ## Set when a head-on latch times out: no more latching until the player lands.
 var _locked_out: bool = false
+## Degrees of the outward look nudge still to apply, signed as the yaw rotation to apply.
+var _nudge_left: float = 0.0
 
 
 func setup(body: CharacterBody3D, player_stats: PlayerStats) -> void:
@@ -77,19 +79,29 @@ func try_start(velocity_before: Vector3, extra_normal: Vector3 = Vector3.ZERO) -
 		if rad_to_deg(asin(clampf(into, 0.0, 1.0))) > stats.wall_run_max_approach_degrees:
 			head_on = flat_normal
 			continue
+		# Running forward takes a held forward key; an accidental run while flying backwards is fine.
+		if _blocked_by_missing_key(heading):
+			continue
 		_begin(flat_normal, false)
 		return true
-	if head_on != Vector3.ZERO and stats.wall_run_head_on_enabled:
+	if head_on != Vector3.ZERO and stats.wall_run_head_on_enabled and not _blocked_by_missing_key(heading):
 		_head_on_speed = minf(flat.length(), stats.wall_run_max_speed)
 		_begin(head_on, true)
 		return true
 	return false
 
 
+## True when travelling forward relative to the look without W held: no run (or head-on latch) then.
+func _blocked_by_missing_key(heading: Vector3) -> bool:
+	return heading.dot(-_body.global_basis.z) > cos(deg_to_rad(stats.wall_run_no_key_degrees)) \
+			and not Input.is_action_pressed("move_forward")
+
+
 ## One physics frame of the run. Returns false once it has ended.
 func step(delta: float) -> bool:
 	if _head_on_left > 0.0:
 		return _step_head_on(delta)
+	_apply_nudge(delta)
 	var velocity: Vector3 = _body.velocity.slide(_normal)
 	var flat: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
 	if flat.length() > stats.wall_run_max_speed:
@@ -139,7 +151,8 @@ func _step_head_on(delta: float) -> bool:
 	var along: Vector3 = look.slide(_normal).normalized()
 	# The angle between the look and the wall: 90 facing straight into it, 0 looking along it.
 	var into_degrees: float = rad_to_deg(asin(clampf(-look.normalized().dot(_normal), -1.0, 1.0)))
-	if into_degrees <= stats.wall_run_head_on_turn_degrees and not along.is_zero_approx():
+	if into_degrees <= stats.wall_run_head_on_turn_degrees and not along.is_zero_approx() \
+			and not _blocked_by_missing_key(along):
 		_head_on_left = 0.0
 		_body.velocity = along * maxf(_head_on_speed, stats.wall_run_end_speed)
 		_side = 1.0 if (-_normal).dot(along.cross(Vector3.UP)) > 0.0 else -1.0
@@ -162,6 +175,16 @@ func _step_head_on(delta: float) -> bool:
 	return true
 
 
+## Turns the body's yaw a little away from the wall over `wall_run_look_nudge_time` after a run starts.
+func _apply_nudge(delta: float) -> void:
+	if is_zero_approx(_nudge_left):
+		return
+	var rate: float = stats.wall_run_look_nudge_degrees / maxf(stats.wall_run_look_nudge_time, 0.001)
+	var amount: float = minf(rate * delta, absf(_nudge_left)) * signf(_nudge_left)
+	_body.rotate_y(deg_to_rad(amount))
+	_nudge_left -= amount
+
+
 func _physics_process(delta: float) -> void:
 	_cooldown = maxf(_cooldown - delta, 0.0)
 	if _body != null and _body.is_on_floor():
@@ -182,11 +205,15 @@ func _begin(wall_normal: Vector3, head_on: bool) -> void:
 	else:
 		# The wall's side relative to where the player is facing, for the camera tilt.
 		_side = 1.0 if (-_normal).dot(_body.global_basis.x) > 0.0 else -1.0
+		# Turn the view outward: toward the wall's normal, away from the wall.
+		var look: Vector3 = -_body.global_basis.z
+		_nudge_left = signf(look.cross(_normal).y) * stats.wall_run_look_nudge_degrees
 	started.emit(_side)
 
 
 func _end() -> void:
 	_active = false
+	_nudge_left = 0.0
 	_head_on_left = 0.0
 	_side = 0.0
 	_cooldown = stats.wall_run_cooldown
