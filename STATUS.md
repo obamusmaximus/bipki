@@ -4,7 +4,7 @@ Loaded into every session through `CLAUDE.md`, so keep it short: this is an inde
 
 **Playtesting:** the user playtests thoroughly after every feature. If they don't mention a feature, it works as intended. Don't label things "not playtested".
 
-_Last updated: 2026-11-16_
+_Last updated: 2026-11-17_
 
 ## Current state
 | Mechanic | Doc (`docs/mechanics/`) | Where it stands |
@@ -35,4 +35,4 @@ _Last updated: 2026-11-16_
 
 ## Layout and branches
 - Feature folders: `player/`, `enemy/`, `hud/`, `menus/` (`menus/tuning/` builds the tuning panel from the stats resources), `effects/`, `levels/arena/`, `levels/city/`, `world/`, `tuning/`. Each mechanic doc lists its scripts. Headless test notes: `docs/testing.md`.
-- Remote: GitHub `origin` (`obamusmaximus/bipki`). Work happens on feature branches off `main` (one topic per branch); finished branches are merged and deleted. Everything up to `core-v2` is in `main`. The current branch is `core-v3` (core gameplay feel, continued).
+- Remote: GitHub `origin` (`obamusmaximus/bipki`). Work happens on feature branches off `main` (one topic per branch); finished branches are merged and deleted. Everything up to `core-v3` is in `main`. The current branch is `core-v4` (core gameplay feel, continued).
