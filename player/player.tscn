@@ -21,6 +21,8 @@
 [ext_resource type="Script" path="res://player/enemy_throw.gd" id="27_throw"]
 [ext_resource type="Resource" path="res://tuning/trajectory_arc_default.tres" id="26_arc"]
 [ext_resource type="Script" path="res://player/health.gd" id="16_health"]
+[ext_resource type="Script" path="res://player/melee.gd" id="28_melee"]
+[ext_resource type="Script" path="res://player/hit_stop.gd" id="29_hitstop"]
 [ext_resource type="Resource" path="res://tuning/player_default.tres" id="18_player"]
 [ext_resource type="Resource" path="res://tuning/grapple_default.tres" id="19_grapple"]
 [ext_resource type="Resource" path="res://tuning/camera_feel_default.tres" id="20_feel"]
@@ -119,6 +121,12 @@ script = ExtResource("24_predictor")
 
 [node name="Health" type="Node" parent="."]
 script = ExtResource("16_health")
+
+[node name="Melee" type="Node" parent="."]
+script = ExtResource("28_melee")
+
+[node name="HitStop" type="Node" parent="."]
+script = ExtResource("29_hitstop")
 
 [node name="Hud" parent="." instance=ExtResource("5_hud")]
 

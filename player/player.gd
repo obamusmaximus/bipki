@@ -11,11 +11,14 @@ extends CharacterBody3D
 @export var minimap_stats: MinimapStats
 @export var arc_stats: TrajectoryArcStats
 
-var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+## The player's own gravity (PlayerStats "Gravity"), shared with the TrajectoryPredictor.
+var _gravity: BodyGravity
 ## True after a launch fires or a swing releases: velocity is preserved (no input override) until landing.
 var _keeps_momentum: bool = false
 ## One double jump per airtime; restored on landing.
 var _double_jump_ready: bool = true
+## True while rising from a jump or double jump, so releasing jump can cut it short.
+var _jump_rising: bool = false
 
 @onready var _head: HeadLook = $Head
 @onready var _grapple: GrappleHook = $GrappleHook
@@ -33,6 +36,8 @@ var _double_jump_ready: bool = true
 @onready var _lean: CameraLean = $Head/Camera3D/CameraLean
 @onready var _health: Health = $Health
 @onready var _pause_menu: PauseMenu = $PauseMenu
+@onready var _melee: Melee = $Melee
+@onready var _hit_stop: HitStop = $HitStop
 
 ## Wall normals beside the body from the last frame, as [left, right]. ZERO means no wall.
 var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO])
@@ -40,6 +45,7 @@ var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO]
 
 func _ready() -> void:
 	# Hand the tuning resources down first: later setup calls and the HUD read them.
+	_gravity = BodyGravity.new(stats)
 	_health.setup(stats.max_health)
 	_head.setup(feel)
 	_camera.setup(feel)
@@ -53,9 +59,12 @@ func _ready() -> void:
 	_grapple.attached.connect(_on_grapple_attached)
 	_grapple.detached.connect(_on_grapple_detached)
 	_grapple.launched.connect(_on_grapple_launched)
+	_grapple.launched_at_enemy.connect(_on_grapple_launched_at_enemy)
+	_melee.setup(self, _camera, stats, grapple_stats)
+	_melee.hit.connect(_on_melee_hit)
 	_detector.setup(self, stats)
 	_detector.walls_beside.connect(_on_walls_beside)
-	_predictor.setup(self, _grapple, stats, _camera)
+	_predictor.setup(self, _grapple, stats, _camera, _gravity)
 	_assist.setup(self, _grapple, _predictor, stats)
 	_wall_run.setup(self, stats)
 	_wall_run.started.connect(_on_wall_run_started)
@@ -79,33 +88,50 @@ func show_city(boxes: Array[AABB]) -> void:
 func _physics_process(delta: float) -> void:
 	if is_on_floor():
 		_double_jump_ready = true
+		# A launch fired while standing still reports the floor this frame; it isn't a landing.
+		if velocity.y <= 0.0:
+			_gravity.end_launch()
+	_gravity.tick(delta)
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
 
 	if _wall_run.is_active():
-		# The run keeps the double jump ready and plays footsteps (no walk bob).
-		_double_jump_ready = true
+		# The run keeps the double jump ready and plays footsteps (no walk bob). A head-on latch does neither.
+		var running: bool = not _wall_run.is_head_on()
+		if running:
+			_double_jump_ready = true
 		_walk_bob.set_walking(false)
-		_footsteps.set_walking(true)
+		_footsteps.set_walking(running)
+		_gravity.end_launch()
+		_jump_rising = false
 		_wall_run.step(delta)
 		return
 
 	if _grapple.is_swinging():
-		# Plain airborne physics with no input: momentum is kept and the rope does the steering.
-		velocity.y -= _gravity * delta
-		# Don't carry velocity into a wall beside the body (the rope can push it there).
-		for wall: Vector3 in _walls:
-			if wall != Vector3.ZERO and velocity.dot(wall) < 0.0:
-				velocity = velocity.slide(wall)
-		_steer_swing(direction, delta)
-		velocity += _assist.get_acceleration(direction) * delta
-		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
+		_gravity.end_launch()
+		_jump_rising = false
+		# Standing on the floor at walking pace (not reeling): walk and jump as usual, the rope only stops
+		# the player going further than its length. Faster (a swing grazing the ground) keeps sliding.
+		var grounded: bool = is_on_floor() and velocity.y <= 0.0
+		if grounded and Vector2(velocity.x, velocity.z).length() <= stats.move_speed \
+				and not Input.is_action_pressed("reel"):
+			_ground_move(direction)
+		else:
+			# Plain airborne physics with no input: momentum is kept and the rope does the steering.
+			velocity.y -= _gravity.swing() * delta
+			# Don't carry velocity into a wall beside the body (the rope can push it there).
+			for wall: Vector3 in _walls:
+				if wall != Vector3.ZERO and velocity.dot(wall) < 0.0:
+					velocity = velocity.slide(wall)
+			velocity = Steering.swing(velocity, direction, global_position, _grapple.get_swing_anchor(), delta, stats)
+			velocity += _assist.get_acceleration(direction) * delta
+			velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		var velocity_before: Vector3 = velocity
 		move_and_slide()
 		if _wall_run.try_start(velocity_before):
 			_grapple.release()
 			return
-		var correction: SwingRope.Correction = _grapple.constrain_swing(velocity, delta)
+		var correction: SwingRope.Correction = _grapple.constrain_swing(velocity, is_on_floor(), delta)
 		# The rope correction respects walls: it stops at a face instead of passing through it.
 		var collision: KinematicCollision3D = move_and_collide(correction.offset)
 		velocity = correction.velocity
@@ -114,14 +140,15 @@ func _physics_process(delta: float) -> void:
 				_grapple.release()
 				return
 			velocity = velocity.slide(collision.get_normal())
-		_set_walking(false)
+		_set_walking(is_on_floor() and not direction.is_zero_approx())
 		return
 
 	if _keeps_momentum:
-		velocity.y -= _gravity * delta
+		velocity.y -= _gravity.air(velocity.y) * delta
 		_try_double_jump(input_dir.x)
-		# Air control only adds speed toward the input, so it steers without cutting the momentum.
-		_air_control(direction, delta)
+		_cut_jump()
+		# Air steering turns the velocity or adds speed toward the input, so it never cuts the momentum.
+		velocity = Steering.air(velocity, direction, delta, stats)
 		velocity += _assist.get_acceleration(direction) * delta
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		var velocity_before: Vector3 = velocity
@@ -134,14 +161,12 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if is_on_floor():
-		if Input.is_action_just_pressed("jump"):
-			velocity.y = stats.jump_speed
-		velocity.x = direction.x * stats.move_speed
-		velocity.z = direction.z * stats.move_speed
+		_ground_move(direction)
 	else:
-		velocity.y -= _gravity * delta
+		velocity.y -= _gravity.air(velocity.y) * delta
 		_try_double_jump(input_dir.x)
-		_air_control(direction, delta)
+		_cut_jump()
+		velocity = Steering.air(velocity, direction, delta, stats)
 	if not is_on_floor():
 		velocity += _assist.get_acceleration(direction) * delta
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
@@ -151,53 +176,35 @@ func _physics_process(delta: float) -> void:
 	_set_walking(is_on_floor() and not direction.is_zero_approx())
 
 
+## On the floor: walk at move_speed in the input direction, and jump.
+func _ground_move(direction: Vector3) -> void:
+	if Input.is_action_just_pressed("jump"):
+		velocity.y = stats.jump_speed
+		_jump_rising = true
+	velocity.x = direction.x * stats.move_speed
+	velocity.z = direction.z * stats.move_speed
+
+
 ## Jump press in the air: a double jump, once per airtime. Holding A or D adds a sideways push.
 func _try_double_jump(side: float) -> void:
 	if not _double_jump_ready or not Input.is_action_just_pressed("jump") or is_on_floor():
 		return
 	_double_jump_ready = false
 	velocity.y = stats.jump_speed * stats.double_jump_factor
+	_jump_rising = true
 	if side != 0.0:
 		velocity += transform.basis.x * side * stats.double_jump_sideways
 
 
-## WASD steers a swing by pushing along the rope's tangent. That adds swing without
-## stretching or shortening the rope, since the rope correction removes any push outward.
-func _steer_swing(direction: Vector3, delta: float) -> void:
-	if direction.is_zero_approx():
+## Letting go of jump while still rising from a jump keeps only `jump_release_cut` of the upward speed.
+func _cut_jump() -> void:
+	if not _jump_rising:
 		return
-	var rope: Vector3 = global_position - _grapple.get_swing_anchor()
-	if rope.is_zero_approx():
-		return
-	var outward: Vector3 = rope.normalized()
-	var tangent: Vector3 = direction - outward * direction.dot(outward)
-	if tangent.is_zero_approx():
-		return
-	tangent = tangent.normalized()
-	var along: float = velocity.dot(tangent)
-	if along >= stats.swing_steer_speed:
-		return
-	velocity += tangent * minf(stats.swing_steer_acceleration * delta, stats.swing_steer_speed - along)
-
-
-## In the air, WASD steers. With the turn rate on, a fast player's velocity is rotated toward the input at
-## a maximum rate (same feel at any speed, no energy added). Otherwise, or when slow, WASD only adds speed
-## in the input direction, up to air_speed, and never slows the player, so jump momentum is kept.
-func _air_control(direction: Vector3, delta: float) -> void:
-	if direction.is_zero_approx():
-		return
-	var horizontal := Vector2(velocity.x, velocity.z)
-	if stats.air_turn_rate_enabled and horizontal.length() >= stats.air_turn_min_speed:
-		var wanted := Vector2(direction.x, direction.z)
-		var limit: float = deg_to_rad(stats.air_turn_rate_degrees) * delta
-		horizontal = horizontal.rotated(clampf(horizontal.angle_to(wanted), -limit, limit))
-		velocity.x = horizontal.x
-		velocity.z = horizontal.y
-		return
-	var along: float = horizontal.dot(Vector2(direction.x, direction.z))
-	if along >= stats.air_speed:
-		return
-	velocity += direction * minf(stats.air_acceleration * delta, stats.air_speed - along)
+	if velocity.y <= 0.0:
+		_jump_rising = false
+	elif Input.is_action_just_released("jump"):
+		velocity.y *= stats.jump_release_cut
+		_jump_rising = false
 
 
 ## Walk bob and footsteps both follow the same walking state.
@@ -211,7 +218,8 @@ func _on_walls_beside(left: Vector3, right: Vector3) -> void:
 
 
 func _on_wall_run_started(side: float) -> void:
-	_double_jump_ready = true
+	if not _wall_run.is_head_on():
+		_double_jump_ready = true
 	_lean.set_wall_side(side)
 
 
@@ -223,6 +231,8 @@ func _on_wall_run_ended() -> void:
 
 func _on_grapple_attached() -> void:
 	_camera.shake(feel.grapple_shake)
+	if grapple_stats.hit_stop_enabled:
+		_hit_stop.trigger(grapple_stats.hit_stop_scale, grapple_stats.hit_stop_time)
 
 
 func _on_grapple_detached() -> void:
@@ -233,8 +243,29 @@ func _on_grapple_detached() -> void:
 ## The launch adds its boost on top of the momentum the player keeps.
 func _on_grapple_launched(launch_velocity: Vector3) -> void:
 	velocity = velocity * stats.momentum_carry + launch_velocity
+	# Fired while standing, lift off the floor, or a launch aimed slightly down would stop dead on it.
+	if is_on_floor() and velocity.y < stats.launch_ground_lift:
+		velocity.y = stats.launch_ground_lift
 	_keeps_momentum = true
+	_jump_rising = false
+	_gravity.start_launch()
 	_fov.kick(feel.launch_fov_kick)
+
+
+## Launched at an enemy: the body hit lands on contact whatever the speed.
+func _on_grapple_launched_at_enemy(_enemy: Enemy) -> void:
+	_melee.arm()
+
+
+## The punch stops the player nearly dead, so the enemy gets the momentum. The double jump comes back.
+func _on_melee_hit(enemy: Enemy, _impact_velocity: Vector3) -> void:
+	velocity *= stats.melee_momentum_keep
+	_keeps_momentum = true
+	_jump_rising = false
+	_double_jump_ready = true
+	_camera.shake(feel.grapple_shake)
+	if _grapple.get_enemy() == enemy:
+		_grapple.release()
 
 
 ## A thrown enemy leaves the rope with a kick, harder for a harder throw.

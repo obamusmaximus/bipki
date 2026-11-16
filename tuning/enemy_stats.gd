@@ -27,6 +27,11 @@ extends Resource
 ## Share of its speed an enemy keeps, reflected, when it bounces off a surface after an impact.
 @export_range(0.0, 1.0, 0.01) var bounce: float = 0.25
 
+@export_group("Knockback")
+## A melee hit sends the enemy flying with the player's momentum. If it hits nothing within this distance (m),
+## it regains control at once. If it hits a surface it takes impact damage like a throw.
+@export var knockback_max_distance: float = 65.0
+
 @export_group("Recovery")
 ## Seconds an enemy that survived a throw stays stunned (it falls, and can be hooked and thrown again) before it
 ## flies again.

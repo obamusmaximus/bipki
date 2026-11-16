@@ -56,9 +56,14 @@ func start(anchor: Vector3, hit_point: Vector3, ground_height: float, margin: fl
 	# Depth below the hit point where a rope of the clear length is `radius` away horizontally
 	# from the point beneath the hit point (the edge of the clearance area).
 	var finish_depth: float = sqrt(maxf(1.0, _clear_length * _clear_length - radius * radius))
-	# Attaching below the hit point leaves less descent to spread the retraction over (at least 1 m).
+	# Attaching below the hit point leaves less descent to spread the retraction over. Already past the edge
+	# depth, it is spread over what is left down to the bottom of the clear arc. Attaching at or below that
+	# (standing on the ground, far away) leaves nothing to clear, so the rope never retracts.
 	var start_depth: float = maxf(0.0, hit_point.y - anchor.y)
-	_retract_rate = maxf(0.0, length - _clear_length) / maxf(1.0, finish_depth - start_depth)
+	if start_depth >= _clear_length:
+		return
+	var descent_left: float = maxf(finish_depth, _clear_length) - start_depth
+	_retract_rate = maxf(0.0, length - _clear_length) / maxf(1.0, descent_left)
 
 
 ## Moves the anchor (the rope hangs from an enemy). `velocity` is the anchor's own velocity.
@@ -67,13 +72,15 @@ func move_anchor(point: Vector3, velocity: Vector3) -> void:
 	anchor_velocity = velocity
 
 
-func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, delta: float) -> Correction:
+## `grounded`: the player stands on the floor. The floor holds them up, so the rope doesn't retract for
+## ground clearance then (and any retraction still owed from the fall is dropped).
+func constrain(anchor: Vector3, velocity: Vector3, reeling: bool, grounded: bool, delta: float) -> Correction:
 	is_reeling = reeling and length > min_length
 	var length_before: float = length
 	if is_reeling:
 		length = maxf(min_length, length - reel_speed * delta)
 	fully_reeled = reeling and length <= min_length
-	_retract_for_descent(anchor.y)
+	_retract_for_descent(anchor.y, grounded)
 	# Only the descent is held to the clearance length. Reeling may go on down to min_length.
 	if _pending_retract > 0.0:
 		var taken: float = minf(_pending_retract, descent_speed * delta)
@@ -120,7 +127,11 @@ func _reel_momentum(velocity: Vector3, outward: Vector3, length_before: float, l
 
 
 ## While the player drops below the hit point's height, shortens the rope in proportion to the descent.
-func _retract_for_descent(y: float) -> void:
+func _retract_for_descent(y: float, grounded: bool) -> void:
+	if grounded:
+		_last_y = y
+		_pending_retract = 0.0
+		return
 	var previous_depth: float = maxf(0.0, _hit_point.y - _last_y)
 	var depth: float = maxf(0.0, _hit_point.y - y)
 	_last_y = y

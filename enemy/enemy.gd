@@ -29,6 +29,10 @@ var state: State = State.NORMAL
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _flight_time: float = 0.0
 var _stun_left: float = 0.0
+## True while flying from a melee hit (a knockback) rather than a throw.
+var _knocked: bool = false
+## Distance a knockback may still fly before the enemy regains control (m).
+var _knock_left: float = 0.0
 
 @onready var health: Health = $Health
 
@@ -60,9 +64,12 @@ func get_center() -> Vector3:
 	return global_position
 
 
-## True if the grapple can take hold of this enemy (not mid-throw, not already held, not dead).
+## True if the grapple can take hold of this enemy: not already held, not dead, and not mid-throw. An enemy
+## flying from a melee knockback still counts (it has not regained control), so it can be hooked, thrown or hit again.
 func is_hookable() -> bool:
-	return (state == State.NORMAL or state == State.STUNNED) and not health.is_dead()
+	if health.is_dead():
+		return false
+	return state == State.NORMAL or state == State.STUNNED or (state == State.THROWN and _knocked)
 
 
 ## Damage an impact at `speed` (m/s along the surface normal) would do to this enemy.
@@ -73,6 +80,7 @@ func damage_for_impact(speed: float) -> float:
 ## The throw takes hold: the enemy stops and hangs where it is.
 func grab() -> void:
 	velocity = Vector3.ZERO
+	_knocked = false
 	_set_state(State.GRABBED)
 
 
@@ -85,6 +93,17 @@ func drop() -> void:
 func throw(launch_velocity: Vector3) -> void:
 	velocity = launch_velocity
 	_flight_time = 0.0
+	_knocked = false
+	_set_state(State.THROWN)
+
+
+## A melee hit: the enemy flies with `launch_velocity` like a thrown one, and a surface it hits does impact
+## damage the same way. If it flies `knockback_max_distance` without hitting anything it regains control at once.
+func knock_back(launch_velocity: Vector3) -> void:
+	velocity = launch_velocity
+	_flight_time = 0.0
+	_knocked = true
+	_knock_left = stats.knockback_max_distance
 	_set_state(State.THROWN)
 
 
@@ -134,9 +153,15 @@ func _stun() -> void:
 func _fly(delta: float) -> void:
 	_flight_time += delta
 	velocity.y -= _gravity * stats.thrown_gravity_scale * delta
+	var start: Vector3 = global_position
 	var collision: KinematicCollision3D = move_and_collide(velocity * delta)
 	if collision != null:
+		_knocked = false
 		_on_thrown_hit(collision)
+	elif _knocked:
+		_knock_left -= global_position.distance_to(start)
+		if _knock_left <= 0.0:
+			_recover()
 	elif _flight_time >= stats.max_flight_time:
 		_stun()
 
@@ -164,9 +189,15 @@ func _stunned_step(delta: float) -> void:
 	if collision != null:
 		velocity = velocity.slide(collision.get_normal()) * 0.9
 	if _stun_left <= 0.0:
-		velocity = Vector3.ZERO
-		_on_recovered()
-		_set_state(State.NORMAL)
+		_recover()
+
+
+## Back to its own behaviour, from a stun or the end of a knockback.
+func _recover() -> void:
+	_knocked = false
+	velocity = Vector3.ZERO
+	_on_recovered()
+	_set_state(State.NORMAL)
 
 
 func _on_damaged(amount: float) -> void:

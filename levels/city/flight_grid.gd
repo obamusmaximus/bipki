@@ -60,6 +60,14 @@ func nearest_open_position(pos: Vector3) -> Vector3:
 	return pos if index < 0 else _centre(index)
 
 
+## Centre of a random open cell, or Vector3.INF if the grid has none.
+func random_open_position(rng: RandomNumberGenerator) -> Vector3:
+	var ids: PackedInt64Array = _astar.get_point_ids()
+	if ids.is_empty():
+		return Vector3.INF
+	return _astar.get_point_position(ids[rng.randi_range(0, ids.size() - 1)])
+
+
 ## Path through open air from `from` to `to`, as waypoints (the cells nearest each end are used).
 ## Straightened wherever a clear line exists. Empty if there is no route.
 ## If `avoid_radius` is above zero, the route stays that far from `avoid_centre` (the start cell is exempt).

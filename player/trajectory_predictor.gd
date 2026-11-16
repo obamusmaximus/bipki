@@ -36,15 +36,17 @@ var stats: PlayerStats
 var _body: CharacterBody3D
 var _grapple: GrappleHook
 var _camera: Camera3D
-var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var _gravity: BodyGravity
 var _body_shape := SphereShape3D.new()
 var _clearance_shape := CylinderShape3D.new()
 var _body_query := PhysicsShapeQueryParameters3D.new()
 var _clearance_query := PhysicsShapeQueryParameters3D.new()
 
 
-func setup(body: CharacterBody3D, grapple: GrappleHook, player_stats: PlayerStats, camera: Camera3D) -> void:
+func setup(body: CharacterBody3D, grapple: GrappleHook, player_stats: PlayerStats, camera: Camera3D,
+		gravity: BodyGravity) -> void:
 	_body = body
+	_gravity = gravity
 	_grapple = grapple
 	stats = player_stats
 	_camera = camera
@@ -91,7 +93,7 @@ func _simulate(swinging: bool) -> void:
 	var check_clearance: bool = stats.assist_strength > 0.0
 	points.append(position)
 	for i: int in int(ceilf(stats.prediction_seconds / step)):
-		velocity.y -= _gravity * step
+		velocity.y -= (_gravity.swing() if swinging else _gravity.air(velocity.y, float(i) * step)) * step
 		var next: Vector3 = position + velocity * step
 		if swinging:
 			var offset: Vector3 = next - anchor

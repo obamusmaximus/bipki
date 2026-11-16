@@ -1,6 +1,7 @@
 class_name BeamAttack
 extends Node
-## The drone's beam: a timed cycle. After `cooldown` it waits for a clear line to the target, charges,
+## The drone's beam: a timed cycle. After `cooldown` (the first one starts at a random point, so drones
+## don't fire in step) it waits for a clear line to the target within `seek_range`, charges,
 ## then latches the target's position and aims at it (even if the target has since moved out of sight),
 ## and after the aim delay fires. The aim delay is the player's grace period to get out of the line.
 ## It reports each step with signals; BeamVisual and DroneSfx listen.
@@ -35,7 +36,7 @@ func setup(origin: Node3D, target: Node3D, drone_stats: DroneStats) -> void:
 	_origin = origin
 	_target = target
 	_target_health = target.get_node_or_null("Health") as Health
-	_timer = stats.cooldown
+	_timer = stats.cooldown * randf()
 
 
 ## Switches the cycle on or off. While off, no timer runs and nothing fires.
@@ -80,7 +81,7 @@ func _physics_process(delta: float) -> void:
 			if _timer <= 0.0:
 				_state = State.READY
 		State.READY:
-			if _has_line_of_sight():
+			if _in_seek_range() and _has_line_of_sight():
 				_state = State.CHARGING
 				_timer = stats.charge_time
 				charge_started.emit()
@@ -121,6 +122,10 @@ func _beam_hits_target(from: Vector3, to: Vector3) -> bool:
 
 func _target_point() -> Vector3:
 	return _target.global_position + Vector3.UP * 0.9
+
+
+func _in_seek_range() -> bool:
+	return _origin.global_position.distance_to(_target_point()) <= stats.seek_range
 
 
 func _has_line_of_sight() -> bool:

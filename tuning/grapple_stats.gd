@@ -21,6 +21,14 @@ extends Resource
 ## Hits within this height of the player's feet count as "the ground plane" and are rejected.
 @export var ground_tolerance: float = 0.1
 
+@export_group("Hit-stop")
+## Freeze the game for a split second when the hook attaches, to sell the bite.
+@export var hit_stop_enabled: bool = true
+## Time scale during the hit-stop (0.05 = nearly frozen).
+@export_range(0.01, 1.0, 0.01) var hit_stop_scale: float = 0.05
+## How long the hit-stop lasts (real seconds).
+@export var hit_stop_time: float = 0.05
+
 @export_group("Enemy hook")
 ## The grapple locks onto an enemy whose centre is within this angle of the crosshair (degrees), on top of the angle the enemy's own size covers.
 @export var enemy_snap_degrees: float = 4.0

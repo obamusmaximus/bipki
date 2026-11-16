@@ -21,6 +21,8 @@ extends Node3D
 signal attached
 ## Emitted once when a launch connects. The player should add this velocity.
 signal launched(launch_velocity: Vector3)
+## Emitted with `launched` when the launch is at an enemy (RMB tapped on it).
+signal launched_at_enemy(enemy: Enemy)
 ## Emitted when an attached hook ends: a launch, or a swing released.
 signal detached
 ## Emitted on attach when the hook is on a lip or an edge. The argument is the horizontal
@@ -211,14 +213,15 @@ func probe_aim() -> Aim:
 
 
 ## What the player must apply to stay on the swing rope (see SwingRope.Correction). Reel (Shift) shortens it.
-func constrain_swing(body_velocity: Vector3, delta: float) -> SwingRope.Correction:
+## `grounded`: the player stands on the floor (no ground-clearance retraction then).
+func constrain_swing(body_velocity: Vector3, grounded: bool, delta: float) -> SwingRope.Correction:
 	# Read each frame, so live tuning applies at once.
 	_swing.reel_gain = stats.reel_momentum_gain
 	_swing.reel_speed_cap = stats.reel_momentum_speed_cap
 	if _enemy != null:
 		_swing_anchor = _hit_point
 		_swing.move_anchor(_swing_anchor, _enemy.velocity)
-	var correction: SwingRope.Correction = _swing.constrain(global_position, body_velocity, Input.is_action_pressed("reel"), delta)
+	var correction: SwingRope.Correction = _swing.constrain(global_position, body_velocity, Input.is_action_pressed("reel"), grounded, delta)
 	if _enemy != null:
 		# The rope pulls both ways: the enemy gets the speed the player gave up along the rope, shared out by its mass.
 		var outward: Vector3 = (global_position - _hit_point).normalized()
@@ -368,8 +371,9 @@ func _decide_enemy_launch() -> void:
 
 func _launch() -> void:
 	var aim_point: Vector3
-	if _enemy != null:
-		aim_point = _enemy.get_center()
+	var target: Enemy = _enemy
+	if target != null:
+		aim_point = target.get_center()
 	else:
 		aim_point = LaunchAim.aim_point(global_position, _hit_point, camera.global_position,
 				-camera.global_basis.z, stats.launch_height_offset, stats.launch_side_offset)
@@ -377,6 +381,8 @@ func _launch() -> void:
 	_reset(true)
 	_sfx.play_launch()
 	launched.emit(direction * stats.launch_speed)
+	if target != null:
+		launched_at_enemy.emit(target)
 	detached.emit()
 
 

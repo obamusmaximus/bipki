@@ -62,6 +62,15 @@ const BASE_SIZE: Vector2 = Vector2(275.0, 228.0)
 @export var trail_color: Color = Color(0.35, 0.9, 1.0)
 
 
+@export_group("Enemies")
+## Show enemies as dots.
+@export var show_enemies: bool = true
+## Colour of the enemy dots.
+@export var enemy_dot_color: Color = Color(1.0, 0.3, 0.25)
+## Radius of an enemy dot (px).
+@export var enemy_dot_radius: float = 3.0
+
+
 ## The panel's size in px before HUD scaling: BASE_SIZE times minimap_scale.
 func panel_size() -> Vector2:
 	return BASE_SIZE * minimap_scale

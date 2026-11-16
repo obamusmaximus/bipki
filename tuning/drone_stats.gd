@@ -11,6 +11,10 @@ extends EnemyStats
 @export var turn_speed: float = 5.0
 ## The drone never approaches closer than this to the target on its own (m). It does not back away if the target comes closer.
 @export var standoff: float = 15.0
+## The drone only chases and shoots a target within this distance (m). Walls don't block it. Beyond it the drone hovers in place.
+@export var seek_range: float = 100.0
+## Drones keep their goals at least this far apart, as an angle seen from the target (degrees), so they surround it instead of bunching up. When there is no room for that, a drone takes the spot farthest from the others. 0 turns it off.
+@export var goal_separation_degrees: float = 45.0
 ## Top flight speed (m/s).
 @export var speed: float = 16.0
 ## Deceleration used to slow down on arrival (m/s per second). Keep it below acceleration.
@@ -29,7 +33,7 @@ extends EnemyStats
 @export var waypoint_reach: float = 3.0
 
 @export_group("Beam")
-## Seconds from one shot to the next charge becoming possible (the reload).
+## Seconds from one shot to the next charge becoming possible (the reload). Each drone starts at a random point in it, so they don't fire together.
 @export var cooldown: float = 7.0
 ## Seconds the drone charges before locking its aim. The charge whine is built to this length at startup.
 @export var charge_time: float = 1.5

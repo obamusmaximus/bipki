@@ -40,6 +40,8 @@ script = ExtResource("3_mcn2j")
 
 [node name="City" type="Node3D" unique_id=951056476]
 script = ExtResource("5_level")
+random_drones = 4
+drone_scene = ExtResource("4_drone")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2135825757]
 environment = SubResource("Environment_city")

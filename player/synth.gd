@@ -58,3 +58,39 @@ static func make_loop(duration: float, tone_hz: float, noise_amount: float, volu
 	stream.loop_begin = 0
 	stream.loop_end = count
 	return stream
+
+
+## A punchy metallic "ka-ching": a short noisy knock ("ka"), then after `delay` seconds a bright ring of
+## inharmonic partials above `ring_hz` that dies away ("ching"). The higher partials fade faster, like struck metal.
+static func make_clang(duration: float, ring_hz: float, delay: float, volume: float) -> AudioStreamWAV:
+	var ratios: PackedFloat32Array = PackedFloat32Array([1.0, 1.51, 2.76, 4.07, 5.40])
+	var gains: PackedFloat32Array = PackedFloat32Array([0.5, 0.35, 0.3, 0.18, 0.12])
+	var count: int = int(duration * MIX_RATE)
+	var delay_samples: int = int(delay * MIX_RATE)
+	var data := PackedByteArray()
+	data.resize(count * 2)
+
+	var smoothed: float = 0.0
+	for i in count:
+		var t: float = float(i) / MIX_RATE
+		# Ka: a sharp knock of band-limited noise over a low thump, gone in a few hundredths of a second.
+		smoothed = lerpf(smoothed, randf_range(-1.0, 1.0), 0.5)
+		var knock: float = (smoothed * 1.4 + sin(TAU * 140.0 * t) * 0.8) * exp(-t * 90.0)
+		# Ching: the ring starts after the knock, with a tiny attack so it doesn't click.
+		var ring: float = 0.0
+		if i >= delay_samples:
+			var rt: float = float(i - delay_samples) / MIX_RATE
+			var attack: float = minf(rt / 0.002, 1.0)
+			for p: int in ratios.size():
+				var hz: float = ring_hz * ratios[p]
+				ring += sin(TAU * hz * rt) * gains[p] * exp(-rt * (5.0 + 4.0 * p))
+			ring *= attack
+		var sample: float = (knock + ring) * volume
+		data.encode_s16(i * 2, int(clampf(sample, -1.0, 1.0) * 32767.0))
+
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = MIX_RATE
+	stream.stereo = false
+	stream.data = data
+	return stream

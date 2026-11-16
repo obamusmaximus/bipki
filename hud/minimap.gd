@@ -1,7 +1,7 @@
 class_name Minimap
 extends Control
 ## HUD minimap: a 3D isometric wireframe of the city with the player as a glowing dot and a trail that fades
-## over a few seconds. The wireframe is drawn once (MinimapWire); this node draws the moving parts each frame.
+## over a few seconds. Enemies are small red dots with their own drop lines. The wireframe is drawn once (MinimapWire); this node draws the moving parts each frame.
 ## Sits in the top-right corner. Hud scales it with the rest of the HUD. Tuning is in MinimapStats.
 
 ## Edges of a box as pairs of AABB.get_endpoint() indices.
@@ -50,6 +50,8 @@ func _draw() -> void:
 	if stats == null or _body == null or _boxes.is_empty():
 		return
 	_draw_trail()
+	if stats.show_enemies:
+		_draw_enemies()
 	_draw_player()
 
 
@@ -130,3 +132,16 @@ func _draw_player() -> void:
 	draw_circle(dot, stats.glow_radius * 0.65, Color(stats.dot_color, 0.18 * glow))
 	draw_circle(dot, stats.dot_radius * 1.9, Color(stats.dot_color, 0.45 * glow + 0.1))
 	draw_circle(dot, stats.dot_radius, Color(stats.dot_color.lightened(0.5), 1.0))
+
+
+func _draw_enemies() -> void:
+	for node: Node in get_tree().get_nodes_in_group(Enemy.GROUP):
+		var enemy: Node3D = node as Node3D
+		if enemy == null:
+			continue
+		var world: Vector3 = enemy.global_position
+		var dot: Vector2 = _projection.project(world)
+		if stats.show_drop_line:
+			draw_line(dot, _projection.project(Vector3(world.x, 0.0, world.z)), Color(stats.enemy_dot_color, 0.3), 1.0, true)
+		draw_circle(dot, stats.enemy_dot_radius * 2.0, Color(stats.enemy_dot_color, 0.25 * stats.glow_strength + 0.05))
+		draw_circle(dot, stats.enemy_dot_radius, stats.enemy_dot_color)

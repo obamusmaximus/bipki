@@ -33,6 +33,10 @@ func setup(grid: FlightGrid, target: Node3D) -> void:
 
 func _ai_step(delta: float) -> void:
 	var desired: Vector3 = _flight.desired_velocity(global_position, delta)
+	# Knocked or thrown out of open air (the flight grid is coarse): fly back in rather than snapping.
+	if _grid != null and not _grid.is_open_at(global_position):
+		var back: Vector3 = _grid.nearest_open_position(global_position)
+		desired = global_position.direction_to(back) * minf(_drone_stats.speed, global_position.distance_to(back) * 4.0)
 	velocity = velocity.move_toward(desired, _drone_stats.acceleration * delta)
 	move_and_slide()
 	_face_target(delta)
@@ -45,11 +49,6 @@ func _on_state_changed() -> void:
 	_beam.set_active(working)
 	if not working:
 		_beam.cancel()
-
-
-func _on_recovered() -> void:
-	if _grid != null:
-		global_position = _grid.nearest_open_position(global_position)
 
 
 func _face_target(delta: float) -> void:

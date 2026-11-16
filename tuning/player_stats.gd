@@ -11,20 +11,46 @@ extends Resource
 @export var air_speed: float = 10.0
 ## How fast air control adds speed toward air_speed (m/s per second).
 @export var air_acceleration: float = 30.0
-## Jump velocity (m/s). Three times the old 1 m jump (about 4.4 m/s).
-@export var jump_speed: float = 13.3
+## Jump velocity (m/s). Jump height is jump_speed squared / (2 * gravity).
+@export var jump_speed: float = 10.5
 ## Double jump velocity as a multiple of jump_speed.
-@export var double_jump_factor: float = 1.2
+@export var double_jump_factor: float = 1.0
+## Releasing jump while still rising from a jump keeps only this share of the upward speed (a tap is a hop,
+## a hold is the full jump). 1 = no cut. Wall jumps and launches aren't cut.
+@export_range(0.0, 1.0, 0.01) var jump_release_cut: float = 0.5
 ## Sideways speed (m/s) a double jump adds while A or D is held.
 @export var double_jump_sideways: float = 3.0
 ## Share of the player's velocity kept when a launch begins. The rest is lost.
 @export_range(0.0, 1.0) var momentum_carry: float = 0.4
+## A launch fired while standing gets at least this upward speed (m/s), so a launch aimed slightly down
+## leaves the ground instead of losing its speed on the floor at once.
+@export var launch_ground_lift: float = 4.0
+
+@export_group("Gravity")
+## The player's gravity (m/s squared). Only the player: enemies and thrown things keep the project's 9.8.
+## Higher makes jumps shorter and falls quicker, so the player stays down among the buildings.
+@export var gravity: float = 25.0
+## Gravity multiplier while falling (vertical speed below zero). Above 1 gives a quick drop after the apex.
+@export_range(1.0, 3.0, 0.05) var fall_gravity_scale: float = 1.3
+## Share of gravity on a swing rope. Higher swings faster and heavier (and builds more speed at the bottom).
+@export_range(0.0, 2.0, 0.01) var swing_gravity_scale: float = 0.4
+## Share of gravity for launch_gravity_time after a launch, so a launch still reaches its aim point.
+@export_range(0.0, 2.0, 0.01) var launch_gravity_scale: float = 0.4
+## Seconds of launch_gravity_scale after a launch, then full gravity (ends early on landing, a swing or a wall run).
+@export var launch_gravity_time: float = 1.0
 
 @export_group("Swing steering")
 ## WASD pushes the body along the swing rope's tangent at this acceleration (m/s per second).
 @export var swing_steer_acceleration: float = 15.0
 ## Top speed (m/s) the swing steering adds along the tangent.
 @export var swing_steer_speed: float = 8.0
+## Steer a swing by turning the velocity along the rope toward the input at a maximum turn rate, like air
+## steering: same feel at any speed, no energy added. Off: the older push along the tangent (the two values above).
+@export var swing_turn_rate_enabled: bool = false
+## Maximum turn rate while swinging (degrees per second).
+@export var swing_turn_rate_degrees: float = 120.0
+## Below this speed (m/s) the older tangent push is used, so a hanging start can still get going.
+@export var swing_turn_min_speed: float = 6.0
 
 @export_group("Edge detection")
 ## How far past the body's surface the wall checks reach (m).
@@ -67,7 +93,7 @@ extends Resource
 ## Largest angle (degrees) between the travel direction and the wall for a hit to count as a graze. Steeper hits are head-on and just slide.
 @export_range(5.0, 89.0, 1.0) var wall_run_max_approach_degrees: float = 50.0
 ## Share of gravity that still applies while wall running.
-@export_range(0.0, 1.0, 0.01) var wall_run_gravity_scale: float = 0.1
+@export_range(0.0, 1.0, 0.01) var wall_run_gravity_scale: float = 0.04
 ## Speed pressed into the wall to keep touching it (m/s).
 @export var wall_run_stick_speed: float = 3.0
 ## Seconds without touching the wall before the run ends.
@@ -78,6 +104,16 @@ extends Resource
 @export var wall_run_jump_away_speed: float = 8.0
 ## Seconds after a run ends before another can start.
 @export var wall_run_cooldown: float = 0.35
+## Head-on hits latch onto the wall: the player slides slowly down it, and turning the camera along the wall
+## within wall_run_head_on_time starts a wall run that way. Otherwise they let go and fall, and can't latch
+## onto a wall again until they land.
+@export var wall_run_head_on_enabled: bool = true
+## Seconds the head-on latch lasts before the player lets go.
+@export var wall_run_head_on_time: float = 1.0
+## Share of gravity while latched head-on (a slow slide down the wall).
+@export_range(0.0, 1.0, 0.01) var wall_run_head_on_gravity_scale: float = 0.08
+## Turning the look this close to parallel with the wall (degrees) starts the run.
+@export_range(0.0, 89.0, 1.0) var wall_run_head_on_turn_degrees: float = 35.0
 
 @export_group("Trajectory prediction")
 ## How far ahead the predicted path looks (seconds). Drives the HUD arc and the obstacle assist.
@@ -115,3 +151,27 @@ extends Resource
 @export_range(20.0, 200.0, 1.0) var soft_speed_limit: float = 60.0
 ## How hard the drag pulls back (m/s per second at 1.25x the limit is about this value). Higher holds the limit tighter.
 @export var soft_speed_limit_strength: float = 40.0
+
+@export_group("Melee")
+## A hit needs at least this speed (m/s), unless the player was launched at an enemy (RMB tap), which always hits.
+@export var melee_min_speed: float = 30.0
+## After a launch at an enemy, the hit stays armed this long (s) or until landing.
+@export var melee_armed_time: float = 2.0
+## Radius of the hit sphere in front of the player (m). Generous on purpose; the enemy's own radius is added.
+@export var melee_hit_radius: float = 1.6
+## How far in front of mid-body (along the look direction) the hit sphere sits (m).
+@export var melee_reach: float = 1.2
+## An enemy must be within this angle (degrees) of the look direction to be hit, so nothing behind is.
+@export_range(10.0, 120.0, 1.0) var melee_front_degrees: float = 75.0
+## Damage as a share of the enemy's max health.
+@export_range(0.0, 1.0, 0.01) var melee_damage_fraction: float = 0.5
+## The enemy is knocked back with the player's velocity times this.
+@export var melee_knockback_scale: float = 1.0
+## Share of the player's velocity kept after the hit.
+@export_range(0.0, 1.0, 0.01) var melee_momentum_keep: float = 0.1
+## Slow motion after a hit (real seconds). Uses the throw's bullet time scale, ease and audio.
+@export var melee_slowmo_time: float = 0.5
+## Seconds after a hit before the next can land.
+@export var melee_cooldown: float = 0.3
+## Volume of the hit sound (dB).
+@export var melee_volume_db: float = -3.0
