@@ -1,6 +1,6 @@
 # Grapple (launch, swing, reel, rope)
 
-Read this before working on the grapple. Update it at the end of the task (see "Keeping this doc" in `docs/mechanics/README.md`). Name tunables, never their values: the `.tres` files are the source of truth.
+Read this before working on the grapple. Update it at the end of the task (see `docs/mechanics/README.md`). Name tunables, never their values.
 
 **Scripts:** `player/grapple_hook.gd` (`GrappleHook`, owner of the three functions), `swing_rope.gd`, `launch_aim.gd`, `ground_probe.gd`, `grapple_rope.gd`, `rope_sim.gd`, `grapple_sfx.gd`, `hit_stop.gd`, `shake_camera.gd`, `steering.gd` (swing steering), `hud/crosshair.gd`, `hud/reel_bar.gd`, `hud/mode_label.gd`. Tunables: `GrappleStats` (Grapple tab), plus `swing_gravity_scale` and `launch_gravity_*` in `PlayerStats`.
 **Related:** a launch at an enemy and the throw are in `combat.md`. Momentum, gravity, steering in flight and the obstacle assist are in `movement.md`.

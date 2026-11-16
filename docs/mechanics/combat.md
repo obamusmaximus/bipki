@@ -28,7 +28,7 @@ There is no gun. Enemies are thrown, punched at speed, or used as anchors, so co
 - **The player can always veer off a strike.** Air steering stays on during it; steering away ends the guidance instead of being fought.
 
 ## Tried and passed on
-- **Fixed height offset for a launch at an enemy** (`launch_enemy_height_offset`): replaced by `StrikeGuidance`. It missed from above and from past about 20 m: the gravity drop grows with distance, carried momentum bent the line, and drones move. In a headless test in the arena (13 launches: level from 10 to 48 m, from above and below, straight down, falling fast, with sideways momentum, at moving drones), the old offset hit 8 of 13. The guidance hits 13 of 13, and also 13 of 13 with homing off.
+- **Fixed height offset for a launch at an enemy** (`launch_enemy_height_offset`): replaced by `StrikeGuidance`. It missed from above and from past about 20 m: the gravity drop grows with distance, carried momentum bent the line, and drones move. In a headless test of 13 varied launches, the old offset hit 8 and the guidance all 13.
 
 ## Known issues and parked
 - Melee slow-mo and the throw's bullet time are separate `BulletTime` instances. Starting a throw inside the half-second melee slow-mo can make the two fight over `Engine.time_scale` for a moment.
