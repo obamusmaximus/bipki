@@ -1,7 +1,7 @@
 class_name SpeedReadout
 extends Control
 ## Speedometer beside the crosshair: a 180 degree gauge that fills toward the soft speed limit (PlayerStats
-## `soft_speed_limit`, the speed the game levels off near), with the speed in m/s in the middle. The last stretch of the
+## `soft_speed_limit`, the speed the game levels off near), with the horizontal speed (X and Z only, not climbing or falling) in m/s in the middle. The last stretch of the
 ## dial is a red zone; the fill and the number shift from white to orange to red as the speed climbs into it.
 ## Full screen and centred like the crosshair, so it scales around the same point and keeps its distance from it.
 
@@ -30,7 +30,7 @@ func setup(body: CharacterBody3D, player_stats: PlayerStats, hud_stats: HudStats
 func _process(delta: float) -> void:
 	if _body == null:
 		return
-	var speed: float = _body.velocity.length()
+	var speed: float = _horizontal_speed()
 	# Real time like the rest of the HUD: bullet time scales the frame delta.
 	var real_delta: float = delta / maxf(Engine.time_scale, 0.01)
 	var follow: float = 1.0 if _stats.speedometer_smoothing <= 0.0 else 1.0 - exp(-_stats.speedometer_smoothing * real_delta)
@@ -74,13 +74,18 @@ func _draw() -> void:
 	var font: Font = ThemeDB.fallback_font
 	var number_size: int = roundi(s.speedometer_size * 0.34)
 	var unit_size: int = roundi(s.speedometer_size * 0.14)
-	var number: String = str(roundi(_body.velocity.length()))
+	var number: String = str(roundi(_horizontal_speed()))
 	var number_pos := Vector2(center.x - radius, center.y + number_size * 0.3)
 	draw_string_outline(font, number_pos, number, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, number_size, 5, Color(0.0, 0.0, 0.0, 0.8))
 	draw_string(font, number_pos, number, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, number_size, tint.lerp(Color.WHITE, 0.35))
 	var unit_pos := Vector2(center.x - radius, center.y + number_size * 0.3 + unit_size + 3.0)
 	draw_string_outline(font, unit_pos, "m/s", HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, unit_size, 3, Color(0.0, 0.0, 0.0, 0.8))
 	draw_string(font, unit_pos, "m/s", HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, unit_size, Color(1.0, 1.0, 1.0, 0.7))
+
+
+## The speed along the ground plane (X and Z): climbing and falling don't count.
+func _horizontal_speed() -> float:
+	return Vector2(_body.velocity.x, _body.velocity.z).length()
 
 
 ## How far up the dial the eased speed is. 1 is the soft speed limit; it can go past 1 briefly.

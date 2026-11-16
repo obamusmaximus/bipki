@@ -2,7 +2,7 @@ class_name Melee
 extends Node
 ## The body hit: flying into an enemy punches it. It lands when the player is fast enough (`melee_min_speed`),
 ## or at any speed after a launch at an enemy (Player calls `arm`). The hit sphere sits in front of the player
-## along the look direction and is swept between frames, so a fast pass doesn't skip through an enemy.
+## along the look direction (along the flight while armed) and is swept between frames, so a fast pass doesn't skip through an enemy.
 ## On a hit: a metallic ka-ching, a short slow-motion (the throw's bullet time), half the enemy's health
 ## (`melee_damage_fraction`) and the player's momentum handed to the enemy as a knockback.
 ## Signals up: Player reacts to `hit` with the player-side effects (keep a share of the speed, double jump back).
@@ -59,7 +59,10 @@ func _physics_process(delta: float) -> void:
 	_armed_left = maxf(_armed_left - delta, 0.0)
 	if _body.is_on_floor():
 		_armed_left = 0.0
+	# Armed by a launch at an enemy, the hit sphere leads along the flight, so looking around mid-air can't miss.
 	var forward: Vector3 = -_camera.global_basis.z
+	if is_armed() and not _body.velocity.is_zero_approx():
+		forward = _body.velocity.normalized()
 	var mid: Vector3 = _body.global_position + Vector3.UP * MID_BODY
 	var center: Vector3 = mid + forward * stats.melee_reach
 	var from: Vector3 = _last_center if _has_last else center

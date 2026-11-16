@@ -20,17 +20,22 @@ var _hand: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	top_level = true
+	# Turning top_level on keeps the node's current world transform (the player's spawn point), but the ribbons are
+	# built in world coordinates, so the transform must be the identity or the whole rope is drawn offset by it.
+	global_transform = Transform3D.IDENTITY
 	visible = false
 	mesh = _ribbons
 
 
-## Called once by GrappleHook. Builds the hook tip from the stats and rebuilds it when they change.
+## Called once by GrappleHook. Builds the hook tip and colours the rope from the stats, and follows them when they change.
 func setup(grapple_stats: GrappleStats) -> void:
 	stats = grapple_stats
 	_tip = _make_tip()
 	add_child(_tip)
 	_apply_tip_look()
+	_apply_rope_look()
 	stats.changed.connect(_apply_tip_look)
+	stats.changed.connect(_apply_rope_look)
 
 
 ## Starts a decaying wobble, for when the hook bites in.
@@ -164,6 +169,11 @@ func _make_tip() -> MeshInstance3D:
 	halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	tip.add_child(halo)
 	return tip
+
+
+## Colours the rope ribbons from the stats.
+func _apply_rope_look() -> void:
+	(material_override as StandardMaterial3D).albedo_color = stats.rope_color
 
 
 ## Sizes and colours the tip core and its halo from the stats.

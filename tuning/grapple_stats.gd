@@ -21,6 +21,16 @@ extends Resource
 ## Hits within this height of the player's feet count as "the ground plane" and are rejected.
 @export var ground_tolerance: float = 0.1
 
+@export_group("Launch at an enemy")
+## How much of the enemy's motion a launch at it leads (0 aims where it is, 1 where it will be on arrival).
+@export_range(0.0, 1.0, 0.01) var strike_lead: float = 1.0
+## How fast the flight is turned back onto the arc into the enemy (degrees per second). 0 is only the aimed launch.
+@export var strike_turn_rate_degrees: float = 120.0
+## Steering more than this many degrees away from the enemy (seen from above) lets the player veer off: guidance ends.
+@export_range(0.0, 180.0, 1.0) var strike_veer_degrees: float = 60.0
+## Guidance gives up after this many seconds (game time).
+@export var strike_max_time: float = 2.0
+
 @export_group("Hit-stop")
 ## Freeze the game for a split second when the hook attaches, to sell the bite.
 @export var hit_stop_enabled: bool = true
@@ -116,6 +126,8 @@ extends Resource
 @export_group("Rope look")
 ## Rope thickness in metres.
 @export var rope_width: float = 0.03
+## Rope colour and opacity. The default is a translucent grey, which is faint against a light background; make it darker and more opaque there.
+@export var rope_color: Color = Color(0.6, 0.6, 0.6, 0.5)
 ## Ribbon segments along the rope. More is smoother.
 @export var rope_segments: int = 14
 ## Sag of the rope while the tip is in flight, in metres per metre of rope length.

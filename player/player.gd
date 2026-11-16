@@ -11,10 +11,15 @@ extends CharacterBody3D
 @export var minimap_stats: MinimapStats
 @export var arc_stats: TrajectoryArcStats
 
+## Extra seconds of launch gravity past a strike's planned flight time, so a late arrival doesn't drop suddenly.
+const STRIKE_GRAVITY_MARGIN: float = 0.25
+
 ## The player's own gravity (PlayerStats "Gravity"), shared with the TrajectoryPredictor.
 var _gravity: BodyGravity
 ## True after a launch fires or a swing releases: velocity is preserved (no input override) until landing.
 var _keeps_momentum: bool = false
+## Steers a launch at an enemy into it (see StrikeGuidance).
+var _strike: StrikeGuidance
 ## One double jump per airtime; restored on landing.
 var _double_jump_ready: bool = true
 ## True while rising from a jump or double jump, so releasing jump can cut it short.
@@ -46,6 +51,7 @@ var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO]
 func _ready() -> void:
 	# Hand the tuning resources down first: later setup calls and the HUD read them.
 	_gravity = BodyGravity.new(stats)
+	_strike = StrikeGuidance.new(grapple_stats, _gravity)
 	_health.setup(stats.max_health)
 	_head.setup(feel)
 	_camera.setup(feel)
@@ -103,12 +109,14 @@ func _physics_process(delta: float) -> void:
 		_walk_bob.set_walking(false)
 		_footsteps.set_walking(running)
 		_gravity.end_launch()
+		_strike.stop()
 		_jump_rising = false
 		_wall_run.step(delta)
 		return
 
 	if _grapple.is_swinging():
 		_gravity.end_launch()
+		_strike.stop()
 		_jump_rising = false
 		# Standing on the floor at walking pace (not reeling): walk and jump as usual, the rope only stops
 		# the player going further than its length. Faster (a swing grazing the ground) keeps sliding.
@@ -149,7 +157,11 @@ func _physics_process(delta: float) -> void:
 		_cut_jump()
 		# Air steering turns the velocity or adds speed toward the input, so it never cuts the momentum.
 		velocity = Steering.air(velocity, direction, delta, stats)
-		velocity += _assist.get_acceleration(direction) * delta
+		# A strike at an enemy flies into it on purpose, so the obstacle assist stays out of it.
+		if _strike.is_active():
+			velocity = _strike.steer(velocity, global_position + Vector3.UP * Melee.MID_BODY, direction, delta)
+		else:
+			velocity += _assist.get_acceleration(direction) * delta
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		var velocity_before: Vector3 = velocity
 		move_and_slide()
@@ -157,6 +169,7 @@ func _physics_process(delta: float) -> void:
 			return
 		if is_on_floor() and velocity.y <= 0.0:
 			_keeps_momentum = false
+			_strike.stop()
 		_set_walking(false)
 		return
 
@@ -246,19 +259,31 @@ func _on_grapple_launched(launch_velocity: Vector3) -> void:
 	# Fired while standing, lift off the floor, or a launch aimed slightly down would stop dead on it.
 	if is_on_floor() and velocity.y < stats.launch_ground_lift:
 		velocity.y = stats.launch_ground_lift
+	_start_launch_flight()
+
+
+## Launched at an enemy: at the speed a launch straight at it would give (never faster), aimed by StrikeGuidance
+## along an arc into it. The launch gravity lasts the whole flight, which the aim assumes. The body hit is armed.
+func _on_grapple_launched_at_enemy(enemy: Enemy) -> void:
+	var mid: Vector3 = global_position + Vector3.UP * Melee.MID_BODY
+	var toward: Vector3 = (enemy.get_center() - mid).normalized()
+	var speed: float = (velocity * stats.momentum_carry + toward * grapple_stats.launch_speed).length()
+	velocity = _strike.start(enemy, mid, speed)
+	_start_launch_flight(_strike.flight_time(mid, speed) + STRIKE_GRAVITY_MARGIN)
+	_melee.arm()
+
+
+## What every launch shares: momentum flight, lighter gravity for at least `gravity_time`, the FOV kick.
+func _start_launch_flight(gravity_time: float = 0.0) -> void:
 	_keeps_momentum = true
 	_jump_rising = false
-	_gravity.start_launch()
+	_gravity.start_launch(gravity_time)
 	_fov.kick(feel.launch_fov_kick)
-
-
-## Launched at an enemy: the body hit lands on contact whatever the speed.
-func _on_grapple_launched_at_enemy(_enemy: Enemy) -> void:
-	_melee.arm()
 
 
 ## The punch stops the player nearly dead, so the enemy gets the momentum. The double jump comes back.
 func _on_melee_hit(enemy: Enemy, _impact_velocity: Vector3) -> void:
+	_strike.stop()
 	velocity *= stats.melee_momentum_keep
 	_keeps_momentum = true
 	_jump_rising = false

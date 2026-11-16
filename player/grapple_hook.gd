@@ -21,7 +21,7 @@ extends Node3D
 signal attached
 ## Emitted once when a launch connects. The player should add this velocity.
 signal launched(launch_velocity: Vector3)
-## Emitted with `launched` when the launch is at an enemy (RMB tapped on it).
+## Emitted instead of `launched` when the launch is at an enemy (RMB tapped on it). Player aims that launch itself.
 signal launched_at_enemy(enemy: Enemy)
 ## Emitted when an attached hook ends: a launch, or a swing released.
 signal detached
@@ -369,20 +369,21 @@ func _decide_enemy_launch() -> void:
 		_throw.start(_enemy)
 
 
+## On the world, the player gets `launch_speed` toward the launch aim point. On an enemy, Player's StrikeGuidance
+## aims the launch into the enemy instead, so only `launched_at_enemy` is emitted.
 func _launch() -> void:
-	var aim_point: Vector3
 	var target: Enemy = _enemy
-	if target != null:
-		aim_point = target.get_center()
-	else:
+	var aim_point: Vector3 = _hit_point
+	if target == null:
 		aim_point = LaunchAim.aim_point(global_position, _hit_point, camera.global_position,
 				-camera.global_basis.z, stats.launch_height_offset, stats.launch_side_offset)
 	var direction: Vector3 = (aim_point - global_position).normalized()
 	_reset(true)
 	_sfx.play_launch()
-	launched.emit(direction * stats.launch_speed)
 	if target != null:
 		launched_at_enemy.emit(target)
+	else:
+		launched.emit(direction * stats.launch_speed)
 	detached.emit()
 
 

@@ -15,9 +15,10 @@ func _init(player_stats: PlayerStats) -> void:
 	stats = player_stats
 
 
-## A launch just fired: lighter gravity for `launch_gravity_time`.
-func start_launch() -> void:
-	_launch_left = stats.launch_gravity_time
+## A launch just fired: lighter gravity for `launch_gravity_time`, or for `at_least` seconds if longer
+## (a launch at an enemy keeps it for its whole flight, which its aim assumes).
+func start_launch(at_least: float = 0.0) -> void:
+	_launch_left = maxf(stats.launch_gravity_time, at_least)
 
 
 ## Landing, a swing or a wall run ends the launch flight early.

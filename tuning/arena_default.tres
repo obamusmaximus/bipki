@@ -4,8 +4,16 @@
 
 [resource]
 script = ExtResource("1_stats")
-minor_width = 0.049999999999999996
+grain_strength = 0.015
+corner_shade = 0.21
+corner_shade_range = 7.199999999999999
+major_width = 0.15
+central_width = 0.29
+notch_width = 0.06
 notch_width_mid = 0.08
-notch_clear = 3.4
-label_size_mid = 1.000257
-label_size_long = 1.500257
+notch_width_long = 0.13
+notch_length = 0.51
+clear_band = 4.8999999999999995
+label_size_mid = 1.01
+label_size_long = 1.49
+glow_hdr_threshold = 0.8999999999999999
