@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ArenaStats" format=3]
+
+[ext_resource type="Script" path="res://tuning/arena_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+minor_width = 0.049999999999999996
+notch_width_mid = 0.08
+notch_clear = 3.4
+label_size_mid = 1.000257
+label_size_long = 1.500257

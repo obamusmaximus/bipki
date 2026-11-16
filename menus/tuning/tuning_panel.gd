@@ -15,8 +15,9 @@ const TABS: Dictionary = {
 	"Player": ["PlayerStats"],
 	"Camera": ["CameraFeel", "HudStats"],
 	"Grapple": ["GrappleStats"],
-	"Drone": ["DroneStats"],
+	"Drone": ["DroneStats", "AttackCoordinatorStats"],
 	"HUD": ["MinimapStats", "TrajectoryArcStats"],
+	"Level": ["ArenaStats", "SpawnerStats"],
 }
 const MAX_TAB_HEIGHT: float = 460.0
 const MAX_WIDTH: float = 780.0

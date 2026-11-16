@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="first"
-run/main_scene="res://levels/city/city.tscn"
+run/main_scene="res://levels/arena/arena.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
