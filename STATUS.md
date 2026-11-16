@@ -4,7 +4,7 @@ Read at the start of every session. Update at the end. Keep it short. Mechanics 
 
 **Playtesting:** the user playtests thoroughly after every feature. If they don't mention a feature, it works as intended. Don't label things "not playtested".
 
-_Last updated: 2026-11-16 (branch `core-v2`: swing rope no longer reels itself in on the ground, player weight (own gravity, fall gravity, jump cut), melee body hit with knockback, head-on wall latch (camera turn to run), hit-stop on attach, ground-launch lift; swing turn rate tried and switched off, enemies on the minimap; drones spread out around the player, seeking range, staggered beams, random drone spawns)_
+_Last updated: 2026-11-16 (`core-v2` work, now on `main`: swing rope no longer reels itself in on the ground, player weight (own gravity, fall gravity, jump cut), melee body hit with knockback, head-on wall latch (camera turn to run), hit-stop on attach, ground-launch lift; swing turn rate tried and switched off, enemies on the minimap; drones spread out around the player, seeking range, staggered beams, random drone spawns)_
 
 ## Current state
 - **Main scene:** `levels/city/city.tscn`, a seeded procedural city about 400 m across on a 1000 m grass ground, fogged at the edge. Built at runtime by `CityGenerator`. Golden-hour look.
@@ -60,4 +60,4 @@ _Last updated: 2026-11-16 (branch `core-v2`: swing rope no longer reels itself i
 7. **Code:** move sound parameters out of `_ready`. Ask before any Asset Library or addon use.
 
 ## Project layout
-Feature folders: `hud/`, `menus/`, `effects/`, `player/`, `enemy/`, `levels/`, `world/`, `tuning/`. Git repo with no remote; work happens on feature branches off `main` (one topic per branch). `swinging-v2-and-combat-v1` is merged into `main`; the current branch is `core-v2` (ironing out core gameplay feel).
+Feature folders: `hud/`, `menus/`, `effects/`, `player/`, `enemy/`, `levels/`, `world/`, `tuning/`. Remote: GitHub `origin` (`obamusmaximus/bipki`). Work happens on feature branches off `main` (one topic per branch); finished branches are merged and deleted. Everything up to `core-v2` is in `main`. The current branch is `core-v3` (ironing out core gameplay feel, continued).
