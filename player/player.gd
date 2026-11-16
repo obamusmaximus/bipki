@@ -72,7 +72,7 @@ func _ready() -> void:
 	_lean.setup(self, feel)
 	_fov.setup(self, feel)
 	_landing.setup(self)
-	_hud.setup(self, _grapple, _health, hud_stats, minimap_stats)
+	_hud.setup(self, _grapple, _health, stats, hud_stats, minimap_stats)
 	_hud.setup_arc(_camera, _predictor, self, arc_stats)
 	_hud.setup_throw(_grapple.get_throw(), _camera, arc_stats)
 	_hud.setup_damage_numbers(_camera)

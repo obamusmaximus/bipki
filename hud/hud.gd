@@ -8,7 +8,7 @@ extends CanvasLayer
 @onready var _bottom_left: VBoxContainer = $BottomLeft
 @onready var _mode_label: ModeLabel = $BottomCenter/ModeLabel
 @onready var _reel_bar: ReelBar = $BottomCenter/ReelBar
-@onready var _speed: SpeedReadout = $BottomLeft/SpeedReadout
+@onready var _speed: SpeedReadout = $SpeedReadout
 @onready var _damage_flash: DamageFlash = $DamageFlash
 @onready var _health_bar: HealthBar = $BottomLeft/HealthBar
 @onready var _death_screen: DeathScreen = $DeathScreen
@@ -18,7 +18,7 @@ extends CanvasLayer
 var stats: HudStats
 
 
-func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, hud_stats: HudStats, minimap_stats: MinimapStats) -> void:
+func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, player_stats: PlayerStats, hud_stats: HudStats, minimap_stats: MinimapStats) -> void:
 	stats = hud_stats
 	_minimap.setup(body, minimap_stats)
 	stats.changed.connect(_apply_scale)
@@ -29,7 +29,7 @@ func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, hud_stats: 
 	_crosshair.setup(hook)
 	_mode_label.setup(hook)
 	_reel_bar.setup(hook)
-	_speed.setup(body)
+	_speed.setup(body, player_stats, hud_stats)
 
 
 ## Gives the trajectory arc what it needs. A separate call from setup() because the predictor is set up later.
@@ -63,6 +63,7 @@ func set_city(boxes: Array[AABB]) -> void:
 func _apply_scale() -> void:
 	var anchors: Dictionary = {
 		_crosshair: Vector2(0.5, 0.5),
+		_speed: Vector2(0.5, 0.5),
 		_bottom_center: Vector2(0.5, 1.0),
 		_bottom_left: Vector2(0.0, 1.0),
 		_minimap: Vector2(1.0, 0.0),

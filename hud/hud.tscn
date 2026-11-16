@@ -44,6 +44,16 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_cross")
 
+[node name="SpeedReadout" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_speed")
+
 [node name="BottomCenter" type="VBoxContainer" parent="."]
 anchors_preset = -1
 anchor_left = 0.5
@@ -85,15 +95,6 @@ offset_bottom = -24.0
 grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/separation = 16
-
-[node name="SpeedReadout" type="Label" parent="BottomLeft"]
-custom_minimum_size = Vector2(160, 28)
-layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-script = ExtResource("5_speed")
 
 [node name="HealthBar" type="Control" parent="BottomLeft"]
 custom_minimum_size = Vector2(200, 16)
