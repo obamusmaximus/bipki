@@ -19,6 +19,8 @@ const STRIKE_GRAVITY_MARGIN: float = 0.25
 
 ## The player's own gravity (PlayerStats "Gravity"), shared with the TrajectoryPredictor.
 var _gravity: BodyGravity
+## Grace window after a fast landing that lets a jump keep the speed (see Bunnyhop).
+var _bunnyhop: Bunnyhop
 ## True after a launch fires or a swing releases: velocity is preserved (no input override) until landing.
 var _keeps_momentum: bool = false
 ## Steers a launch at an enemy into it (see StrikeGuidance).
@@ -59,6 +61,7 @@ func _ready() -> void:
 	add_to_group(&"playtest_probe")
 	# Hand the tuning resources down first: later setup calls and the HUD read them.
 	_gravity = BodyGravity.new(stats)
+	_bunnyhop = Bunnyhop.new(stats)
 	_strike = StrikeGuidance.new(grapple_stats, _gravity)
 	_health.setup(stats.max_health)
 	_head.setup(feel)
@@ -107,6 +110,7 @@ func _physics_process(delta: float) -> void:
 		if velocity.y <= 0.0:
 			_gravity.end_launch()
 	_gravity.tick(delta)
+	_bunnyhop.tick(delta, is_on_floor())
 	_grapple.wall_normals = PackedVector3Array([_walls[0], _walls[1], _wall_run.get_normal() if _wall_run.is_active() else Vector3.ZERO])
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
@@ -139,7 +143,8 @@ func _physics_process(delta: float) -> void:
 			_swing_airborne = false
 			# The swing's speed doesn't carry into walking, which is hard capped: this is a walking frame.
 			_keeps_momentum = false
-			_ground_move(direction)
+			_bunnyhop.land(velocity)
+			_ground_step(direction)
 			_forces.mark(&"walk", velocity)
 			move_and_slide()
 			_forces.mark(&"collision", velocity)
@@ -210,11 +215,12 @@ func _physics_process(delta: float) -> void:
 		if is_on_floor() and velocity.y <= 0.0:
 			_keeps_momentum = false
 			_strike.stop()
+			_bunnyhop.land(velocity)
 		_set_walking(false)
 		return
 
 	if is_on_floor():
-		_ground_move(direction)
+		_ground_step(direction)
 		_forces.mark(&"walk", velocity)
 	else:
 		velocity.y -= _gravity.air(velocity.y) * delta
@@ -235,7 +241,20 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_forces.mark(&"collision", velocity)
 	_wall_run.try_start(velocity_before)
-	_set_walking(is_on_floor() and not direction.is_zero_approx())
+	_set_walking(is_on_floor() and not direction.is_zero_approx() and not _bunnyhop.is_open())
+
+
+## On the floor: inside the bunnyhop window the speed is kept and a jump hops with it, otherwise walk as usual.
+func _ground_step(direction: Vector3) -> void:
+	if not _bunnyhop.is_open():
+		_ground_move(direction)
+		return
+	velocity.y = 0.0
+	if _bunnyhop.wants_hop():
+		velocity = _bunnyhop.hop(velocity)
+		_keeps_momentum = true
+		_jump_rising = true
+		playtest_event.emit(&"bunnyhop", {"velocity": velocity})
 
 
 ## On the floor: walk at move_speed in the input direction, and jump.

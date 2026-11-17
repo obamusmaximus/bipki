@@ -12,7 +12,7 @@ _Last updated: 2026-11-17_
 | Grapple (launch, swing, reel, rope) | `grapple.md` | Launch, swing with reel momentum, rope retract, hit-stop, ground-launch lift, swing works on the ground, separate swing gravity before and after the low point of the arc, tunable `rope_color`. |
 | Combat | `combat.md` | Enemy lock, guided launch at an enemy (`StrikeGuidance`), melee with knockback, bullet-time throw with release prediction, damage numbers. |
 | Drones | `drones.md` | Ring slots, seeking range, attack coordinator, opening delay, random city drones, recovery flies back into open air. |
-| Movement | `movement.md` | Player gravity, air turn-rate steering, air drag, soft speed limit, wall run (accelerates, compressor above the max) and head-on latch (jump launches straight back), obstacle assist, trajectory arc, camera feel. |
+| Movement | `movement.md` | Player gravity, air turn-rate steering, air drag, soft speed limit, wall run (accelerates, compressor above the max) and head-on latch (jump launches straight back), bunnyhop (grace window after landing keeps speed on a jump), obstacle assist, trajectory arc, camera feel. |
 | Levels, HUD, menus | `levels_and_hud.md` | Arena is the main scene; city still loadable. Speedometer dial (horizontal speed), minimap with enemies, tuning panel with a Level tab. |
 
 ## Current goals

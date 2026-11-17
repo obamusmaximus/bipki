@@ -91,6 +91,17 @@ extends Resource
 ## Fraction of speed lost per second while airborne or swinging, on at any speed (below the soft limit too). 0 = off. Keeps flight from feeling static.
 @export_range(0.0, 0.5, 0.005) var air_drag: float = 0.05
 
+@export_group("Bunnyhop")
+## Landing with more than walking speed opens a grace window: speed is kept instead of being set to move_speed,
+## and a jump inside it leaves the ground with that speed. Off: every landing sets walking speed.
+@export var bunnyhop_enabled: bool = true
+## Seconds of grace after landing in which a jump keeps the speed. Then the landing sets walking speed.
+@export var bunnyhop_window: float = 0.15
+## A jump pressed this many seconds before landing still counts as a hop.
+@export var bunnyhop_buffer_time: float = 0.12
+## Share of the speed above move_speed kept by a hop. 1 keeps it all; less bleeds speed on every hop.
+@export_range(0.0, 1.0, 0.01) var bunnyhop_speed_keep: float = 0.95
+
 @export_group("Wall run")
 ## Horizontal speed (m/s) needed to latch onto a wall.
 @export var wall_run_min_speed: float = 12.0
