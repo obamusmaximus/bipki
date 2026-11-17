@@ -59,11 +59,13 @@ light_energy = 1.5
 shadow_enabled = true
 
 [node name="Ground" parent="." unique_id=456383441 instance=ExtResource("2_ground")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14733505, 0.19155979, -0.05908394)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+metadata/_edit_lock_ = true
 
 [node name="CityGenerator" type="Node3D" parent="." unique_id=126174780]
 script = ExtResource("3_generator")
 settings = SubResource("Resource_bl6cj")
+metadata/_edit_lock_ = true
 
 [node name="Player" parent="." unique_id=770892310 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

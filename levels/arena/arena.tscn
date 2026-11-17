@@ -87,48 +87,59 @@ transform = Transform3D(-0.9397, -0.0827, 0.3319, 0, 0.9703, 0.2419, -0.342, 0.2
 light_energy = 0.6
 
 [node name="Room" type="StaticBody3D" parent="." unique_id=2008580457]
+metadata/_edit_lock_ = true
 
 [node name="Grid" type="MeshInstance3D" parent="Room" unique_id=46959688]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.070103, 50.47258, 50.120697)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, 50)
 material_override = SubResource("ShaderMaterial_grid")
 transparency = 1.0
 cast_shadow = 0
 mesh = SubResource("BoxMesh_room")
+metadata/_edit_lock_ = true
 
 [node name="Floor" type="CollisionShape3D" parent="Room" unique_id=2133709958]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -1, 50)
 shape = SubResource("BoxShape3D_floor")
+metadata/_edit_lock_ = true
 
 [node name="Ceiling" type="CollisionShape3D" parent="Room" unique_id=982106680]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 101, 50)
 shape = SubResource("BoxShape3D_floor")
+metadata/_edit_lock_ = true
 
 [node name="WallEast" type="CollisionShape3D" parent="Room" unique_id=373987771]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101, 50, 50)
 shape = SubResource("BoxShape3D_wall_x")
+metadata/_edit_lock_ = true
 
 [node name="WallWest" type="CollisionShape3D" parent="Room" unique_id=1755085513]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 50, 50)
 shape = SubResource("BoxShape3D_wall_x")
+metadata/_edit_lock_ = true
 
 [node name="WallSouth" type="CollisionShape3D" parent="Room" unique_id=555357434]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, 101)
 shape = SubResource("BoxShape3D_wall_z")
+metadata/_edit_lock_ = true
 
 [node name="WallNorth" type="CollisionShape3D" parent="Room" unique_id=2141440178]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, -1)
 shape = SubResource("BoxShape3D_wall_z")
+metadata/_edit_lock_ = true
 
 [node name="Pillar" type="StaticBody3D" parent="." unique_id=872623461]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, 50)
+metadata/_edit_lock_ = true
 
 [node name="Mesh" type="MeshInstance3D" parent="Pillar" unique_id=28235556]
 material_override = SubResource("StandardMaterial3D_pillar")
 cast_shadow = 0
 mesh = SubResource("BoxMesh_pillar")
+metadata/_edit_lock_ = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar" unique_id=651401048]
 shape = SubResource("BoxShape3D_pillar")
+metadata/_edit_lock_ = true
 
 [node name="Player" parent="." unique_id=477953265 instance=ExtResource("4_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 1, 80)
