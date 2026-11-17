@@ -1,38 +1,31 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://u8ncb71nfxdt"]
 
-[ext_resource type="Script" path="res://levels/arena/arena_level.gd" id="1_level"]
-[ext_resource type="Script" path="res://levels/arena/arena_look.gd" id="2_look"]
-[ext_resource type="Script" path="res://levels/arena/arena_scale.gd" id="9_scale"]
-[ext_resource type="Shader" path="res://levels/arena/grid.gdshader" id="3_shader"]
+[ext_resource type="Script" uid="uid://duyohffxhc1x3" path="res://levels/arena/arena_level.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://fltstca6nsml" path="res://levels/arena/arena_look.gd" id="2_look"]
+[ext_resource type="Shader" uid="uid://cpff8wqxvc0jc" path="res://levels/arena/grid.gdshader" id="3_shader"]
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="4_player"]
 [ext_resource type="PackedScene" path="res://enemy/drone.tscn" id="5_drone"]
-[ext_resource type="Script" path="res://enemy/enemy_spawner.gd" id="6_spawner"]
+[ext_resource type="Script" uid="uid://fmm7vi4je7og" path="res://enemy/enemy_spawner.gd" id="6_spawner"]
 [ext_resource type="Resource" path="res://tuning/arena_default.tres" id="7_arena"]
 [ext_resource type="Resource" path="res://tuning/spawner_default.tres" id="8_spawner_stats"]
-[ext_resource type="Script" path="res://enemy/attack_coordinator.gd" id="10_coord"]
+[ext_resource type="Script" uid="uid://djg0gqbxmyoya" path="res://levels/arena/arena_scale.gd" id="9_scale"]
+[ext_resource type="Script" uid="uid://e11qoechttmb" path="res://enemy/attack_coordinator.gd" id="10_coord"]
 [ext_resource type="Resource" path="res://tuning/attack_coordinator_default.tres" id="11_coord_stats"]
 
 [sub_resource type="Environment" id="Environment_arena"]
 background_mode = 1
-background_color = Color(0, 0, 0, 1)
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.9
-glow_enabled = true
+glow_enabled = false
 glow_blend_mode = 0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
+render_priority = 0
 shader = ExtResource("3_shader")
 
 [sub_resource type="BoxMesh" id="BoxMesh_room"]
 size = Vector3(100, 100, 100)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pillar"]
-albedo_color = Color(1, 0.42, 0.08, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_pillar"]
-size = Vector3(5, 100, 5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
 size = Vector3(104, 2, 104)
@@ -43,83 +36,90 @@ size = Vector3(2, 100, 100)
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_z"]
 size = Vector3(104, 100, 2)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pillar"]
+albedo_color = Color(1, 0.42, 0.08, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_pillar"]
+size = Vector3(5, 100, 5)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_pillar"]
 size = Vector3(5, 100, 5)
 
-[node name="Arena" type="Node3D"]
+[node name="Arena" type="Node3D" unique_id=1275679789]
 script = ExtResource("1_level")
 stats = ExtResource("7_arena")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=576982048]
 environment = SubResource("Environment_arena")
 
-[node name="AttackCoordinator" type="Node" parent="."]
+[node name="AttackCoordinator" type="Node" parent="." unique_id=298711438]
 script = ExtResource("10_coord")
 stats = ExtResource("11_coord_stats")
 
-[node name="Look" type="Node" parent="."]
+[node name="Look" type="Node" parent="." unique_id=36424243]
 script = ExtResource("2_look")
 
-[node name="Scale" type="Node3D" parent="."]
+[node name="Scale" type="Node3D" parent="." unique_id=647669227]
 script = ExtResource("9_scale")
 
-[node name="Light" type="DirectionalLight3D" parent="."]
+[node name="Light" type="DirectionalLight3D" parent="." unique_id=371397731]
 transform = Transform3D(-0.9397, -0.0827, 0.3319, 0, 0.9703, 0.2419, -0.342, 0.2273, -0.9118, 50, 100, 50)
 light_energy = 0.6
 
-[node name="Room" type="StaticBody3D" parent="."]
+[node name="Room" type="StaticBody3D" parent="." unique_id=2008580457]
 
-[node name="Grid" type="MeshInstance3D" parent="Room"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, 50)
+[node name="Grid" type="MeshInstance3D" parent="Room" unique_id=46959688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.070103, 50.47258, 50.120697)
 material_override = SubResource("ShaderMaterial_grid")
 cast_shadow = 0
 mesh = SubResource("BoxMesh_room")
 
-[node name="Floor" type="CollisionShape3D" parent="Room"]
+[node name="Floor" type="CollisionShape3D" parent="Room" unique_id=2133709958]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -1, 50)
 shape = SubResource("BoxShape3D_floor")
 
-[node name="Ceiling" type="CollisionShape3D" parent="Room"]
+[node name="Ceiling" type="CollisionShape3D" parent="Room" unique_id=982106680]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 101, 50)
 shape = SubResource("BoxShape3D_floor")
 
-[node name="WallEast" type="CollisionShape3D" parent="Room"]
+[node name="WallEast" type="CollisionShape3D" parent="Room" unique_id=373987771]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101, 50, 50)
 shape = SubResource("BoxShape3D_wall_x")
 
-[node name="WallWest" type="CollisionShape3D" parent="Room"]
+[node name="WallWest" type="CollisionShape3D" parent="Room" unique_id=1755085513]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 50, 50)
 shape = SubResource("BoxShape3D_wall_x")
 
-[node name="WallSouth" type="CollisionShape3D" parent="Room"]
+[node name="WallSouth" type="CollisionShape3D" parent="Room" unique_id=555357434]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, 101)
 shape = SubResource("BoxShape3D_wall_z")
 
-[node name="WallNorth" type="CollisionShape3D" parent="Room"]
+[node name="WallNorth" type="CollisionShape3D" parent="Room" unique_id=2141440178]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, -1)
 shape = SubResource("BoxShape3D_wall_z")
 
-[node name="Pillar" type="StaticBody3D" parent="."]
+[node name="Pillar" type="StaticBody3D" parent="." unique_id=872623461]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50, 50)
 
-[node name="Mesh" type="MeshInstance3D" parent="Pillar"]
+[node name="Mesh" type="MeshInstance3D" parent="Pillar" unique_id=28235556]
 material_override = SubResource("StandardMaterial3D_pillar")
 cast_shadow = 0
 mesh = SubResource("BoxMesh_pillar")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar" unique_id=651401048]
 shape = SubResource("BoxShape3D_pillar")
 
-[node name="Player" parent="." instance=ExtResource("4_player")]
+[node name="Player" parent="." unique_id=477953265 instance=ExtResource("4_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 1, 80)
 
-[node name="SpawnerA" type="Marker3D" parent="."]
+[node name="SpawnerA" type="Marker3D" parent="." unique_id=488277355]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 40, 30)
 script = ExtResource("6_spawner")
 enemy_scene = ExtResource("5_drone")
 stats = ExtResource("8_spawner_stats")
 
-[node name="SpawnerB" type="Marker3D" parent="."]
+[node name="SpawnerB" type="Marker3D" parent="." unique_id=1445812217]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 60, 70)
 script = ExtResource("6_spawner")
 enemy_scene = ExtResource("5_drone")
