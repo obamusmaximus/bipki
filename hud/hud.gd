@@ -1,6 +1,6 @@
 class_name Hud
 extends CanvasLayer
-## The first-person HUD: crosshair, grapple mode, rope reel bar, speed, health bar, lives, damage flash, rewind flash
+## The first-person HUD: crosshair, grapple mode, rope reel bar, speed, health bar, lives, damage flash
 ## and death screen. Each element has its own
 ## script; this node only hands them what they read.
 
@@ -17,7 +17,6 @@ extends CanvasLayer
 @onready var _arc: TrajectoryArc = $TrajectoryArc
 
 var stats: HudStats
-var _rewind_flash: RewindFlash
 
 
 func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, player_stats: PlayerStats, hud_stats: HudStats, minimap_stats: MinimapStats) -> void:
@@ -54,21 +53,12 @@ func setup_damage_numbers(camera: Camera3D) -> void:
 	numbers.setup(camera, stats)
 
 
-## Pips for the lives left, above the health bar, and the flash a rewind plays.
+## Pips for the lives left, above the health bar.
 func setup_lives(lives: Lives) -> void:
 	var readout := LivesReadout.new()
 	_bottom_left.add_child(readout)
 	_bottom_left.move_child(readout, 0)
 	readout.setup(lives)
-	_rewind_flash = RewindFlash.new()
-	add_child(_rewind_flash)
-	move_child(_rewind_flash, _damage_flash.get_index() + 1)
-
-
-## A death was rewound.
-func show_rewind() -> void:
-	if _rewind_flash != null:
-		_rewind_flash.play()
 
 
 ## The last life is gone: freeze the game behind the death screen.

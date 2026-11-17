@@ -164,6 +164,11 @@ func rewind_restore(saved: Dictionary, _rewind: Rewind) -> void:
 	_restore_ai(saved[&"ai"])
 
 
+## Where the playback of a rewind has the enemy between two snapshots.
+func rewind_pose(from: Dictionary, to: Dictionary, weight: float, span: float) -> void:
+	global_transform = RewindScrub.transform_between(from, to, weight, span)
+
+
 ## The enemy type's own state for a rewind snapshot (plain values only).
 func _capture_ai() -> Dictionary:
 	return {}

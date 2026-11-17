@@ -58,6 +58,8 @@ var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO]
 ## Debug: this frame's velocity change split by cause, for the playtest log.
 var _forces := VelocityLedger.new()
 var _lives: Lives
+## True from a death that rewinds until the restore: the body coasts with no input while time slows to a stop.
+var _downed: bool = false
 
 
 func _ready() -> void:
@@ -110,6 +112,9 @@ func show_city(boxes: Array[AABB]) -> void:
 
 func _physics_process(delta: float) -> void:
 	_forces.begin(velocity)
+	if _downed:
+		_coast(delta)
+		return
 	if is_on_floor():
 		_double_jump_ready = true
 		# A launch fired while standing still reports the floor this frame; it isn't a landing.
@@ -248,6 +253,18 @@ func _physics_process(delta: float) -> void:
 	_forces.mark(&"collision", velocity)
 	_wall_run.try_start(velocity_before)
 	_set_walking(is_on_floor() and not direction.is_zero_approx() and not _bunnyhop.is_open())
+
+
+## Dead, waiting for the rewind: falls and keeps its momentum with no input, so the slow-down shows the body carrying on.
+func _coast(delta: float) -> void:
+	if is_on_floor():
+		velocity.x = 0.0
+		velocity.z = 0.0
+	else:
+		velocity.y -= _gravity.air(velocity.y) * delta
+		velocity = AirDrag.apply(velocity, delta, stats)
+	move_and_slide()
+	_forces.mark(&"coast", velocity)
 
 
 ## On the floor: inside the bunnyhop window the speed is kept and a jump hops with it, otherwise walk as usual.
@@ -392,11 +409,31 @@ func _on_died() -> void:
 	var rewinding: bool = _lives.spend() and not rewind_requested.get_connections().is_empty()
 	playtest_event.emit(&"died", {"lives_left": _lives.get_left(), "rewinding": rewinding})
 	if rewinding:
+		_go_down()
 		rewind_requested.emit()
 		return
 	_grapple.get_throw().cancel()
 	_pause_menu.set_process_unhandled_input(false)
 	_hud.show_death_screen()
+
+
+## A death that rewinds: the hook goes away, input and the body hit stop until the restore (`_set_active` brings them back).
+func _go_down() -> void:
+	_downed = true
+	_grapple.abort()
+	_strike.stop()
+	_melee.reset()
+	_wall_run.cancel(false)
+	_set_walking(false)
+	_set_active(false)
+
+
+## Mouse look, firing the hook, the pause menu and the body hit (a dead body coasting into an enemy doesn't punch it).
+func _set_active(enabled: bool) -> void:
+	_head.set_process_unhandled_input(enabled)
+	_melee.set_physics_process(enabled)
+	_grapple.set_physics_process(enabled)
+	_pause_menu.set_process_unhandled_input(enabled)
 
 
 ## The player's part of a rewind snapshot (see `Rewind`). Lives are not in it. Neither is the hook: the buttons that
@@ -434,8 +471,15 @@ func rewind_restore(state: Dictionary, _rewind: Rewind) -> void:
 	_health.restore(state[&"health"])
 	_wall_run.rewind_restore(state[&"wall_run"])
 	_lean.set_wall_side(_wall_run.get_side() if _wall_run.is_active() else 0.0)
-	_hud.show_rewind()
+	_downed = false
+	_set_active(true)
 	playtest_event.emit(&"rewound", {"lives_left": _lives.get_left()})
+
+
+## Where the playback of a rewind has the player between two snapshots: the body and the look's pitch.
+func rewind_pose(from: Dictionary, to: Dictionary, weight: float, span: float) -> void:
+	global_transform = RewindScrub.transform_between(from, to, weight, span)
+	_head.set_pitch(lerpf(from[&"pitch"], to[&"pitch"], weight))
 
 
 ## Debug: what the playtest log records about the player each physics frame (debug/playtest_log/).

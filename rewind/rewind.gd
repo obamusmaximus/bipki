@@ -2,6 +2,8 @@ class_name Rewind
 extends Node
 ## Sets the level back `rewind_seconds` of game time: the player, the enemies and anything else that takes part.
 ## One per level, owned by the level, which calls `rewind()` when the player dies with a life left.
+## A rewind is played, not cut: `RewindSequence` slows time to a stop, then the level is posed backwards through the
+## snapshots (`RewindScrub`) to the saved moment, and only then restored for real.
 ##
 ## It keeps a ring buffer of snapshots, one every `snapshot_interval`, and only as many as the rewind needs, so the
 ## memory is bounded whatever the level's size and the cost is one pass over the rewindable nodes per snapshot.
@@ -44,29 +46,42 @@ var _pending: bool = false
 ## Id to node while a restore runs, for `find()`.
 var _live: Dictionary[int, Node] = {}
 var _scenes: Dictionary[String, PackedScene] = {}
+## The game time of the death's standstill and of the saved moment, while the trip back plays.
+var _from_time: float = 0.0
+var _to_time: float = 0.0
+var _scrub: RewindScrub
+var _sequence: RewindSequence
 
 
 func _ready() -> void:
 	# Last in the physics order, so a snapshot sees the frame's finished moves.
 	process_physics_priority = 1000
+	_sequence = RewindSequence.new()
+	_sequence.setup(stats)
+	add_child(_sequence)
+	_sequence.stopped.connect(_on_stopped)
+	_sequence.progressed.connect(_on_progressed)
+	_sequence.arrived.connect(_on_arrived)
 
 
 func _physics_process(delta: float) -> void:
+	# The clock runs on while time slows after a death, so the trip back starts from where the world got to.
+	_clock += delta
 	if _pending:
 		return
-	_clock += delta
 	_since_capture += delta
 	if _snapshots.is_empty() or _since_capture >= stats.snapshot_interval:
 		_capture()
 
 
-## Sets the level back. Runs at the end of the frame, outside any node's physics step, so nodes can be freed and
-## made safely. A second call before then is ignored.
+## Sets the level back: time slows to a stop, plays back to the saved moment, and the level is restored there.
+## Nothing changes in the tree until time stands still, so this is safe from inside a physics step. A second call
+## before the restore is ignored.
 func rewind() -> void:
 	if _pending or _snapshots.is_empty():
 		return
 	_pending = true
-	_restore.call_deferred()
+	_sequence.play()
 
 
 ## The node with rewind id `id` while a restore runs, or null.
@@ -74,8 +89,9 @@ func find(id: int) -> Node:
 	return _live.get(id, null)
 
 
-## Every rewindable node's state now. Ids are handed out first, so a state can name any other node.
-func _capture() -> void:
+## Every rewindable node's state now. Ids are handed out first, so a state can name any other node. `trim` false keeps
+## the oldest snapshots (the trip back's one, taken after the death, must not drop the saved moment).
+func _capture(trim: bool = true) -> void:
 	_since_capture = 0.0
 	var nodes: Array[Node] = _rewindable_nodes()
 	for node: Node in nodes:
@@ -90,7 +106,7 @@ func _capture() -> void:
 			snapshot.origins[id] = node.get_meta(ORIGIN_META)
 	_snapshots.append(snapshot)
 	# Keep only one snapshot at least `rewind_seconds` old: the one a rewind now would use.
-	while _snapshots.size() > 1 and _snapshots[1].time <= _clock - stats.rewind_seconds:
+	while trim and _snapshots.size() > 1 and _snapshots[1].time <= _clock - stats.rewind_seconds:
 		_snapshots.pop_front()
 
 
@@ -114,8 +130,43 @@ func _assign_id(node: Node) -> void:
 		node.set_meta(ORIGIN_META, origin)
 
 
+## Time stands still and the tree is paused. The world as it is now becomes the trip back's first frame, and every node
+## killed since the saved moment is made again (hidden until the playback reaches the last moment it was alive).
+func _on_stopped() -> void:
+	_capture(false)
+	_from_time = _snapshots[-1].time
+	_to_time = _snapshots[0].time
+	var live: Dictionary[int, Node] = {}
+	for node: Node in _rewindable_nodes():
+		live[node.get_meta(ID_META)] = node
+	# Newest first, so a node remade gets the last origin it had.
+	for i: int in range(_snapshots.size() - 1, -1, -1):
+		var snapshot: RewindSnapshot = _snapshots[i]
+		for id: int in snapshot.origins:
+			if not live.has(id):
+				var made: Node = _recreate(id, snapshot.origins[id])
+				if made != null:
+					live[id] = made
+	_scrub = RewindScrub.new(_snapshots, live)
+	_scrub.pose_at(_from_time)
+
+
+func _on_progressed(weight: float) -> void:
+	if _scrub != null:
+		_scrub.pose_at(lerpf(_from_time, _to_time, weight))
+
+
+## At the saved moment: the playback's poses give way to the real restore.
+func _on_arrived() -> void:
+	if _scrub != null:
+		_scrub.finish()
+		_scrub = null
+	_restore()
+
+
 ## The newest snapshot at least `rewind_seconds` old (or the oldest, early in the level). Newer ones are the undone
-## future and are dropped; the clock goes back to the snapshot's time.
+## future and are dropped; the clock goes back to the snapshot's time. Nodes the playback already remade are kept;
+## any still missing are made here.
 func _restore() -> void:
 	_pending = false
 	var snapshot: RewindSnapshot = _snapshots[0]
