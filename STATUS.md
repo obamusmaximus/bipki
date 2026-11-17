@@ -34,5 +34,5 @@ _Last updated: 2026-11-17_
 7. **Code:** move sound parameters out of `_ready`.
 
 ## Layout and branches
-- Feature folders: `player/`, `enemy/`, `hud/`, `menus/` (`menus/tuning/` builds the tuning panel from the stats resources), `effects/`, `levels/arena/`, `levels/city/`, `world/`, `tuning/`. Each mechanic doc lists its scripts. Headless test notes: `docs/testing.md`.
+- Feature folders: `player/`, `enemy/`, `hud/`, `menus/`, `effects/`, `levels/arena/`, `levels/city/`, `world/`, `tuning/`, `debug/` (dev-only tools: `debug/tuning/` builds the tuning panel from the stats resources; the playtest log, `docs/playtest_log.md`). Each mechanic doc lists its scripts. Headless test notes: `docs/testing.md`.
 - Remote: GitHub `origin` (`obamusmaximus/bipki`). Work happens on feature branches off `main` (one topic per branch); finished branches are merged and deleted. Everything up to `core-v3` is in `main`. The current branch is `core-v4` (core gameplay feel, continued).

@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://menus/tuning/tuning_panel.gd" id="1_panel"]
+[ext_resource type="Script" path="res://debug/tuning/tuning_panel.gd" id="1_panel"]
 
 [node name="TuningPanel" type="PanelContainer"]
 custom_minimum_size = Vector2(780, 0)

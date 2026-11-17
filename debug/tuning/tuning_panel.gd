@@ -1,7 +1,7 @@
 class_name TuningPanel
 extends PanelContainer
-## Debug panel (opened from the pause menu) for tuning the game while testing it. Tabs: Player, Camera (camera feel and
-## HUD scale), Grapple, Drone, HUD (minimap and trajectory arc). Each tab shows the stats resources of its classes found in `res://tuning/`, with one foldable
+## Debug: the panel (opened from the pause menu) for tuning the game while testing it. Tabs: Player, Camera (camera feel and
+## HUD scale), Grapple, Drone, HUD (minimap and trajectory arc), Level, Debug (playtest log). Each tab shows the stats resources of its classes found in `res://tuning/`, with one foldable
 ## sub-label per `@export_group` (see TuningFields). Values change live; Save writes the current tab's
 ## resources back to their .tres files, Reset reloads them from disk.
 ## To add a new stats resource, put its .tres in `tuning/` and list its class in TABS.
@@ -18,6 +18,7 @@ const TABS: Dictionary = {
 	"Drone": ["DroneStats", "AttackCoordinatorStats"],
 	"HUD": ["MinimapStats", "TrajectoryArcStats"],
 	"Level": ["ArenaStats", "SpawnerStats"],
+	"Debug": ["PlaytestLogStats"],
 }
 const MAX_TAB_HEIGHT: float = 460.0
 const MAX_WIDTH: float = 780.0
