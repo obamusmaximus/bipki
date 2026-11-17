@@ -96,8 +96,16 @@ extends Resource
 @export var wall_run_min_speed: float = 12.0
 ## The run ends when the speed drops below this (m/s).
 @export var wall_run_end_speed: float = 6.0
-## The speed is limited to this while wall running (m/s).
+## The compressor brings the run's horizontal speed down to this (m/s), starting wall_run_compress_delay into the run. A head-on latch also keeps at most this.
 @export var wall_run_max_speed: float = 50.0
+## Seconds into a run before the compressor starts slowing a run that is faster than wall_run_max_speed.
+@export var wall_run_compress_delay: float = 0.75
+## How fast (m/s per second) the compressor slows a run that is above wall_run_max_speed.
+@export var wall_run_compress_rate: float = 5.0
+## Acceleration (m/s per second) along the wall while the run is slower than wall_run_accel_max_speed.
+@export var wall_run_accel: float = 8.0
+## The run accelerates only up to this speed (m/s). A run that starts faster keeps its momentum, with no extra speed.
+@export var wall_run_accel_max_speed: float = 42.0
 ## Largest angle (degrees) between the travel direction and the wall for a hit to count as a graze. Steeper hits are head-on and just slide.
 @export_range(5.0, 89.0, 1.0) var wall_run_max_approach_degrees: float = 50.0
 ## Share of gravity that still applies while wall running.
