@@ -14,7 +14,7 @@ _Last updated: 2026-11-17_
 | Drones | `drones.md` | Ring slots, seeking range, attack coordinator, opening delay, random city drones, recovery flies back into open air. |
 | Movement | `movement.md` | Player gravity, air turn-rate steering, air drag, soft speed limit, wall run (accelerates, compressor above the max) and head-on latch (jump launches straight back), bunnyhop (grace window after landing keeps speed on a jump), obstacle assist, trajectory arc, camera feel. |
 | Rewind (death, lives) | `rewind.md` | Each death spends a life (`lives` = rewinds) and sets the player, enemies and spawners back `rewind_seconds` (killed enemies remade, newer ones removed); a death with none left is game over. Played, not cut: time slows to a stop, the level plays back to the saved moment (easing in and out) under a screen effect, then time eases back up. Lives pips on the HUD. |
-| Levels, HUD, menus | `levels_and_hud.md` | Arena is the main scene; city still loadable. Speedometer dial (horizontal speed), minimap with enemies, tuning panel with a Level tab. |
+| Levels, HUD, menus | `levels_and_hud.md` | Arena is the main scene; city still loadable. HUD in anchor groups (corners, edge midpoints, centre) with the edge groups bent by a helmet-visor shader; swing/launch/throw indicators (flash on use, throw shows bullet time left); speedometer dial; minimap in a rounded box sized and visually centred on its wireframe; tuning panel with a Level tab. |
 
 ## Current goals
 1. **Make the core gameplay feel right** (this branch): iron out swing, launch, wall run and combat.

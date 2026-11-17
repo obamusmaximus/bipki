@@ -11,6 +11,11 @@
 [ext_resource type="Script" path="res://hud/minimap.gd" id="9_minimap"]
 [ext_resource type="Script" path="res://hud/minimap_wire.gd" id="10_wire"]
 [ext_resource type="Script" path="res://hud/trajectory_arc.gd" id="11_arc"]
+[ext_resource type="Shader" path="res://hud/visor.gdshader" id="12_visor"]
+[ext_resource type="Script" path="res://hud/ability_bar.gd" id="13_abilities"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_visor"]
+shader = ExtResource("12_visor")
 
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -34,6 +39,147 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("11_arc")
 
+[node name="Visor" type="SubViewportContainer" parent="."]
+material = SubResource("ShaderMaterial_visor")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
+
+[node name="Viewport" type="SubViewport" parent="Visor"]
+disable_3d = true
+transparent_bg = true
+handle_input_locally = false
+gui_disable_input = true
+size = Vector2i(2560, 1440)
+render_target_update_mode = 4
+
+[node name="TopLeft" type="VBoxContainer" parent="Visor/Viewport"]
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="TopCenter" type="VBoxContainer" parent="Visor/Viewport"]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Right" type="VBoxContainer" parent="Visor/Viewport"]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="ReelBar" type="Control" parent="Visor/Viewport/Right"]
+custom_minimum_size = Vector2(8, 200)
+layout_mode = 2
+size_flags_horizontal = 8
+mouse_filter = 2
+script = ExtResource("4_reel")
+
+[node name="BottomLeft" type="VBoxContainer" parent="Visor/Viewport"]
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Row" type="HBoxContainer" parent="Visor/Viewport/BottomLeft"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="HealthBar" type="Control" parent="Visor/Viewport/BottomLeft/Row"]
+custom_minimum_size = Vector2(252, 16)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("7_health")
+
+[node name="Abilities" type="HBoxContainer" parent="Visor/Viewport/BottomLeft/Row"]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("13_abilities")
+
+[node name="BottomCenter" type="VBoxContainer" parent="Visor/Viewport"]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="ModeLabel" type="Label" parent="Visor/Viewport/BottomCenter"]
+custom_minimum_size = Vector2(320, 28)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+script = ExtResource("3_mode")
+
+[node name="BottomRight" type="VBoxContainer" parent="Visor/Viewport"]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Minimap" type="Control" parent="Visor/Viewport"]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -324.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 244.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("9_minimap")
+
+[node name="Background" type="Panel" parent="Visor/Viewport/Minimap"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Wire" type="Control" parent="Visor/Viewport/Minimap"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10_wire")
+
 [node name="Crosshair" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
@@ -53,91 +199,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5_speed")
-
-[node name="BottomCenter" type="VBoxContainer" parent="."]
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_top = -52.0
-offset_bottom = -52.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-theme_override_constants/separation = 8
-
-[node name="ModeLabel" type="Label" parent="BottomCenter"]
-custom_minimum_size = Vector2(320, 28)
-layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-horizontal_alignment = 1
-script = ExtResource("3_mode")
-
-[node name="ReelBar" type="Control" parent="BottomCenter"]
-custom_minimum_size = Vector2(200, 8)
-layout_mode = 2
-size_flags_horizontal = 4
-mouse_filter = 2
-script = ExtResource("4_reel")
-
-[node name="BottomLeft" type="VBoxContainer" parent="."]
-anchors_preset = -1
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = -24.0
-offset_right = 24.0
-offset_bottom = -24.0
-grow_vertical = 0
-mouse_filter = 2
-theme_override_constants/separation = 16
-
-[node name="HealthBar" type="Control" parent="BottomLeft"]
-custom_minimum_size = Vector2(200, 16)
-layout_mode = 2
-size_flags_horizontal = 0
-mouse_filter = 2
-script = ExtResource("7_health")
-
-[node name="Minimap" type="Control" parent="."]
-clip_contents = true
-layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -324.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = 244.0
-grow_horizontal = 0
-mouse_filter = 2
-script = ExtResource("9_minimap")
-
-[node name="Background" type="ColorRect" parent="Minimap"]
-show_behind_parent = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.27, 0.28, 0.3, 1)
-
-[node name="Wire" type="Control" parent="Minimap"]
-show_behind_parent = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("10_wire")
 
 [node name="DeathScreen" type="Control" parent="."]
 layout_mode = 3

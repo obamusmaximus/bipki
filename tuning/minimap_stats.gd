@@ -5,7 +5,7 @@ extends Resource
 ## (tuning/minimap_default.tres). The Player scene holds it in `minimap_stats`. The minimap also follows
 ## `HudStats.hud_scale`.
 
-## Panel size at scale 1, before HUD scaling (px). Width and height scale together.
+## The box the wireframe is fitted into at scale 1, before HUD scaling (px). The panel then shrinks to the wireframe.
 const BASE_SIZE: Vector2 = Vector2(275.0, 228.0)
 
 @export_group("Layout")
@@ -19,17 +19,20 @@ const BASE_SIZE: Vector2 = Vector2(275.0, 228.0)
 @export_range(0.0, 1.0, 0.01) var minimap_opacity: float = 0.7
 ## Colour of the box behind the map. Leave its alpha at 1 for an opaque box.
 @export var background_color: Color = Color(0.27, 0.28, 0.30, 1.0)
+## Corner rounding of the box behind the map (px).
+@export var corner_radius: float = 12.0
 
 @export_group("Projection")
 ## Camera tilt: 35.264 is a true isometric view, 90 looks straight down.
 @export_range(10.0, 90.0, 0.5) var pitch_degrees: float = 35.264
 ## Rotation of the city about the vertical axis (degrees). 45 gives the classic isometric diamond.
 @export_range(-180.0, 180.0, 1.0) var yaw_degrees: float = 45.0
-## Space kept clear around the city inside the panel (px).
+## Space kept clear around the wireframe inside the panel, at its tightest side (px). The panel is sized to the
+## wireframe plus this.
 @export var view_padding: float = 12.0
-## Extra height above the tallest building that stays inside the view, so a player flying over the
-## rooftops doesn't leave the panel (m).
-@export var view_headroom: float = 40.0
+## Where the wireframe's centre is taken to be. 0 = the middle of its bounding box (true centre), 1 = the centroid
+## of its outline's area (visual centre: a tall corner of the city weighs less than its height suggests).
+@export_range(0.0, 1.0, 0.01) var visual_centering: float = 1.0
 
 @export_group("Wireframe")
 ## Colour of the building outlines.

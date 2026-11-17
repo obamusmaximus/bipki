@@ -2,7 +2,8 @@ class_name Minimap
 extends Control
 ## HUD minimap: a 3D isometric wireframe of the city with the player as a glowing dot and a trail that fades
 ## over a few seconds. Enemies are small red dots with their own drop lines. The wireframe is drawn once (MinimapWire); this node draws the moving parts each frame.
-## Sits in the top-right corner. Hud scales it with the rest of the HUD. Tuning is in MinimapStats.
+## Sits in the top-right corner on a rounded box sized to the wireframe and visually centred on it (MinimapFrame).
+## Hud scales it with the rest of the HUD. Tuning is in MinimapStats.
 
 ## Edges of a box as pairs of AABB.get_endpoint() indices.
 const BOX_EDGES: Array[Vector2i] = [
@@ -18,16 +19,21 @@ var _boxes: Array[AABB] = []
 var _projection := MinimapProjection.new()
 var _trail := MinimapTrail.new()
 var _clock: float = 0.0
+## The panel's size before HUD scaling: fitted to the wireframe once the city is known.
+var _panel_size: Vector2 = Vector2.ZERO
+var _box := StyleBoxFlat.new()
 
-@onready var _background: ColorRect = $Background
+@onready var _background: Panel = $Background
 @onready var _wire: MinimapWire = $Wire
 
 
 func setup(body: Node3D, minimap_stats: MinimapStats) -> void:
 	_body = body
 	stats = minimap_stats
-	stats.changed.connect(_on_stats_changed)
-	_apply_layout()
+	_panel_size = stats.panel_size()
+	_box.anti_aliasing = true
+	_background.add_theme_stylebox_override("panel", _box)
+	stats.changed.connect(_rebuild)
 	_rebuild()
 
 
@@ -55,55 +61,63 @@ func _draw() -> void:
 	_draw_player()
 
 
-func _on_stats_changed() -> void:
-	_apply_layout()
-	_rebuild()
-
-
-## Anchors the panel to the top-right corner at the tuned size and margin, and sets the colours.
+## Anchors the panel to the top-right corner at its fitted size and the tuned margin, and sets the colours.
 func _apply_layout() -> void:
 	visible = stats.minimap_visible
 	# The opacity applies to the map only (this node's own drawing and the wireframe), not to the background box.
 	self_modulate.a = stats.minimap_opacity
 	_wire.self_modulate.a = stats.minimap_opacity
-	_background.color = stats.background_color
-	var size: Vector2 = stats.panel_size()
-	offset_left = -(stats.minimap_margin + size.x)
+	_box.bg_color = stats.background_color
+	_box.set_corner_radius_all(roundi(stats.corner_radius))
+	offset_left = -(stats.minimap_margin + _panel_size.x)
 	offset_right = -stats.minimap_margin
 	offset_top = stats.minimap_margin
-	offset_bottom = stats.minimap_margin + size.y
+	offset_bottom = stats.minimap_margin + _panel_size.y
 
 
-## Refits the projection to the city and rebuilds the wireframe lines.
+## Refits the projection to the city, sizes the panel around it and rebuilds the wireframe lines.
 func _rebuild() -> void:
-	if stats == null or _boxes.is_empty():
+	if stats == null:
+		return
+	if _boxes.is_empty():
+		_apply_layout()
 		return
 	var bounds: AABB = _city_bounds()
-	_projection.setup(bounds, stats.panel_size(), stats.pitch_degrees, stats.yaw_degrees, stats.view_padding)
+	var corners := PackedVector3Array()
+	for box: AABB in _boxes:
+		for i: int in 8:
+			corners.append(box.get_endpoint(i))
+	_projection.setup(corners, stats.panel_size(), stats.pitch_degrees, stats.yaw_degrees, stats.view_padding)
 	var lines := PackedVector2Array()
 	for box: AABB in _boxes:
 		for edge: Vector2i in BOX_EDGES:
 			lines.append(_projection.project(box.get_endpoint(edge.x)))
 			lines.append(_projection.project(box.get_endpoint(edge.y)))
 	if stats.show_ground_outline:
-		var corners: Array[Vector3] = [
+		var ground: Array[Vector3] = [
 			bounds.position, bounds.position + Vector3(bounds.size.x, 0.0, 0.0),
 			bounds.position + Vector3(bounds.size.x, 0.0, bounds.size.z), bounds.position + Vector3(0.0, 0.0, bounds.size.z),
 		]
 		for i: int in 4:
-			lines.append(_projection.project(Vector3(corners[i].x, 0.0, corners[i].z)))
-			lines.append(_projection.project(Vector3(corners[(i + 1) % 4].x, 0.0, corners[(i + 1) % 4].z)))
+			lines.append(_projection.project(Vector3(ground[i].x, 0.0, ground[i].z)))
+			lines.append(_projection.project(Vector3(ground[(i + 1) % 4].x, 0.0, ground[(i + 1) % 4].z)))
+	var frame: MinimapFrame = MinimapFrame.fit(lines, stats.view_padding, stats.visual_centering)
+	_projection.shift(frame.shift)
+	for i: int in lines.size():
+		lines[i] += frame.shift
+	_panel_size = frame.size
+	_apply_layout()
 	_wire.set_lines(lines, Color(stats.wire_color, stats.wire_alpha), stats.wire_width)
 	queue_redraw()
 
 
-## The box the view is fitted to: all the buildings, from the ground up to the tallest roof plus headroom.
+## The box around all the buildings, from the ground up. Its footprint is the ground outline.
 func _city_bounds() -> AABB:
 	var bounds: AABB = _boxes[0]
 	for box: AABB in _boxes:
 		bounds = bounds.merge(box)
+	bounds.size.y = bounds.end.y
 	bounds.position.y = 0.0
-	bounds.size.y = bounds.end.y + stats.view_headroom
 	return bounds
 
 
@@ -122,7 +136,8 @@ func _draw_trail() -> void:
 
 func _draw_player() -> void:
 	var world: Vector3 = _body.global_position
-	var dot: Vector2 = _projection.project(world)
+	# The panel hugs the wireframe, so a player flying high above it would leave it: pin the dot to the edge instead.
+	var dot: Vector2 = _projection.project(world).clamp(Vector2.ONE * stats.dot_radius * 2.0, size - Vector2.ONE * stats.dot_radius * 2.0)
 	if stats.show_drop_line:
 		var ground: Vector2 = _projection.project(Vector3(world.x, 0.0, world.z))
 		draw_line(dot, ground, Color(stats.dot_color, 0.35), 1.0, true)

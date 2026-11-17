@@ -4,10 +4,41 @@ extends Resource
 ## `hud_stats` and hands it to the Hud. Likely to move into GameSettings once the size feels right.
 
 @export_group("Scale")
-## Size of the on-screen HUD (crosshair, mode label, reel bar, speed readout, health bar) and of the menus
+## Size of the on-screen HUD (every group: the centre, the corners, the edges and the minimap) and of the menus
 ## (pause menu, tuning panel, death screen). 1 = normal. Menus rescale when the mouse is released, so a slider
 ## doesn't move under the pointer while it is dragged.
 @export_range(0.5, 3.0, 0.05) var hud_scale: float = 1.0
+
+@export_group("Layout")
+## Gap between the HUD groups (corners, edge midpoints) and the screen edges (px, after HUD scale).
+@export var edge_margin: float = 24.0
+
+@export_group("Visor")
+## How far the HUD wraps around the view from side to side, like the inside of a helmet visor (degrees; 0 = flat).
+## The edge groups bend and their outer sides grow; the crosshair and speedometer at the centre stay flat.
+@export_range(0.0, 60.0, 0.5) var visor_curve_x: float = 24.0
+## The same wrap from top to bottom (degrees; 0 = flat).
+@export_range(0.0, 60.0, 0.5) var visor_curve_y: float = 14.0
+
+@export_group("Abilities")
+## Size of each ability indicator right of the health bar (px, before HUD scale).
+@export var ability_size: Vector2 = Vector2(40.0, 40.0)
+## Corner rounding of an ability indicator (px, before HUD scale).
+@export var ability_corner_radius: float = 8.0
+## Gap between the ability indicators (px, before HUD scale).
+@export var ability_gap: float = 8.0
+## Colour of an ability indicator at rest.
+@export var ability_color: Color = Color(0.32, 0.33, 0.36, 0.75)
+## Colour an ability indicator flashes when the ability is used, and of the throw's time-left outline.
+@export var ability_flash_color: Color = Color(1.0, 0.58, 0.15, 1.0)
+## How long the flash takes to fade (real seconds).
+@export var ability_flash_seconds: float = 0.35
+## Colour of the letter on an ability indicator.
+@export var ability_letter_color: Color = Color(1.0, 1.0, 1.0, 0.9)
+## Text size of the letter on an ability indicator (px, before HUD scale).
+@export var ability_letter_size: int = 18
+## Thickness of the outline that runs round the throw indicator while the throw's bullet time lasts (px, before HUD scale).
+@export var throw_outline_width: float = 3.0
 
 @export_group("Speedometer")
 ## Diameter of the speed dial beside the crosshair (px, before HUD scale).
