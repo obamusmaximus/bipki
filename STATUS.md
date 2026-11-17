@@ -9,7 +9,7 @@ _Last updated: 2026-11-17_
 ## Current state
 | Mechanic | Doc (`docs/mechanics/`) | Where it stands |
 |---|---|---|
-| Grapple (launch, swing, reel, rope) | `grapple.md` | Launch, swing with reel momentum, rope retract, hit-stop, ground-launch lift, swing works on the ground, tunable `rope_color`. |
+| Grapple (launch, swing, reel, rope) | `grapple.md` | Launch, swing with reel momentum, rope retract, hit-stop, ground-launch lift, swing works on the ground, separate swing gravity before and after the low point of the arc, tunable `rope_color`. |
 | Combat | `combat.md` | Enemy lock, guided launch at an enemy (`StrikeGuidance`), melee with knockback, bullet-time throw with release prediction, damage numbers. |
 | Drones | `drones.md` | Ring slots, seeking range, attack coordinator, opening delay, random city drones, recovery flies back into open air. |
 | Movement | `movement.md` | Player gravity, air turn-rate steering, air drag, soft speed limit, wall run and head-on latch (jump launches straight back), obstacle assist, trajectory arc, camera feel. |

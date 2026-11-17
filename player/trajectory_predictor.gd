@@ -93,7 +93,7 @@ func _simulate(swinging: bool) -> void:
 	var check_clearance: bool = stats.assist_strength > 0.0
 	points.append(position)
 	for i: int in int(ceilf(stats.prediction_seconds / step)):
-		velocity.y -= (_gravity.swing() if swinging else _gravity.air(velocity.y, float(i) * step)) * step
+		velocity.y -= (_gravity.swing(velocity.y) if swinging else _gravity.air(velocity.y, float(i) * step)) * step
 		var next: Vector3 = position + velocity * step
 		if swinging:
 			var offset: Vector3 = next - anchor

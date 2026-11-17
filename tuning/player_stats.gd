@@ -32,8 +32,12 @@ extends Resource
 @export var gravity: float = 25.0
 ## Gravity multiplier while falling (vertical speed below zero). Above 1 gives a quick drop after the apex.
 @export_range(1.0, 3.0, 0.05) var fall_gravity_scale: float = 1.3
-## Share of gravity on a swing rope. Higher swings faster and heavier (and builds more speed at the bottom).
-@export_range(0.0, 2.0, 0.01) var swing_gravity_scale: float = 0.4
+## Share of gravity on a swing rope while falling toward the low point of the arc. Higher builds speed faster
+## (and more speed at the bottom).
+@export_range(0.0, 2.0, 0.01) var swing_gravity_scale_falling: float = 0.4
+## Share of gravity on a swing rope while rising past the low point. Higher slows the swing sooner and lower
+## carries it higher. Below the falling share each swing climbs higher than it started; above it each one dies down.
+@export_range(0.0, 2.0, 0.01) var swing_gravity_scale_rising: float = 0.4
 ## Share of gravity for launch_gravity_time after a launch, so a launch still reaches its aim point.
 @export_range(0.0, 2.0, 0.01) var launch_gravity_scale: float = 0.4
 ## Seconds of launch_gravity_scale after a launch, then full gravity (ends early on landing, a swing or a wall run).

@@ -152,7 +152,7 @@ func _physics_process(delta: float) -> void:
 			_ground_move(direction)
 		else:
 			# Plain airborne physics with no input: momentum is kept and the rope does the steering.
-			velocity.y -= _gravity.swing() * delta
+			velocity.y -= _gravity.swing(velocity.y) * delta
 			_forces.mark(&"gravity", velocity)
 			# Don't carry velocity into a wall beside the body (the rope can push it there).
 			for wall: Vector3 in _walls:
