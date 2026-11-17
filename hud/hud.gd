@@ -74,6 +74,11 @@ func setup_damage_numbers(camera: Camera3D) -> void:
 	numbers.setup(camera, stats)
 
 
+## A short tag under the speedometer's number (the jet's "A/B" while the afterburner burns). Empty hides it.
+func set_speed_tag(text: String) -> void:
+	_speed.set_tag(text)
+
+
 ## Pips for the lives left, above the health bar.
 func setup_lives(lives: Lives) -> void:
 	var readout := LivesReadout.new()

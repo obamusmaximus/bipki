@@ -1,13 +1,12 @@
 class_name GrappleHud
 extends LoadoutHud
 ## The grapple loadout's HUD: the crosshair (centre), the reel bar (right edge), the swing, launch and throw
-## indicators (next to the health bar), the mode label (bottom centre), the trajectory arc (under the visor) and the
-## throw's readout (on top). See grapple.md, combat.md and levels_and_hud.md.
+## indicators (next to the health bar), the trajectory arc (under the visor) and the throw's readout (on top).
+## See grapple.md, combat.md and levels_and_hud.md.
 
 @onready var _crosshair: Crosshair = $Center/Crosshair
 @onready var _reel_bar: ReelBar = $Right/ReelBar
 @onready var _abilities: AbilityBar = $AbilityRow/Abilities
-@onready var _mode_label: ModeLabel = $BottomCenter/ModeLabel
 @onready var _arc: TrajectoryArc = $Underlay/TrajectoryArc
 @onready var _throw_readout: ThrowReadout = $Overlay/ThrowReadout
 
@@ -17,7 +16,6 @@ func setup(hook: GrappleHook, camera: Camera3D, predictor: TrajectoryPredictor, 
 		arc_stats: TrajectoryArcStats, hud_stats: HudStats) -> void:
 	_abilities.setup(hook, hud_stats)
 	_crosshair.setup(hook)
-	_mode_label.setup(hook)
 	_reel_bar.setup(hook)
 	_arc.setup(camera, predictor, body, arc_stats)
 	# The throw's aiming gauges, and its release prediction on the trajectory arc.

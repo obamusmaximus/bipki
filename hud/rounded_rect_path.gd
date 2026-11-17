@@ -26,12 +26,25 @@ static func outline(rect: Rect2, radius: float) -> PackedVector2Array:
 	return points
 
 
+## The first `share` (0-1) of the outline: as the share grows, its end travels clockwise from the top middle.
+static func head(rect: Rect2, radius: float, share: float) -> PackedVector2Array:
+	var points: PackedVector2Array = outline(rect, radius)
+	var lengths: PackedFloat32Array = _lengths(points)
+	var cut: float = lengths[lengths.size() - 1] * clampf(share, 0.0, 1.0)
+	var result := PackedVector2Array([points[0]])
+	for i: int in range(1, points.size()):
+		if lengths[i] >= cut:
+			var t: float = inverse_lerp(lengths[i - 1], lengths[i], cut) if lengths[i] > lengths[i - 1] else 0.0
+			result.append(points[i - 1].lerp(points[i], t))
+			break
+		result.append(points[i])
+	return result
+
+
 ## The last `share` (0-1) of the outline: as the share drops, its tail travels clockwise toward the top middle.
 static func tail(rect: Rect2, radius: float, share: float) -> PackedVector2Array:
 	var points: PackedVector2Array = outline(rect, radius)
-	var lengths := PackedFloat32Array([0.0])
-	for i: int in range(1, points.size()):
-		lengths.append(lengths[i - 1] + points[i - 1].distance_to(points[i]))
+	var lengths: PackedFloat32Array = _lengths(points)
 	var cut: float = lengths[lengths.size() - 1] * (1.0 - clampf(share, 0.0, 1.0))
 	var result := PackedVector2Array()
 	for i: int in range(1, points.size()):
@@ -42,3 +55,11 @@ static func tail(rect: Rect2, radius: float, share: float) -> PackedVector2Array
 			result.append(points[i - 1].lerp(points[i], t))
 		result.append(points[i])
 	return result
+
+
+## Distance along the polyline to each of its points.
+static func _lengths(points: PackedVector2Array) -> PackedFloat32Array:
+	var lengths := PackedFloat32Array([0.0])
+	for i: int in range(1, points.size()):
+		lengths.append(lengths[i - 1] + points[i - 1].distance_to(points[i]))
+	return lengths

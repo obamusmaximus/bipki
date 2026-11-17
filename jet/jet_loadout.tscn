@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://jet/jet_loadout.gd" id="1_loadout"]
+[ext_resource type="Script" path="res://jet/jet_motor.gd" id="2_motor"]
+[ext_resource type="Script" path="res://jet/jet_sfx.gd" id="3_sfx"]
+[ext_resource type="Resource" path="res://tuning/jet_default.tres" id="4_stats"]
+
+[node name="JetLoadout" type="Node3D"]
+script = ExtResource("1_loadout")
+jet_stats = ExtResource("4_stats")
+
+[node name="JetMotor" type="Node" parent="."]
+script = ExtResource("2_motor")
+
+[node name="JetSfx" type="Node" parent="."]
+script = ExtResource("3_sfx")

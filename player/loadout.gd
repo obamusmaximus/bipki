@@ -11,9 +11,10 @@ extends Node3D
 signal playtest_event(event: StringName, data: Dictionary)
 
 
-## Called once by Player after its own parts are set up, with the shared parts the loadout may use.
+## Called once by Player after its own parts are set up, with the shared parts the loadout may use. `hand` is the
+## socket under the camera where the loadout puts what the player holds (its view model, a muzzle point, effects).
 func setup(_body: Player, _camera: ShakeCamera, _head: HeadLook, _fov: DynamicFov, _gravity: BodyGravity,
-		_wall_run: WallRun) -> void:
+		_wall_run: WallRun, _hand: Node3D) -> void:
 	pass
 
 

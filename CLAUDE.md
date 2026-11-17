@@ -14,7 +14,7 @@
 - **One scene per object**, and **group files by feature** (e.g. `player/` holds the player's scene and scripts).
 - **All tunable numbers live in stats resources in `tuning/`** (one class per owner, each with a `*_default.tres`), never as `@export`s on gameplay scripts. Add a tunable as an `@export` in the right class, inside an `@export_group` (it becomes a sub-label in the debug panel) and with a `##` doc comment (it becomes the tooltip). Owners hold the resource and hand it to their parts through `setup()`; parts read `stats.x`. Parts that cache a value listen to the resource's `changed` signal so live edits apply. A new stats class needs listing in `TuningPanel.TABS`. A new enemy type extends `Enemy` with its own stats class extending `EnemyStats`; a variant is just another `.tres`. `CitySettings` stays its own resource.
 - **The `.tres` files are the source of truth.** The user tunes live and saves them between sessions, so values change between prompts. That is normal: don't be surprised by a changed value, don't "fix", reset or revert it. Never write tunable values into the docs (name the parameter), and treat any number in a doc as possibly stale.
-- **Use named input actions** (`move_forward`, `move_back`, `move_left`, `move_right`, `jump`, `grapple`, `swing`, `reel`) from the Input Map, never raw keys.
+- **Use named input actions** (`move_forward`, `move_back`, `move_left`, `move_right`, `jump`, `grapple`, `swing`, `reel`, `jet`) from the Input Map, never raw keys.
 - **Movement and raycasts go in `_physics_process`**, not `_process`.
 - **Collision layers:** 1 World, 2 Player, 3 Enemy, 4 Bullet. Use these when setting `collision_layer` and `collision_mask`. The names are set in `project.godot`; the player is on layer 2 and masks layer 1.
 - Use `@onready var x: Type = $Path` for node references. Don't call `get_node` repeatedly.
@@ -37,7 +37,8 @@ Game-specific terms. Use them consistently in code, comments and conversation. E
 - **[`drones.md`]** seeking range, goal separation (ring slots), attack coordinator, random drones
 - **[`movement.md`]** player gravity, momentum, air steering, soft speed limit, wall run, head-on latch, obstacle assist, trajectory prediction, trajectory arc, camera lean, dynamic FOV, walk bob
 - **[`rewind.md`]** rewind, snapshot, rewindable (rewind id), recreate, lives, game over
-- **[`loadouts.md`]** loadout, loadout API, HUD module, slot
+- **[`loadouts.md`]** loadout, loadout API, hand (socket), HUD module, slot
+- **[`jet.md`]** jetpack, jet key, hover, surge, afterburner (A/B), fuel, afterburner carry
 - **[`levels_and_hud.md`]** arena, city, enemy spawner, HUD scale, speedometer, minimap, effects, pause menu, tuning panel
 
 - **Dev-only tools live in `debug/`** (one subfolder per tool) and their scripts start their doc comment with "Debug:". Gameplay must never depend on them; they hook in through groups and signals.

@@ -28,8 +28,9 @@ var _swing: SwingStep
 @onready var _hit_stop: HitStop = $HitStop
 
 
+## The hand holds nothing yet: the rope starts at mid-body (GrappleHook), not at a muzzle.
 func setup(body: Player, camera: ShakeCamera, head: HeadLook, fov: DynamicFov, gravity: BodyGravity,
-		wall_run: WallRun) -> void:
+		wall_run: WallRun, _hand: Node3D) -> void:
 	_body = body
 	_stats = body.stats
 	_feel = body.feel

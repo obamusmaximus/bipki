@@ -18,7 +18,7 @@
 [ext_resource type="Resource" path="res://tuning/camera_feel_default.tres" id="20_feel"]
 [ext_resource type="Resource" path="res://tuning/hud_default.tres" id="21_hud"]
 [ext_resource type="Resource" path="res://tuning/minimap_default.tres" id="22_minimap"]
-[ext_resource type="PackedScene" path="res://player/grapple_loadout.tscn" id="30_loadout"]
+[ext_resource type="PackedScene" path="res://jet/jet_loadout.tscn" id="30_loadout"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 height = 1.8
@@ -66,6 +66,8 @@ script = ExtResource("25_lean")
 
 [node name="DynamicFov" type="Node" parent="Head/Camera3D"]
 script = ExtResource("11_fov")
+
+[node name="Hand" type="Node3D" parent="Head/Camera3D"]
 
 [node name="Footsteps" type="Node" parent="."]
 script = ExtResource("9_steps")

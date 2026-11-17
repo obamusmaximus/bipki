@@ -31,6 +31,9 @@ var _loadout: Loadout
 
 @onready var _head: HeadLook = $Head
 @onready var _camera: ShakeCamera = $Head/Camera3D
+## The socket for what the player holds (a loadout's view model, muzzle, effects). Follows the camera's look, shake,
+## bob and lean. Empty for now.
+@onready var _hand: Node3D = $Head/Camera3D/Hand
 @onready var _walk_bob: WalkBob = $Head/Camera3D/WalkBob
 @onready var _footsteps: Footsteps = $Footsteps
 @onready var _fov: DynamicFov = $Head/Camera3D/DynamicFov
@@ -78,7 +81,7 @@ func _ready() -> void:
 	add_child(_loadout)
 	move_child(_loadout, _head.get_index() + 1)
 	_loadout.playtest_event.connect(playtest_event.emit)
-	_loadout.setup(self, _camera, _head, _fov, _gravity, _wall_run)
+	_loadout.setup(self, _camera, _head, _fov, _gravity, _wall_run, _hand)
 	_hud.setup(self, _health, stats, hud_stats, minimap_stats)
 	_loadout.setup_hud(_hud)
 	_hud.setup_damage_numbers(_camera)

@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://jet/hud/jet_hud.gd" id="1_module"]
+[ext_resource type="Script" path="res://jet/hud/jet_crosshair.gd" id="2_cross"]
+[ext_resource type="Script" path="res://jet/hud/fuel_gauge.gd" id="3_fuel"]
+[ext_resource type="Script" path="res://jet/hud/jet_ability_bar.gd" id="4_abilities"]
+
+[node name="JetHud" type="Node"]
+script = ExtResource("1_module")
+
+[node name="Center" type="Node" parent="."]
+
+[node name="JetCrosshair" type="Control" parent="Center"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_cross")
+
+[node name="Right" type="Node" parent="."]
+
+[node name="FuelGauge" type="Control" parent="Right"]
+custom_minimum_size = Vector2(8, 200)
+layout_mode = 2
+size_flags_horizontal = 8
+mouse_filter = 2
+script = ExtResource("3_fuel")
+
+[node name="AbilityRow" type="Node" parent="."]
+
+[node name="Abilities" type="HBoxContainer" parent="AbilityRow"]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("4_abilities")

@@ -2,7 +2,7 @@
 
 Read this before working on the grapple. Update it at the end of the task (see `docs/mechanics/README.md`). Name tunables, never their values.
 
-**Scripts:** `player/grapple_loadout.gd` (`GrappleLoadout`: wires the grapple into the body, see `loadouts.md`), `player/grapple_hook.gd` (`GrappleHook`, owner of the three functions), `swing_step.gd` (the swing's movement frame), `swing_rope.gd`, `launch_aim.gd`, `ground_probe.gd`, `grapple_rope.gd`, `rope_sim.gd`, `grapple_sfx.gd`, `hit_stop.gd`, `shake_camera.gd`, `steering.gd` (swing steering), `hud/grapple_hud.gd` (the grapple's HUD module), `hud/crosshair.gd`, `hud/reel_bar.gd`, `hud/mode_label.gd`. Tunables: `GrappleStats` (Grapple tab), plus `swing_gravity_scale_*` and `launch_gravity_*` in `PlayerStats`.
+**Scripts:** `player/grapple_loadout.gd` (`GrappleLoadout`: wires the grapple into the body, see `loadouts.md`), `player/grapple_hook.gd` (`GrappleHook`, owner of the three functions), `swing_step.gd` (the swing's movement frame), `swing_rope.gd`, `launch_aim.gd`, `ground_probe.gd`, `grapple_rope.gd`, `rope_sim.gd`, `grapple_sfx.gd`, `hit_stop.gd`, `shake_camera.gd`, `steering.gd` (swing steering), `hud/grapple_hud.gd` (the grapple's HUD module), `hud/crosshair.gd`, `hud/reel_bar.gd`. Tunables: `GrappleStats` (Grapple tab), plus `swing_gravity_scale_*` and `launch_gravity_*` in `PlayerStats`.
 **Related:** a launch at an enemy and the throw are in `combat.md`. Momentum, gravity, steering in flight and the obstacle assist are in `movement.md`.
 
 ## Intent
