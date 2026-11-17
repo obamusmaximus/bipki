@@ -17,12 +17,31 @@ background_mode = 1
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.9
-glow_enabled = false
 glow_blend_mode = 0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
 render_priority = 0
 shader = ExtResource("3_shader")
+shader_parameter/wall_color = Color(0.97, 0.97, 0.96, 1)
+shader_parameter/noise_scale = 0.15
+shader_parameter/noise_strength = 0.03
+shader_parameter/grain_strength = 0.015
+shader_parameter/corner_shade = 0.21
+shader_parameter/corner_shade_range = 7.2
+shader_parameter/bar_color = Color(0, 0, 0, 1)
+shader_parameter/major_spacing = 10.0
+shader_parameter/minor_spacing = 5.0
+shader_parameter/major_width = 0.15
+shader_parameter/minor_width = 0.06
+shader_parameter/central_width = 0.29
+shader_parameter/notch_width = 0.06
+shader_parameter/notch_width_mid = 0.08
+shader_parameter/notch_width_long = 0.13
+shader_parameter/notch_length = 0.51
+shader_parameter/notch_length_mid = 1.0
+shader_parameter/notch_length_long = 1.6
+shader_parameter/notch_clear = 3.5
+shader_parameter/clear_band = 4.9
 
 [sub_resource type="BoxMesh" id="BoxMesh_room"]
 size = Vector3(100, 100, 100)
@@ -72,6 +91,7 @@ light_energy = 0.6
 [node name="Grid" type="MeshInstance3D" parent="Room" unique_id=46959688]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.070103, 50.47258, 50.120697)
 material_override = SubResource("ShaderMaterial_grid")
+transparency = 1.0
 cast_shadow = 0
 mesh = SubResource("BoxMesh_room")
 
