@@ -2,7 +2,8 @@ class_name ArenaLevel
 extends Node3D
 ## The testing arena: a 100 m white box with black grid and scale bars on all six surfaces and a 5 m pillar from floor to
 ## ceiling. The world origin is a bottom corner of the box, so the room runs 0 to 100 m on every axis. Hand-built. Enemies come from the `EnemySpawner` nodes placed in the scene;
-## this script hands each drone the flight grid and the player, gives the HUD minimap the solid boxes, and applies the look.
+## this script hands each drone the flight grid and the player (a drone a rewind remade too), gives the HUD minimap the
+## solid boxes, applies the look, and rewinds the level when the player dies with a life left.
 ## The boxes are read from the collision shapes under Room and Pillar, so the scene stays the one source of geometry.
 
 ## Flight grid cell sizes and the margin kept from solids (m).
@@ -17,6 +18,7 @@ var flight_grid: FlightGrid
 @onready var _player: Player = $Player
 @onready var _look: ArenaLook = $Look
 @onready var _coordinator: AttackCoordinator = $AttackCoordinator
+@onready var _rewind: Rewind = $Rewind
 @onready var _scale: ArenaScale = $Scale
 @onready var _light: DirectionalLight3D = $Light
 @onready var _grid_mesh: MeshInstance3D = $Room/Grid
@@ -33,6 +35,14 @@ func _ready() -> void:
 	for node: Node in get_tree().get_nodes_in_group(EnemySpawner.GROUP):
 		(node as EnemySpawner).spawned.connect(_on_enemy_spawned)
 	_player.show_city(boxes)
+	_player.rewind_requested.connect(_rewind.rewind)
+	_rewind.recreated.connect(_on_rewind_recreated)
+
+
+func _on_rewind_recreated(node: Node) -> void:
+	var enemy: Enemy = node as Enemy
+	if enemy != null:
+		_on_enemy_spawned(enemy)
 
 
 func _on_enemy_spawned(enemy: Enemy) -> void:

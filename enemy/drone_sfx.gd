@@ -1,7 +1,13 @@
 class_name DroneSfx
 extends Node3D
 ## The drone's sounds, made in code and played from the drone's position: a rising charge whine, a
-## blip when the aim locks, and the beam's zap.
+## blip when the aim locks, and the beam's zap. The sounds are built once and shared by every drone (synthesizing
+## them is the bulk of a drone's spawn cost); the whine is rebuilt per charge time.
+
+## Shared sounds. The charge whine is keyed by the charge time it was built for.
+static var _lock_sound: AudioStreamWAV
+static var _zap_sound: AudioStreamWAV
+static var _charge_sounds: Dictionary[float, AudioStreamWAV] = {}
 
 var stats: DroneStats
 
@@ -15,10 +21,13 @@ var _built_charge_time: float = 0.0
 func setup(beam: BeamAttack, drone_stats: DroneStats) -> void:
 	stats = drone_stats
 	_charge = _make_player(_make_charge_sound())
-	# Lock: a short high blip so the player knows the aim is set.
-	_lock = _make_player(Synth.make_sound(0.15, 1400.0, 1400.0, 0.0, 0.5, 0.002, 2.0))
-	# Zap: a fast downward sweep with plenty of noise.
-	_zap = _make_player(Synth.make_sound(0.5, 2200.0, 70.0, 0.55, 0.9, 0.002, 2.0))
+	if _lock_sound == null:
+		# Lock: a short high blip so the player knows the aim is set.
+		_lock_sound = Synth.make_sound(0.15, 1400.0, 1400.0, 0.0, 0.5, 0.002, 2.0)
+		# Zap: a fast downward sweep with plenty of noise.
+		_zap_sound = Synth.make_sound(0.5, 2200.0, 70.0, 0.55, 0.9, 0.002, 2.0)
+	_lock = _make_player(_lock_sound)
+	_zap = _make_player(_zap_sound)
 	stats.changed.connect(_on_stats_changed)
 	beam.charge_started.connect(func() -> void: _charge.play())
 	beam.cancelled.connect(func() -> void: _charge.stop())
@@ -29,7 +38,9 @@ func setup(beam: BeamAttack, drone_stats: DroneStats) -> void:
 ## Charge: a tone sweeping up over the charge time, getting louder as it goes.
 func _make_charge_sound() -> AudioStreamWAV:
 	_built_charge_time = stats.charge_time
-	return Synth.make_sound(_built_charge_time, 180.0, 1600.0, 0.15, 0.6, 1.3, 0.05)
+	if not _charge_sounds.has(_built_charge_time):
+		_charge_sounds[_built_charge_time] = Synth.make_sound(_built_charge_time, 180.0, 1600.0, 0.15, 0.6, 1.3, 0.05)
+	return _charge_sounds[_built_charge_time]
 
 
 func _on_stats_changed() -> void:

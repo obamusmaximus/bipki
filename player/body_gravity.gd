@@ -26,6 +26,16 @@ func end_launch() -> void:
 	_launch_left = 0.0
 
 
+## Seconds of launch gravity left, for a rewind snapshot.
+func get_launch_left() -> float:
+	return _launch_left
+
+
+## Puts the launch gravity back as a snapshot had it (a rewind).
+func restore_launch(left: float) -> void:
+	_launch_left = maxf(left, 0.0)
+
+
 func tick(delta: float) -> void:
 	_launch_left = maxf(_launch_left - delta, 0.0)
 

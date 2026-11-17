@@ -17,8 +17,6 @@ A first-person momentum game, a love letter to the Titanfall movement feel, buil
 ## Scale
 Derive map size from a target end-to-end traversal time at full speed, not the other way round. The speed-limit parameters in `PlayerStats` are therefore also level-design constraints: raising top speed shrinks every map. Tall landmarks visible from far away give the player something to measure their speed against.
 
-**Walking speed is capped on purpose, for now.** Walking, and any speed gained by a launch or swing, is hard-capped when the player is on foot, for consistency. This may change: sliding or bunnyhopping could let the player conserve built-up momentum across a larger map, which would also loosen the Scale constraint above.
-
 ## Level structure (proposed)
 **Core idea:** skipping is allowed but costly. Every objective changes the state of the map, so the order matters and nothing is locked.
 
@@ -49,6 +47,8 @@ Derive map size from a target end-to-end traversal time at full speed, not the o
 - **One core verb:** the grapple. New tools are sidegrades that interact with it, not stat boosts (stat changes would shift the feel being tuned).
 
 ## Death and respawn: rewind (leaning yes)
+**Built (basic):** a fixed `rewind_seconds` window and `lives`, no checkpoints or calm snapshot yet. How it works is in `docs/mechanics/rewind.md`; this section stays the design.
+
 **Idea:** dying sets the player back in time. They restart where they were about a minute earlier, with progress in that window reverted and killed enemies respawned. After 3 deaths it's game over and the level restarts. Checkpoints restore lives.
 
 **Why it fits:** cheap failure, lets the player change approach (information carries over, the world doesn't), suits open order, and matches the game's existing time theme (bullet time). Precedent: Prince of Persia: The Sands of Time (rewind with limited charges), Hitman (limited saves).

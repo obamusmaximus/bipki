@@ -184,6 +184,16 @@ func release() -> void:
 		_reset(true)
 
 
+## Puts the hook away at once, with no signals, sounds or rope retract (a rewind). A throw ends without touching
+## the enemy, which the rewind restores itself.
+func abort() -> void:
+	var throwing: bool = _mode == Mode.THROW
+	_mode = Mode.NONE # Before the throw ends, so `_on_throw_ended` doesn't detach.
+	if throwing:
+		_throw.abort()
+	_reset(false)
+
+
 ## Current swing rope length, or 0 when not swinging.
 func get_rope_length() -> float:
 	return _swing.length if is_swinging() else 0.0

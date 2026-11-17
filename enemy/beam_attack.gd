@@ -58,6 +58,28 @@ func cancel() -> void:
 	_release_token()
 
 
+## The cycle's state for a rewind snapshot (part of the drone's).
+func rewind_capture() -> Dictionary:
+	return {&"state": _state, &"timer": _timer, &"latched": _latched, &"active": _active}
+
+
+## Puts the cycle back. A charge or aim in progress is cut off (`cancelled`, so the charge sound stops), and the
+## attack token is taken or given back to match the restored step.
+func rewind_restore(saved: Dictionary) -> void:
+	if _state == State.CHARGING or _state == State.AIMING:
+		cancelled.emit()
+	_state = saved[&"state"]
+	_timer = saved[&"timer"]
+	_latched = saved[&"latched"]
+	_active = saved[&"active"]
+	if _coordinator == null:
+		return
+	if _state == State.CHARGING or _state == State.AIMING:
+		_coordinator.claim(self)
+	else:
+		_coordinator.release(self)
+
+
 ## A freed drone gives its attack token back.
 func _exit_tree() -> void:
 	_release_token()

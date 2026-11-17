@@ -16,6 +16,12 @@ func setup(body: CharacterBody3D) -> void:
 	_body = body
 
 
+## Forgets the last frame (a rewind moved the body), so the jump in position doesn't count as a landing.
+func reset() -> void:
+	_was_on_floor = true
+	_last_vertical_speed = 0.0
+
+
 func _physics_process(_delta: float) -> void:
 	if _body == null:
 		return

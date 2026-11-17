@@ -33,6 +33,17 @@ func land(velocity: Vector3) -> void:
 		_window_left = _stats.bunnyhop_window
 
 
+## Seconds of grace left, for a rewind snapshot.
+func get_window_left() -> float:
+	return _window_left
+
+
+## Puts the window back as a snapshot had it (a rewind). A remembered jump press is input, not state: it's dropped.
+func restore(window_left: float) -> void:
+	_window_left = maxf(window_left, 0.0)
+	_buffer_left = 0.0
+
+
 func is_open() -> bool:
 	return _window_left > 0.0
 

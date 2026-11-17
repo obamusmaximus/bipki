@@ -33,6 +33,12 @@ func request(attacker: Node) -> bool:
 	return true
 
 
+## Hands `attacker` a token whatever the limits (a rewind put it back mid-attack). Safe to call when it holds one.
+func claim(attacker: Node) -> void:
+	if not _attackers.has(attacker):
+		_attackers.append(attacker)
+
+
 ## Gives the token back. Safe to call when the attacker holds none.
 func release(attacker: Node) -> void:
 	_attackers.erase(attacker)

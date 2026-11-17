@@ -43,6 +43,16 @@ func _ai_step(delta: float) -> void:
 	_face_target(delta)
 
 
+func _capture_ai() -> Dictionary:
+	return {&"beam": _beam.rewind_capture()}
+
+
+## The beam goes back to where its cycle was; the flight plans afresh from the restored spot.
+func _restore_ai(saved: Dictionary) -> void:
+	_beam.rewind_restore(saved[&"beam"])
+	_flight.reset()
+
+
 func _on_state_changed() -> void:
 	if _beam == null:
 		return

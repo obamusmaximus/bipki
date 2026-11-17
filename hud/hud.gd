@@ -1,6 +1,7 @@
 class_name Hud
 extends CanvasLayer
-## The first-person HUD: crosshair, grapple mode, rope reel bar, speed, health bar, damage flash and death screen. Each element has its own
+## The first-person HUD: crosshair, grapple mode, rope reel bar, speed, health bar, lives, damage flash, rewind flash
+## and death screen. Each element has its own
 ## script; this node only hands them what they read.
 
 @onready var _crosshair: Crosshair = $Crosshair
@@ -16,6 +17,7 @@ extends CanvasLayer
 @onready var _arc: TrajectoryArc = $TrajectoryArc
 
 var stats: HudStats
+var _rewind_flash: RewindFlash
 
 
 func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, player_stats: PlayerStats, hud_stats: HudStats, minimap_stats: MinimapStats) -> void:
@@ -25,7 +27,7 @@ func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, player_stat
 	_apply_scale()
 	_damage_flash.setup(health)
 	_health_bar.setup(health)
-	_death_screen.setup(health, stats)
+	_death_screen.setup(stats)
 	_crosshair.setup(hook)
 	_mode_label.setup(hook)
 	_reel_bar.setup(hook)
@@ -50,6 +52,28 @@ func setup_damage_numbers(camera: Camera3D) -> void:
 	var numbers := DamageNumbers.new()
 	add_child(numbers)
 	numbers.setup(camera, stats)
+
+
+## Pips for the lives left, above the health bar, and the flash a rewind plays.
+func setup_lives(lives: Lives) -> void:
+	var readout := LivesReadout.new()
+	_bottom_left.add_child(readout)
+	_bottom_left.move_child(readout, 0)
+	readout.setup(lives)
+	_rewind_flash = RewindFlash.new()
+	add_child(_rewind_flash)
+	move_child(_rewind_flash, _damage_flash.get_index() + 1)
+
+
+## A death was rewound.
+func show_rewind() -> void:
+	if _rewind_flash != null:
+		_rewind_flash.play()
+
+
+## The last life is gone: freeze the game behind the death screen.
+func show_death_screen() -> void:
+	_death_screen.open()
 
 
 ## Gives the minimap the city's building boxes once the level has built the city.

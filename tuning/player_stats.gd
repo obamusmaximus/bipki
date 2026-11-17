@@ -77,6 +77,9 @@ extends Resource
 @export_group("Health")
 ## Player hit points. Read once at startup (needs a restart).
 @export var max_health: float = 100.0
+## Rewinds the player has. Each death spends one and rewinds the level (`RewindStats`); a death with none left is
+## game over, so the player dies `lives + 1` times in all. Read once at startup (needs a restart).
+@export_range(0, 9) var lives: int = 3
 
 @export_group("Air steering")
 ## Steer in the air by turning the velocity toward the input at a maximum turn rate, so steering feels the same

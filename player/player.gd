@@ -5,6 +5,8 @@ extends CharacterBody3D
 
 ## Debug: a moment worth seeing in the playtest log (debug/playtest_log/), e.g. a launch or a wall run start.
 signal playtest_event(event: StringName, data: Dictionary)
+## The player died and spent a life. The level rewinds (see `Rewind`). With nothing connected, a death is game over.
+signal rewind_requested
 
 ## Tunable numbers (see the stats resources in tuning/). Edited live from the pause menu's tuning panel.
 @export var stats: PlayerStats
@@ -55,10 +57,13 @@ var _swing_airborne: bool = false
 var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO])
 ## Debug: this frame's velocity change split by cause, for the playtest log.
 var _forces := VelocityLedger.new()
+var _lives: Lives
 
 
 func _ready() -> void:
 	add_to_group(&"playtest_probe")
+	add_to_group(Rewind.GROUP)
+	_lives = Lives.new(stats.lives)
 	# Hand the tuning resources down first: later setup calls and the HUD read them.
 	_gravity = BodyGravity.new(stats)
 	_bunnyhop = Bunnyhop.new(stats)
@@ -93,6 +98,7 @@ func _ready() -> void:
 	_hud.setup_arc(_camera, _predictor, self, arc_stats)
 	_hud.setup_throw(_grapple.get_throw(), _camera, arc_stats)
 	_hud.setup_damage_numbers(_camera)
+	_hud.setup_lives(_lives)
 	_health.died.connect(_on_died)
 	_effects.setup(self, _grapple, _landing, _camera)
 
@@ -380,11 +386,56 @@ func _on_grapple_thrown(launch_velocity: Vector3, power: float) -> void:
 	_camera.shake(feel.grapple_shake * lerpf(0.5, 1.0, power))
 
 
-## The Hud's death screen freezes the game; ESC must not unpause it again.
+## A death spends a life and the level rewinds. With none left to spend it is game over: the Hud's death screen freezes
+## the game, and ESC must not unpause it again.
 func _on_died() -> void:
-	playtest_event.emit(&"died", {})
+	var rewinding: bool = _lives.spend() and not rewind_requested.get_connections().is_empty()
+	playtest_event.emit(&"died", {"lives_left": _lives.get_left(), "rewinding": rewinding})
+	if rewinding:
+		rewind_requested.emit()
+		return
 	_grapple.get_throw().cancel()
 	_pause_menu.set_process_unhandled_input(false)
+	_hud.show_death_screen()
+
+
+## The player's part of a rewind snapshot (see `Rewind`). Lives are not in it. Neither is the hook: the buttons that
+## held a swing or a throw are rarely still held after a death, so the player comes back with the hook put away.
+func rewind_capture() -> Dictionary:
+	return {
+		&"transform": global_transform,
+		&"pitch": _head.get_pitch(),
+		&"velocity": velocity,
+		&"keeps_momentum": _keeps_momentum,
+		&"double_jump_ready": _double_jump_ready,
+		&"jump_rising": _jump_rising,
+		&"launch_gravity_left": _gravity.get_launch_left(),
+		&"bunnyhop_window_left": _bunnyhop.get_window_left(),
+		&"health": _health.get_current(),
+		&"wall_run": _wall_run.rewind_capture(),
+	}
+
+
+func rewind_restore(state: Dictionary, _rewind: Rewind) -> void:
+	# Hook first: putting it away would otherwise set the momentum flag through `detached`.
+	_grapple.abort()
+	_strike.stop()
+	_melee.reset()
+	_landing.reset()
+	global_transform = state[&"transform"]
+	_head.set_pitch(state[&"pitch"])
+	velocity = state[&"velocity"]
+	_keeps_momentum = state[&"keeps_momentum"]
+	_double_jump_ready = state[&"double_jump_ready"]
+	_jump_rising = state[&"jump_rising"]
+	_swing_airborne = false
+	_gravity.restore_launch(state[&"launch_gravity_left"])
+	_bunnyhop.restore(state[&"bunnyhop_window_left"])
+	_health.restore(state[&"health"])
+	_wall_run.rewind_restore(state[&"wall_run"])
+	_lean.set_wall_side(_wall_run.get_side() if _wall_run.is_active() else 0.0)
+	_hud.show_rewind()
+	playtest_event.emit(&"rewound", {"lives_left": _lives.get_left()})
 
 
 ## Debug: what the playtest log records about the player each physics frame (debug/playtest_log/).

@@ -11,6 +11,8 @@
 [ext_resource type="Script" uid="uid://djg0gqbxmyoya" path="res://levels/arena/arena_scale.gd" id="9_scale"]
 [ext_resource type="Script" uid="uid://e11qoechttmb" path="res://enemy/attack_coordinator.gd" id="10_coord"]
 [ext_resource type="Resource" path="res://tuning/attack_coordinator_default.tres" id="11_coord_stats"]
+[ext_resource type="Script" path="res://rewind/rewind.gd" id="rw_script"]
+[ext_resource type="Resource" path="res://tuning/rewind_default.tres" id="rw_stats"]
 
 [sub_resource type="Environment" id="Environment_arena"]
 background_mode = 1
@@ -71,6 +73,10 @@ stats = ExtResource("7_arena")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=576982048]
 environment = SubResource("Environment_arena")
+
+[node name="Rewind" type="Node" parent="." unique_id=727535640]
+script = ExtResource("rw_script")
+stats = ExtResource("rw_stats")
 
 [node name="AttackCoordinator" type="Node" parent="." unique_id=298711438]
 script = ExtResource("10_coord")

@@ -45,6 +45,29 @@ func is_active() -> bool:
 	return _active
 
 
+## The run's whole state, for a rewind snapshot (part of the Player's).
+func rewind_capture() -> Dictionary:
+	return {
+		&"active": _active, &"normal": _normal, &"side": _side, &"lost_time": _lost_time, &"cooldown": _cooldown,
+		&"head_on_left": _head_on_left, &"head_on_speed": _head_on_speed, &"locked_out": _locked_out,
+		&"run_time": _run_time, &"nudge_left": _nudge_left,
+	}
+
+
+## Puts a captured state back without `started` or `ended`: the Player sets the camera tilt itself.
+func rewind_restore(state: Dictionary) -> void:
+	_active = state[&"active"]
+	_normal = state[&"normal"]
+	_side = state[&"side"]
+	_lost_time = state[&"lost_time"]
+	_cooldown = state[&"cooldown"]
+	_head_on_left = state[&"head_on_left"]
+	_head_on_speed = state[&"head_on_speed"]
+	_locked_out = state[&"locked_out"]
+	_run_time = state[&"run_time"]
+	_nudge_left = state[&"nudge_left"]
+
+
 func get_side() -> float:
 	return _side
 
