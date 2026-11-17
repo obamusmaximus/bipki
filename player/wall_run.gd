@@ -59,7 +59,7 @@ func try_start(velocity_before: Vector3, extra_normal: Vector3 = Vector3.ZERO) -
 	if _active or _cooldown > 0.0 or _locked_out or _body.is_on_floor():
 		return false
 	var flat: Vector3 = Vector3(velocity_before.x, 0.0, velocity_before.z)
-	if flat.length() < stats.wall_run_min_speed:
+	if flat.length() < stats.wall_run_min_speed or velocity_before.y > stats.wall_run_max_rise_speed:
 		return false
 	var heading: Vector3 = flat.normalized()
 	var normals: Array[Vector3] = []
@@ -103,6 +103,7 @@ func step(delta: float) -> bool:
 		return _step_head_on(delta)
 	_apply_nudge(delta)
 	var velocity: Vector3 = _body.velocity.slide(_normal)
+	velocity.y = minf(velocity.y, 0.0) # A run never climbs.
 	var flat: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
 	if flat.length() > stats.wall_run_max_speed:
 		flat = flat.normalized() * stats.wall_run_max_speed
@@ -194,8 +195,8 @@ func _physics_process(delta: float) -> void:
 func _begin(wall_normal: Vector3, head_on: bool) -> void:
 	_active = true
 	_normal = wall_normal
-	# Falling speed doesn't carry into the run (upward speed does).
-	_body.velocity.y = maxf(_body.velocity.y, 0.0)
+	# Vertical speed doesn't carry into the run: it never climbs.
+	_body.velocity.y = 0.0
 	_lost_time = 0.0
 	_head_on_left = stats.wall_run_head_on_time if head_on else 0.0
 	if head_on:
@@ -211,10 +212,22 @@ func _begin(wall_normal: Vector3, head_on: bool) -> void:
 	started.emit(_side)
 
 
-func _end() -> void:
+## Ends the run from outside (a swing attached, a launch fired). `with_cooldown` false lets it latch again at once.
+func cancel(with_cooldown: bool = true) -> void:
+	if _active:
+		_end(with_cooldown)
+
+
+## Normal of the wall being run on (horizontal, pointing out toward the player). Only meaningful while active.
+func get_normal() -> Vector3:
+	return _normal
+
+
+func _end(with_cooldown: bool = true) -> void:
 	_active = false
 	_nudge_left = 0.0
 	_head_on_left = 0.0
 	_side = 0.0
-	_cooldown = stats.wall_run_cooldown
+	if with_cooldown:
+		_cooldown = stats.wall_run_cooldown
 	ended.emit()

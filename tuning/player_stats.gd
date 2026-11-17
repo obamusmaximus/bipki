@@ -96,6 +96,8 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wall_run_gravity_scale: float = 0.04
 ## Speed pressed into the wall to keep touching it (m/s).
 @export var wall_run_stick_speed: float = 3.0
+## A wall isn't latched while rising faster than this (m/s). A wall run never runs up the wall: it starts with no upward speed, so a fast climb (a launch) just slides past instead.
+@export var wall_run_max_rise_speed: float = 12.0
 ## Seconds without touching the wall before the run ends.
 @export var wall_run_lose_grace: float = 0.12
 ## Upward speed of a jump off the wall (m/s).

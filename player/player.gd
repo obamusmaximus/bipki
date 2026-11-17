@@ -27,6 +27,8 @@ var _strike: StrikeGuidance
 var _double_jump_ready: bool = true
 ## True while rising from a jump or double jump, so releasing jump can cut it short.
 var _jump_rising: bool = false
+## True once the player has left the floor during the current swing. Landing after that ends the swing.
+var _swing_airborne: bool = false
 
 @onready var _head: HeadLook = $Head
 @onready var _grapple: GrappleHook = $GrappleHook
@@ -105,6 +107,7 @@ func _physics_process(delta: float) -> void:
 		if velocity.y <= 0.0:
 			_gravity.end_launch()
 	_gravity.tick(delta)
+	_grapple.wall_normals = PackedVector3Array([_walls[0], _walls[1], _wall_run.get_normal() if _wall_run.is_active() else Vector3.ZERO])
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
 
@@ -126,9 +129,24 @@ func _physics_process(delta: float) -> void:
 		_gravity.end_launch()
 		_strike.stop()
 		_jump_rising = false
-		# Standing on the floor at walking pace (not reeling): walk and jump as usual, the rope only stops
-		# the player going further than its length. Faster (a swing grazing the ground) keeps sliding.
+		# A swing and walking are exclusive: landing after having been in the air ends the swing, and the
+		# frame is a walking one.
 		var grounded: bool = is_on_floor() and velocity.y <= 0.0
+		if not is_on_floor():
+			_swing_airborne = true
+		elif grounded and _swing_airborne:
+			_grapple.release()
+			_swing_airborne = false
+			# The swing's speed doesn't carry into walking, which is hard capped: this is a walking frame.
+			_keeps_momentum = false
+			_ground_move(direction)
+			_forces.mark(&"walk", velocity)
+			move_and_slide()
+			_forces.mark(&"collision", velocity)
+			_set_walking(not direction.is_zero_approx())
+			return
+		# A swing started from the floor (never airborne yet): walk and jump as usual at walking pace, the rope
+		# only stops the player going further than its length. Faster (a swing grazing the ground) keeps sliding.
 		if grounded and Vector2(velocity.x, velocity.z).length() <= stats.move_speed \
 				and not Input.is_action_pressed("reel"):
 			_ground_move(direction)
@@ -148,21 +166,15 @@ func _physics_process(delta: float) -> void:
 			velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 			_forces.mark(&"soft_limit", velocity)
 		_forces.mark(&"walk", velocity)
-		var velocity_before: Vector3 = velocity
 		move_and_slide()
 		_forces.mark(&"collision", velocity)
-		if _wall_run.try_start(velocity_before):
-			_grapple.release()
-			return
 		var correction: SwingRope.Correction = _grapple.constrain_swing(velocity, is_on_floor(), delta)
 		# The rope correction respects walls: it stops at a face instead of passing through it.
 		var collision: KinematicCollision3D = move_and_collide(correction.offset)
 		velocity = correction.velocity
 		_forces.mark(&"rope", velocity)
 		if collision:
-			if _wall_run.try_start(velocity_before, collision.get_normal()):
-				_grapple.release()
-				return
+			# A swing never wall runs: it just slides along the wall.
 			velocity = velocity.slide(collision.get_normal())
 			_forces.mark(&"collision", velocity)
 		_set_walking(is_on_floor() and not direction.is_zero_approx())
@@ -277,6 +289,10 @@ func _on_wall_run_ended() -> void:
 
 func _on_grapple_attached() -> void:
 	playtest_event.emit(&"grapple_attached", {"hit_point": _grapple.get_hit_point()})
+	if _grapple.get_mode() == GrappleHook.Mode.SWING:
+		_swing_airborne = false
+		# A swing and a wall run are exclusive. Letting go of the swing can latch a wall again at once.
+		_wall_run.cancel(false)
 	_camera.shake(feel.grapple_shake)
 	if grapple_stats.hit_stop_enabled:
 		_hit_stop.trigger(grapple_stats.hit_stop_scale, grapple_stats.hit_stop_time)
@@ -291,6 +307,7 @@ func _on_grapple_detached() -> void:
 ## The launch adds its boost on top of the momentum the player keeps.
 func _on_grapple_launched(launch_velocity: Vector3) -> void:
 	playtest_event.emit(&"launched", {"launch_velocity": launch_velocity})
+	_wall_run.cancel() # A launch sends the player flying; it isn't spent running along a wall.
 	velocity = velocity * stats.momentum_carry + launch_velocity
 	# Fired while standing, lift off the floor, or a launch aimed slightly down would stop dead on it.
 	if is_on_floor() and velocity.y < stats.launch_ground_lift:
@@ -302,6 +319,7 @@ func _on_grapple_launched(launch_velocity: Vector3) -> void:
 ## along an arc into it. The launch gravity lasts the whole flight, which the aim assumes. The body hit is armed.
 func _on_grapple_launched_at_enemy(enemy: Enemy) -> void:
 	playtest_event.emit(&"launched_at_enemy", {"enemy": enemy.name, "enemy_center": enemy.get_center()})
+	_wall_run.cancel()
 	var mid: Vector3 = global_position + Vector3.UP * Melee.MID_BODY
 	var toward: Vector3 = (enemy.get_center() - mid).normalized()
 	var speed: float = (velocity * stats.momentum_carry + toward * grapple_stats.launch_speed).length()

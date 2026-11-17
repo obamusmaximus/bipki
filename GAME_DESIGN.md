@@ -17,6 +17,8 @@ A first-person momentum game, a love letter to the Titanfall movement feel, buil
 ## Scale
 Derive map size from a target end-to-end traversal time at full speed, not the other way round. The speed-limit parameters in `PlayerStats` are therefore also level-design constraints: raising top speed shrinks every map. Tall landmarks visible from far away give the player something to measure their speed against.
 
+**Walking speed is capped on purpose, for now.** Walking, and any speed gained by a launch or swing, is hard-capped when the player is on foot, for consistency. This may change: sliding or bunnyhopping could let the player conserve built-up momentum across a larger map, which would also loosen the Scale constraint above.
+
 ## Level structure (proposed)
 **Core idea:** skipping is allowed but costly. Every objective changes the state of the map, so the order matters and nothing is locked.
 

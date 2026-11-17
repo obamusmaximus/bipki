@@ -20,6 +20,8 @@ extends Resource
 @export var launch_range: float = 30.0
 ## Hits within this height of the player's feet count as "the ground plane" and are rejected.
 @export var ground_tolerance: float = 0.1
+## A launch can't target a point this close (metres) to the plane of a wall the player is running on or beside. It would only press them into it.
+@export var wall_tolerance: float = 1.5
 
 @export_group("Launch at an enemy")
 ## How much of the enemy's motion a launch at it leads (0 aims where it is, 1 where it will be on arrival).
