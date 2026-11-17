@@ -163,6 +163,8 @@ func _physics_process(delta: float) -> void:
 			_forces.mark(&"steering", velocity)
 			velocity += _assist.get_acceleration(direction) * delta
 			_forces.mark(&"assist", velocity)
+			velocity = AirDrag.apply(velocity, delta, stats)
+			_forces.mark(&"drag", velocity)
 			velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 			_forces.mark(&"soft_limit", velocity)
 		_forces.mark(&"walk", velocity)
@@ -196,6 +198,8 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity += _assist.get_acceleration(direction) * delta
 			_forces.mark(&"assist", velocity)
+		velocity = AirDrag.apply(velocity, delta, stats)
+		_forces.mark(&"drag", velocity)
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		_forces.mark(&"soft_limit", velocity)
 		var velocity_before: Vector3 = velocity
@@ -223,6 +227,8 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity += _assist.get_acceleration(direction) * delta
 		_forces.mark(&"assist", velocity)
+		velocity = AirDrag.apply(velocity, delta, stats)
+		_forces.mark(&"drag", velocity)
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
 		_forces.mark(&"soft_limit", velocity)
 	var velocity_before: Vector3 = velocity

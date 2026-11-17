@@ -83,6 +83,10 @@ extends Resource
 ## Below this horizontal speed (m/s) the older acceleration is used, so a standing start can still move.
 @export var air_turn_min_speed: float = 6.0
 
+@export_group("Air drag")
+## Fraction of speed lost per second while airborne or swinging, on at any speed (below the soft limit too). 0 = off. Keeps flight from feeling static.
+@export_range(0.0, 0.5, 0.005) var air_drag: float = 0.05
+
 @export_group("Wall run")
 ## Horizontal speed (m/s) needed to latch onto a wall.
 @export var wall_run_min_speed: float = 12.0
@@ -112,6 +116,8 @@ extends Resource
 @export var wall_run_head_on_enabled: bool = true
 ## Seconds the head-on latch lasts before the player lets go.
 @export var wall_run_head_on_time: float = 1.0
+## Speed (m/s) straight back off the wall when jumping from a head-on latch. The player faces the wall, so this is directly backward. The upward speed is jump_speed, as on the ground.
+@export var wall_run_head_on_jump_speed: float = 14.0
 ## Share of gravity while latched head-on (a slow slide down the wall).
 @export_range(0.0, 1.0, 0.01) var wall_run_head_on_gravity_scale: float = 0.08
 ## Turning the look this close to parallel with the wall (degrees) starts the run.

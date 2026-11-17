@@ -4,10 +4,18 @@
 
 [resource]
 script = ExtResource("1_stats")
-jump_speed = 7.0
+jump_speed = 15.0
 jump_release_cut = 1.0
-momentum_carry = 0.700048
-gravity = 30.00116
-fall_gravity_scale = 1.401162
+double_jump_sideways = 6.08
+momentum_carry = 0.999
+launch_ground_lift = 5.0
+gravity = 22.4
+fall_gravity_scale = 1.25
 swing_gravity_scale = 0.7
 launch_gravity_scale = 0.35
+launch_gravity_time = 1.4
+footsteps_volume_db = -17.5
+wall_run_jump_speed = 14.0
+wall_run_jump_away_speed = 10.0
+wall_run_head_on_jump_speed = 16.0
+prediction_seconds = 2.51

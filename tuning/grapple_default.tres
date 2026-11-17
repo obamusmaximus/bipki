@@ -5,8 +5,9 @@
 [resource]
 script = ExtResource("1_stats")
 extend_speed = 200.0
-launch_speed = 35.00116
+launch_speed = 40.0
 launch_grace = 0.200258
-max_distance = 500.0
-launch_range = 50.001160999999996
+max_distance = 100.0
+launch_range = 100.0
+wall_tolerance = 1.01
 clear_ground_radius = 7.05

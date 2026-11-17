@@ -141,9 +141,8 @@ func step(delta: float) -> bool:
 func _step_head_on(delta: float) -> bool:
 	var velocity: Vector3 = Vector3(0.0, _body.velocity.y - stats.gravity * stats.wall_run_head_on_gravity_scale * delta, 0.0)
 	if Input.is_action_just_pressed("jump"):
-		velocity += _normal * stats.wall_run_jump_away_speed
-		velocity.y = maxf(velocity.y, 0.0) + stats.wall_run_jump_speed
-		_body.velocity = velocity
+		# Facing the wall, so straight back off it is directly backward. The lift is the ground jump's, and the momentum flight takes over.
+		_body.velocity = _normal * stats.wall_run_head_on_jump_speed + Vector3.UP * stats.jump_speed
 		_end()
 		return false
 
