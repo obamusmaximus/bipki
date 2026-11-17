@@ -7,3 +7,6 @@
 
 # Playtest logs (debug/playtest_log/)
 /playtest_logs/
+
+# Third-party editor addon (Script IDE)
+/addons/script-ide/
