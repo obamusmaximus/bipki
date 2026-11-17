@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://hud/grapple_hud.gd" id="1_module"]
+[ext_resource type="Script" path="res://hud/crosshair.gd" id="2_cross"]
+[ext_resource type="Script" path="res://hud/reel_bar.gd" id="3_reel"]
+[ext_resource type="Script" path="res://hud/ability_bar.gd" id="4_abilities"]
+[ext_resource type="Script" path="res://hud/mode_label.gd" id="5_mode"]
+[ext_resource type="Script" path="res://hud/trajectory_arc.gd" id="6_arc"]
+[ext_resource type="Script" path="res://hud/throw_readout.gd" id="7_throw"]
+
+[node name="GrappleHud" type="Node"]
+script = ExtResource("1_module")
+
+[node name="Underlay" type="Node" parent="."]
+
+[node name="TrajectoryArc" type="Control" parent="Underlay"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_arc")
+
+[node name="Center" type="Node" parent="."]
+
+[node name="Crosshair" type="Control" parent="Center"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_cross")
+
+[node name="Right" type="Node" parent="."]
+
+[node name="ReelBar" type="Control" parent="Right"]
+custom_minimum_size = Vector2(8, 200)
+layout_mode = 2
+size_flags_horizontal = 8
+mouse_filter = 2
+script = ExtResource("3_reel")
+
+[node name="AbilityRow" type="Node" parent="."]
+
+[node name="Abilities" type="HBoxContainer" parent="AbilityRow"]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("4_abilities")
+
+[node name="BottomCenter" type="Node" parent="."]
+
+[node name="ModeLabel" type="Label" parent="BottomCenter"]
+custom_minimum_size = Vector2(320, 28)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+script = ExtResource("5_mode")
+
+[node name="Overlay" type="Node" parent="."]
+
+[node name="ThrowReadout" type="Control" parent="Overlay"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_throw")

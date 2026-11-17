@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://player/grapple_loadout.gd" id="1_loadout"]
+[ext_resource type="Script" path="res://player/grapple_hook.gd" id="2_hook"]
+[ext_resource type="Script" path="res://player/grapple_rope.gd" id="3_rope"]
+[ext_resource type="Script" path="res://player/grapple_sfx.gd" id="4_sfx"]
+[ext_resource type="Script" path="res://player/enemy_throw.gd" id="5_throw"]
+[ext_resource type="Script" path="res://player/avoidance_assist.gd" id="6_assist"]
+[ext_resource type="Script" path="res://player/trajectory_predictor.gd" id="7_predictor"]
+[ext_resource type="Script" path="res://player/melee.gd" id="8_melee"]
+[ext_resource type="Script" path="res://player/hit_stop.gd" id="9_hitstop"]
+[ext_resource type="Resource" path="res://tuning/grapple_default.tres" id="10_grapple"]
+[ext_resource type="Resource" path="res://tuning/trajectory_arc_default.tres" id="11_arc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rope"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.6, 0.6, 0.6, 0.5)
+
+[node name="GrappleLoadout" type="Node3D"]
+script = ExtResource("1_loadout")
+grapple_stats = ExtResource("10_grapple")
+arc_stats = ExtResource("11_arc")
+
+[node name="GrappleHook" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+script = ExtResource("2_hook")
+
+[node name="Rope" type="MeshInstance3D" parent="GrappleHook"]
+cast_shadow = 0
+material_override = SubResource("StandardMaterial3D_rope")
+script = ExtResource("3_rope")
+
+[node name="Sfx" type="Node" parent="GrappleHook"]
+script = ExtResource("4_sfx")
+
+[node name="Throw" type="Node" parent="GrappleHook"]
+script = ExtResource("5_throw")
+
+[node name="AvoidanceAssist" type="Node" parent="."]
+script = ExtResource("6_assist")
+
+[node name="TrajectoryPredictor" type="Node" parent="."]
+script = ExtResource("7_predictor")
+
+[node name="Melee" type="Node" parent="."]
+script = ExtResource("8_melee")
+
+[node name="HitStop" type="Node" parent="."]
+script = ExtResource("9_hitstop")

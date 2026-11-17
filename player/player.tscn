@@ -1,11 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://player/grapple_sfx.gd" id="8_sfx"]
 [ext_resource type="Script" path="res://player/footsteps.gd" id="9_steps"]
 [ext_resource type="Script" path="res://player/head_look.gd" id="2_look"]
-[ext_resource type="Script" path="res://player/grapple_hook.gd" id="3_hook"]
-[ext_resource type="Script" path="res://player/grapple_rope.gd" id="4_rope"]
 [ext_resource type="PackedScene" path="res://hud/hud.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://menus/pause_menu.tscn" id="10_pause"]
 [ext_resource type="Script" path="res://player/dynamic_fov.gd" id="11_fov"]
@@ -15,19 +12,13 @@
 [ext_resource type="Script" path="res://player/walk_bob.gd" id="7_bob"]
 [ext_resource type="Script" path="res://player/edge_detector.gd" id="14_edge"]
 [ext_resource type="Script" path="res://player/wall_run.gd" id="15_wallrun"]
-[ext_resource type="Script" path="res://player/avoidance_assist.gd" id="23_assist"]
-[ext_resource type="Script" path="res://player/trajectory_predictor.gd" id="24_predictor"]
 [ext_resource type="Script" path="res://player/camera_lean.gd" id="25_lean"]
-[ext_resource type="Script" path="res://player/enemy_throw.gd" id="27_throw"]
-[ext_resource type="Resource" path="res://tuning/trajectory_arc_default.tres" id="26_arc"]
 [ext_resource type="Script" path="res://player/health.gd" id="16_health"]
-[ext_resource type="Script" path="res://player/melee.gd" id="28_melee"]
-[ext_resource type="Script" path="res://player/hit_stop.gd" id="29_hitstop"]
 [ext_resource type="Resource" path="res://tuning/player_default.tres" id="18_player"]
-[ext_resource type="Resource" path="res://tuning/grapple_default.tres" id="19_grapple"]
 [ext_resource type="Resource" path="res://tuning/camera_feel_default.tres" id="20_feel"]
 [ext_resource type="Resource" path="res://tuning/hud_default.tres" id="21_hud"]
 [ext_resource type="Resource" path="res://tuning/minimap_default.tres" id="22_minimap"]
+[ext_resource type="PackedScene" path="res://player/grapple_loadout.tscn" id="30_loadout"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 height = 1.8
@@ -40,22 +31,15 @@ radius = 0.4
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
 albedo_color = Color(0.9, 0.5, 0.1, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rope"]
-transparency = 1
-cull_mode = 2
-shading_mode = 0
-albedo_color = Color(0.6, 0.6, 0.6, 0.5)
-
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
 collision_mask = 1
 script = ExtResource("1_player")
 stats = ExtResource("18_player")
-grapple_stats = ExtResource("19_grapple")
 feel = ExtResource("20_feel")
 hud_stats = ExtResource("21_hud")
 minimap_stats = ExtResource("22_minimap")
-arc_stats = ExtResource("26_arc")
+loadout_scene = ExtResource("30_loadout")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -83,21 +67,6 @@ script = ExtResource("25_lean")
 [node name="DynamicFov" type="Node" parent="Head/Camera3D"]
 script = ExtResource("11_fov")
 
-[node name="GrappleHook" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-script = ExtResource("3_hook")
-
-[node name="Rope" type="MeshInstance3D" parent="GrappleHook"]
-cast_shadow = 0
-material_override = SubResource("StandardMaterial3D_rope")
-script = ExtResource("4_rope")
-
-[node name="Sfx" type="Node" parent="GrappleHook"]
-script = ExtResource("8_sfx")
-
-[node name="Throw" type="Node" parent="GrappleHook"]
-script = ExtResource("27_throw")
-
 [node name="Footsteps" type="Node" parent="."]
 script = ExtResource("9_steps")
 
@@ -113,20 +82,8 @@ script = ExtResource("14_edge")
 [node name="WallRun" type="Node" parent="."]
 script = ExtResource("15_wallrun")
 
-[node name="AvoidanceAssist" type="Node" parent="."]
-script = ExtResource("23_assist")
-
-[node name="TrajectoryPredictor" type="Node" parent="."]
-script = ExtResource("24_predictor")
-
 [node name="Health" type="Node" parent="."]
 script = ExtResource("16_health")
-
-[node name="Melee" type="Node" parent="."]
-script = ExtResource("28_melee")
-
-[node name="HitStop" type="Node" parent="."]
-script = ExtResource("29_hitstop")
 
 [node name="Hud" parent="." instance=ExtResource("5_hud")]
 
