@@ -27,6 +27,7 @@
 - **At the end of a task, update the mechanic's doc, then `STATUS.md`.** Follow the documenting principles in `docs/mechanics/README.md`.
 - Several sessions may work in this checkout at once, one per mechanic. Touch only your mechanic's doc, and re-read `STATUS.md` right before editing it.
 - `GAME_DESIGN.md` is optional reading for design discussions.
+- **Playtest logs** (`playtest_logs/`, saved in game with L): read them only when the user asks, and read `docs/playtest_log.md` first.
 
 ## Glossary
 Game-specific terms. Use them consistently in code, comments and conversation. Each is defined in the mechanic doc in brackets (all in `docs/mechanics/`).
@@ -35,7 +36,10 @@ Game-specific terms. Use them consistently in code, comments and conversation. E
 - **[`combat.md`]** enemy, enemy lock (snap), launch at an enemy (strike), melee (body hit), knockback, throw, bullet time, pull point, draw and flick (throw power), camera weight, impact damage, release prediction, damage numbers
 - **[`drones.md`]** seeking range, goal separation (ring slots), attack coordinator, random drones
 - **[`movement.md`]** player gravity, momentum, air steering, soft speed limit, wall run, head-on latch, obstacle assist, trajectory prediction, trajectory arc, camera lean, dynamic FOV, walk bob
+- **[`rewind.md`]** rewind, snapshot, rewindable (rewind id), recreate, lives, game over
 - **[`levels_and_hud.md`]** arena, city, enemy spawner, HUD scale, speedometer, minimap, effects, pause menu, tuning panel
+
+- **Dev-only tools live in `debug/`** (one subfolder per tool) and their scripts start their doc comment with "Debug:". Gameplay must never depend on them; they hook in through groups and signals.
 
 ## Dependencies
 - **Ask before adding any addon or plugin** (Asset Library, `addons/` folder, GDExtension). Prefer built-in engine features.

@@ -5,6 +5,7 @@ extends CharacterBody3D
 ## straight line, and when it hits a surface it takes damage in proportion to the speed it hit at (the part
 ## of its velocity into the surface). A subclass supplies its own behaviour in `_ai_step` and reacts to
 ## state changes in `_on_state_changed`.
+## It takes part in a rewind (see `Rewind`): a subclass adds its own parts in `_capture_ai` and `_restore_ai`.
 ## Signals up: the grapple and the HUD listen; nothing here knows about the player.
 
 ## Emitted when a thrown enemy hits something. `speed` is the impact speed along the surface normal.
@@ -41,6 +42,8 @@ var _knock_left: float = 0.0
 ## find every enemy that is in the scene from the start.
 func _enter_tree() -> void:
 	add_to_group(GROUP)
+	add_to_group(Rewind.GROUP)
+	add_to_group(Rewind.RECREATE_GROUP)
 
 
 func _ready() -> void:
@@ -120,6 +123,60 @@ func take_collision(speed: float, point: Vector3, push: Vector3) -> void:
 		return
 	velocity += push
 	EnemyEffects.impact(get_tree().current_scene, point, -push.normalized(), speed)
+
+
+## What a rewind sets on a remade enemy before it enters the tree: a variant placed with other stats stays itself.
+func rewind_recipe() -> Dictionary:
+	return {&"stats": stats}
+
+
+func rewind_capture() -> Dictionary:
+	return {
+		&"transform": global_transform,
+		&"velocity": velocity,
+		&"state": state,
+		&"flight_time": _flight_time,
+		&"stun_left": _stun_left,
+		&"knocked": _knocked,
+		&"knock_left": _knock_left,
+		&"health": health.get_current(),
+		&"ai": _capture_ai(),
+	}
+
+
+## Held by a throw in the snapshot: the throw isn't rewound (the player comes back with the hook put away), so the
+## enemy comes back dropped, as if let go.
+func rewind_restore(saved: Dictionary, _rewind: Rewind) -> void:
+	global_transform = saved[&"transform"]
+	velocity = saved[&"velocity"]
+	_flight_time = saved[&"flight_time"]
+	_stun_left = saved[&"stun_left"]
+	_knocked = saved[&"knocked"]
+	_knock_left = saved[&"knock_left"]
+	health.restore(saved[&"health"])
+	var restored: State = saved[&"state"]
+	if restored == State.GRABBED:
+		restored = State.STUNNED
+		_stun_left = stats.stun_time
+	state = restored
+	_on_state_changed()
+	state_changed.emit(state)
+	_restore_ai(saved[&"ai"])
+
+
+## Where the playback of a rewind has the enemy between two snapshots.
+func rewind_pose(from: Dictionary, to: Dictionary, weight: float, span: float) -> void:
+	global_transform = RewindScrub.transform_between(from, to, weight, span)
+
+
+## The enemy type's own state for a rewind snapshot (plain values only).
+func _capture_ai() -> Dictionary:
+	return {}
+
+
+## Puts `_capture_ai`'s state back. Runs after the base state and `_on_state_changed`.
+func _restore_ai(_saved: Dictionary) -> void:
+	pass
 
 
 ## NORMAL state behaviour, called each physics frame. Overridden by each enemy type.

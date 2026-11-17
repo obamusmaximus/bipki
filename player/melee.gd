@@ -48,6 +48,13 @@ func arm() -> void:
 	_armed_left = stats.melee_armed_time
 
 
+## Forgets the armed hit and the swept sphere's last position (a rewind moved the body).
+func reset() -> void:
+	_armed_left = 0.0
+	_cooldown = 0.0
+	_has_last = false
+
+
 func is_armed() -> bool:
 	return _armed_left > 0.0
 

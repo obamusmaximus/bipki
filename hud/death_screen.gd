@@ -1,15 +1,14 @@
 class_name DeathScreen
 extends Control
-## Shown when the player dies: the game freezes behind a dark red veil, and a Restart button reloads the
-## level. It keeps running while the tree is paused (process mode "always").
+## Shown when the player's last life is gone: the game freezes behind a dark red veil, and a Restart button
+## reloads the level. It keeps running while the tree is paused (process mode "always").
 
 var _restart_button: Button
 var _column: VBoxContainer
 var _stats: HudStats
 
 
-func setup(health: Health, hud_stats: HudStats) -> void:
-	health.died.connect(_on_died)
+func setup(hud_stats: HudStats) -> void:
 	_stats = hud_stats
 	_stats.changed.connect(_apply_scale)
 	_apply_scale()
@@ -56,7 +55,7 @@ func _apply_scale() -> void:
 	_column.scale = Vector2.ONE * _stats.hud_scale
 
 
-func _on_died() -> void:
+func open() -> void:
 	visible = true
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

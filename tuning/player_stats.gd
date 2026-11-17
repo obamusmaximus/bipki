@@ -32,8 +32,12 @@ extends Resource
 @export var gravity: float = 25.0
 ## Gravity multiplier while falling (vertical speed below zero). Above 1 gives a quick drop after the apex.
 @export_range(1.0, 3.0, 0.05) var fall_gravity_scale: float = 1.3
-## Share of gravity on a swing rope. Higher swings faster and heavier (and builds more speed at the bottom).
-@export_range(0.0, 2.0, 0.01) var swing_gravity_scale: float = 0.4
+## Share of gravity on a swing rope while falling toward the low point of the arc. Higher builds speed faster
+## (and more speed at the bottom).
+@export_range(0.0, 2.0, 0.01) var swing_gravity_scale_falling: float = 0.4
+## Share of gravity on a swing rope while rising past the low point. Higher slows the swing sooner and lower
+## carries it higher. Below the falling share each swing climbs higher than it started; above it each one dies down.
+@export_range(0.0, 2.0, 0.01) var swing_gravity_scale_rising: float = 0.4
 ## Share of gravity for launch_gravity_time after a launch, so a launch still reaches its aim point.
 @export_range(0.0, 2.0, 0.01) var launch_gravity_scale: float = 0.4
 ## Seconds of launch_gravity_scale after a launch, then full gravity (ends early on landing, a swing or a wall run).
@@ -73,6 +77,9 @@ extends Resource
 @export_group("Health")
 ## Player hit points. Read once at startup (needs a restart).
 @export var max_health: float = 100.0
+## Rewinds the player has. Each death spends one and rewinds the level (`RewindStats`); a death with none left is
+## game over, so the player dies `lives + 1` times in all. Read once at startup (needs a restart).
+@export_range(0, 9) var lives: int = 3
 
 @export_group("Air steering")
 ## Steer in the air by turning the velocity toward the input at a maximum turn rate, so steering feels the same
@@ -83,19 +90,44 @@ extends Resource
 ## Below this horizontal speed (m/s) the older acceleration is used, so a standing start can still move.
 @export var air_turn_min_speed: float = 6.0
 
+@export_group("Air drag")
+## Fraction of speed lost per second while airborne or swinging, on at any speed (below the soft limit too). 0 = off. Keeps flight from feeling static.
+@export_range(0.0, 0.5, 0.005) var air_drag: float = 0.05
+
+@export_group("Bunnyhop")
+## Landing with more than walking speed opens a grace window: speed is kept instead of being set to move_speed,
+## and a jump inside it leaves the ground with that speed. Off: every landing sets walking speed.
+@export var bunnyhop_enabled: bool = true
+## Seconds of grace after landing in which a jump keeps the speed. Then the landing sets walking speed.
+@export var bunnyhop_window: float = 0.15
+## A jump pressed this many seconds before landing still counts as a hop.
+@export var bunnyhop_buffer_time: float = 0.12
+## Share of the speed above move_speed kept by a hop. 1 keeps it all; less bleeds speed on every hop.
+@export_range(0.0, 1.0, 0.01) var bunnyhop_speed_keep: float = 0.95
+
 @export_group("Wall run")
 ## Horizontal speed (m/s) needed to latch onto a wall.
 @export var wall_run_min_speed: float = 12.0
 ## The run ends when the speed drops below this (m/s).
 @export var wall_run_end_speed: float = 6.0
-## The speed is limited to this while wall running (m/s).
+## The compressor brings the run's horizontal speed down to this (m/s), starting wall_run_compress_delay into the run. A head-on latch also keeps at most this.
 @export var wall_run_max_speed: float = 50.0
+## Seconds into a run before the compressor starts slowing a run that is faster than wall_run_max_speed.
+@export var wall_run_compress_delay: float = 0.75
+## How fast (m/s per second) the compressor slows a run that is above wall_run_max_speed.
+@export var wall_run_compress_rate: float = 5.0
+## Acceleration (m/s per second) along the wall while the run is slower than wall_run_accel_max_speed.
+@export var wall_run_accel: float = 8.0
+## The run accelerates only up to this speed (m/s). A run that starts faster keeps its momentum, with no extra speed.
+@export var wall_run_accel_max_speed: float = 42.0
 ## Largest angle (degrees) between the travel direction and the wall for a hit to count as a graze. Steeper hits are head-on and just slide.
 @export_range(5.0, 89.0, 1.0) var wall_run_max_approach_degrees: float = 50.0
 ## Share of gravity that still applies while wall running.
 @export_range(0.0, 1.0, 0.01) var wall_run_gravity_scale: float = 0.04
 ## Speed pressed into the wall to keep touching it (m/s).
 @export var wall_run_stick_speed: float = 3.0
+## A wall isn't latched while rising faster than this (m/s). A wall run never runs up the wall: it starts with no upward speed, so a fast climb (a launch) just slides past instead.
+@export var wall_run_max_rise_speed: float = 12.0
 ## Seconds without touching the wall before the run ends.
 @export var wall_run_lose_grace: float = 0.12
 ## Upward speed of a jump off the wall (m/s).
@@ -110,6 +142,8 @@ extends Resource
 @export var wall_run_head_on_enabled: bool = true
 ## Seconds the head-on latch lasts before the player lets go.
 @export var wall_run_head_on_time: float = 1.0
+## Speed (m/s) straight back off the wall when jumping from a head-on latch. The player faces the wall, so this is directly backward. The upward speed is jump_speed, as on the ground.
+@export var wall_run_head_on_jump_speed: float = 14.0
 ## Share of gravity while latched head-on (a slow slide down the wall).
 @export_range(0.0, 1.0, 0.01) var wall_run_head_on_gravity_scale: float = 0.08
 ## Turning the look this close to parallel with the wall (degrees) starts the run.

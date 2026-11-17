@@ -1,7 +1,7 @@
 class_name Health
 extends Node
 ## Hit points for whatever owns this node. Attackers find it as a child named "Health" on the body they hit
-## and call take_damage(). It reports upward with signals and does nothing else (no death handling yet).
+## and call take_damage(). It reports upward with signals; its owner decides what a death does.
 
 signal damaged(amount: float)
 signal health_changed(current: float, maximum: float)
@@ -26,6 +26,12 @@ func take_damage(amount: float) -> void:
 	health_changed.emit(_current, max_health)
 	if is_dead():
 		died.emit()
+
+
+## Sets the hit points back (a rewind). Reports the change but no damage or death: neither happened.
+func restore(current: float) -> void:
+	_current = clampf(current, 0.0, max_health)
+	health_changed.emit(_current, max_health)
 
 
 func get_current() -> float:

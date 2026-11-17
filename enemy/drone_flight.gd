@@ -37,6 +37,11 @@ func setup(grid: FlightGrid, target: Node3D, drone_stats: DroneStats) -> void:
 	_target = target
 
 
+## Drops the goal and path, so the next tick plans from where the drone is (a rewind moved it).
+func reset() -> void:
+	_stand_down()
+
+
 ## True while parked at its goal.
 func is_holding() -> bool:
 	return _holding

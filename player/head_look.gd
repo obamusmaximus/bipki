@@ -18,6 +18,16 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
+func get_pitch() -> float:
+	return _pitch
+
+
+## Puts the pitch back (a rewind). Yaw is the body's own rotation.
+func set_pitch(pitch: float) -> void:
+	_pitch = clampf(pitch, -_pitch_limit, _pitch_limit)
+	rotation.x = _pitch
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	# ESC is handled by the pause menu, which also releases and recaptures the mouse.
 	if event is InputEventMouseButton and event.pressed:

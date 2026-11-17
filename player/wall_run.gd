@@ -30,6 +30,8 @@ var _head_on_left: float = 0.0
 var _head_on_speed: float = 0.0
 ## Set when a head-on latch times out: no more latching until the player lands.
 var _locked_out: bool = false
+## Seconds since the run started (or since a head-on latch turned into a run), for the compressor delay.
+var _run_time: float = 0.0
 ## Degrees of the outward look nudge still to apply, signed as the yaw rotation to apply.
 var _nudge_left: float = 0.0
 
@@ -41,6 +43,29 @@ func setup(body: CharacterBody3D, player_stats: PlayerStats) -> void:
 
 func is_active() -> bool:
 	return _active
+
+
+## The run's whole state, for a rewind snapshot (part of the Player's).
+func rewind_capture() -> Dictionary:
+	return {
+		&"active": _active, &"normal": _normal, &"side": _side, &"lost_time": _lost_time, &"cooldown": _cooldown,
+		&"head_on_left": _head_on_left, &"head_on_speed": _head_on_speed, &"locked_out": _locked_out,
+		&"run_time": _run_time, &"nudge_left": _nudge_left,
+	}
+
+
+## Puts a captured state back without `started` or `ended`: the Player sets the camera tilt itself.
+func rewind_restore(state: Dictionary) -> void:
+	_active = state[&"active"]
+	_normal = state[&"normal"]
+	_side = state[&"side"]
+	_lost_time = state[&"lost_time"]
+	_cooldown = state[&"cooldown"]
+	_head_on_left = state[&"head_on_left"]
+	_head_on_speed = state[&"head_on_speed"]
+	_locked_out = state[&"locked_out"]
+	_run_time = state[&"run_time"]
+	_nudge_left = state[&"nudge_left"]
 
 
 func get_side() -> float:
@@ -59,7 +84,7 @@ func try_start(velocity_before: Vector3, extra_normal: Vector3 = Vector3.ZERO) -
 	if _active or _cooldown > 0.0 or _locked_out or _body.is_on_floor():
 		return false
 	var flat: Vector3 = Vector3(velocity_before.x, 0.0, velocity_before.z)
-	if flat.length() < stats.wall_run_min_speed:
+	if flat.length() < stats.wall_run_min_speed or velocity_before.y > stats.wall_run_max_rise_speed:
 		return false
 	var heading: Vector3 = flat.normalized()
 	var normals: Array[Vector3] = []
@@ -103,9 +128,9 @@ func step(delta: float) -> bool:
 		return _step_head_on(delta)
 	_apply_nudge(delta)
 	var velocity: Vector3 = _body.velocity.slide(_normal)
-	var flat: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
-	if flat.length() > stats.wall_run_max_speed:
-		flat = flat.normalized() * stats.wall_run_max_speed
+	velocity.y = minf(velocity.y, 0.0) # A run never climbs.
+	_run_time += delta
+	var flat: Vector3 = _run_speed_step(Vector3(velocity.x, 0.0, velocity.z), delta)
 	velocity.x = flat.x
 	velocity.z = flat.z
 	velocity.y -= stats.gravity * stats.wall_run_gravity_scale * delta
@@ -135,14 +160,28 @@ func step(delta: float) -> bool:
 	return true
 
 
+## The run's horizontal speed for this frame. Below `wall_run_accel_max_speed` it accelerates up to that.
+## Above `wall_run_max_speed`, once `wall_run_compress_delay` has passed, a compressor slows it back down
+## to that at `wall_run_compress_rate`. Between the two, momentum is kept as it is.
+func _run_speed_step(flat: Vector3, delta: float) -> Vector3:
+	var speed: float = flat.length()
+	if is_zero_approx(speed):
+		return flat
+	var target: float = speed
+	if speed < stats.wall_run_accel_max_speed:
+		target = minf(speed + stats.wall_run_accel * delta, stats.wall_run_accel_max_speed)
+	elif speed > stats.wall_run_max_speed and _run_time >= stats.wall_run_compress_delay:
+		target = maxf(speed - stats.wall_run_compress_rate * delta, stats.wall_run_max_speed)
+	return flat * (target / speed)
+
+
 ## One physics frame of the head-on latch: a slow slide straight down the wall until the player turns the camera
 ## along it (the run starts that way) or the time runs out (they let go and fall). Returns false once it has ended.
 func _step_head_on(delta: float) -> bool:
 	var velocity: Vector3 = Vector3(0.0, _body.velocity.y - stats.gravity * stats.wall_run_head_on_gravity_scale * delta, 0.0)
 	if Input.is_action_just_pressed("jump"):
-		velocity += _normal * stats.wall_run_jump_away_speed
-		velocity.y = maxf(velocity.y, 0.0) + stats.wall_run_jump_speed
-		_body.velocity = velocity
+		# Facing the wall, so straight back off it is directly backward. The lift is the ground jump's, and the momentum flight takes over.
+		_body.velocity = _normal * stats.wall_run_head_on_jump_speed + Vector3.UP * stats.jump_speed
 		_end()
 		return false
 
@@ -154,6 +193,7 @@ func _step_head_on(delta: float) -> bool:
 	if into_degrees <= stats.wall_run_head_on_turn_degrees and not along.is_zero_approx() \
 			and not _blocked_by_missing_key(along):
 		_head_on_left = 0.0
+		_run_time = 0.0
 		_body.velocity = along * maxf(_head_on_speed, stats.wall_run_end_speed)
 		_side = 1.0 if (-_normal).dot(along.cross(Vector3.UP)) > 0.0 else -1.0
 		started.emit(_side)
@@ -194,9 +234,10 @@ func _physics_process(delta: float) -> void:
 func _begin(wall_normal: Vector3, head_on: bool) -> void:
 	_active = true
 	_normal = wall_normal
-	# Falling speed doesn't carry into the run (upward speed does).
-	_body.velocity.y = maxf(_body.velocity.y, 0.0)
+	# Vertical speed doesn't carry into the run: it never climbs.
+	_body.velocity.y = 0.0
 	_lost_time = 0.0
+	_run_time = 0.0
 	_head_on_left = stats.wall_run_head_on_time if head_on else 0.0
 	if head_on:
 		# Latched facing the wall: no sideways motion and no tilt until the player turns along it.
@@ -211,10 +252,22 @@ func _begin(wall_normal: Vector3, head_on: bool) -> void:
 	started.emit(_side)
 
 
-func _end() -> void:
+## Ends the run from outside (a swing attached, a launch fired). `with_cooldown` false lets it latch again at once.
+func cancel(with_cooldown: bool = true) -> void:
+	if _active:
+		_end(with_cooldown)
+
+
+## Normal of the wall being run on (horizontal, pointing out toward the player). Only meaningful while active.
+func get_normal() -> Vector3:
+	return _normal
+
+
+func _end(with_cooldown: bool = true) -> void:
 	_active = false
 	_nudge_left = 0.0
 	_head_on_left = 0.0
 	_side = 0.0
-	_cooldown = stats.wall_run_cooldown
+	if with_cooldown:
+		_cooldown = stats.wall_run_cooldown
 	ended.emit()

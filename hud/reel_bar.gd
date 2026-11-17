@@ -1,7 +1,7 @@
 class_name ReelBar
 extends Control
-## Bar showing how much swing rope is left. The mark is where reeling detaches the hook.
-## Only shown while swinging.
+## Upright bar on the right edge of the screen showing how much swing rope is left; it drains downward as you
+## reel. The mark is where reeling detaches the hook. Only shown while swinging.
 
 @export var back_color: Color = Color(0.0, 0.0, 0.0, 0.45)
 @export var fill_color: Color = Color(1.0, 1.0, 1.0, 0.85)
@@ -35,5 +35,6 @@ func _draw() -> void:
 	var mark: float = clampf(_hook.stats.min_rope_length / start_length, 0.0, 1.0)
 	var low: float = clampf(inverse_lerp(mark + 0.25, mark, ratio), 0.0, 1.0) # Reddens near the detach mark.
 	draw_rect(Rect2(Vector2.ZERO, size), back_color)
-	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x * ratio, size.y)), fill_color.lerp(low_color, low))
-	draw_line(Vector2(size.x * mark, -2.0), Vector2(size.x * mark, size.y + 2.0), mark_color, 2.0)
+	draw_rect(Rect2(0.0, size.y * (1.0 - ratio), size.x, size.y * ratio), fill_color.lerp(low_color, low))
+	var mark_y: float = size.y * (1.0 - mark)
+	draw_line(Vector2(-2.0, mark_y), Vector2(size.x + 2.0, mark_y), mark_color, 2.0)

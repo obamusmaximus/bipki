@@ -65,6 +65,9 @@ var _held_time: float = 0.0
 ## Seconds the tip has been chasing an enemy.
 var _chase_time: float = 0.0
 
+## Normals of walls the player is running on or beside, set by Player every frame. A launch can't target those walls.
+var wall_normals: PackedVector3Array = PackedVector3Array()
+
 @onready var _rope: GrappleRope = $Rope
 @onready var _sfx: GrappleSfx = $Sfx
 @onready var _throw: EnemyThrow = $Throw
@@ -181,6 +184,16 @@ func release() -> void:
 		_reset(true)
 
 
+## Puts the hook away at once, with no signals, sounds or rope retract (a rewind). A throw ends without touching
+## the enemy, which the rewind restores itself.
+func abort() -> void:
+	var throwing: bool = _mode == Mode.THROW
+	_mode = Mode.NONE # Before the throw ends, so `_on_throw_ended` doesn't detach.
+	if throwing:
+		_throw.abort()
+	_reset(false)
+
+
 ## Current swing rope length, or 0 when not swinging.
 func get_rope_length() -> float:
 	return _swing.length if is_swinging() else 0.0
@@ -209,6 +222,8 @@ func probe_aim() -> Aim:
 		return Aim.SWING_ONLY
 	if _is_ground(hit["position"]):
 		return Aim.GROUND
+	if _is_on_player_wall(hit["position"]):
+		return Aim.SWING_ONLY
 	return Aim.VALID if camera.global_position.distance_to(hit["position"]) <= stats.launch_range else Aim.SWING_ONLY
 
 
@@ -295,6 +310,14 @@ func _is_ground(point: Vector3) -> bool:
 	return absf(point.y - feet_y) <= stats.ground_tolerance
 
 
+## True if the point lies on the plane of a wall the player is running on or beside (a launch at it is invalid).
+func _is_on_player_wall(point: Vector3) -> bool:
+	for normal: Vector3 in wall_normals:
+		if normal != Vector3.ZERO and absf((point - global_position).dot(normal)) <= stats.wall_tolerance:
+			return true
+	return false
+
+
 func _try_fire(is_swing: bool) -> void:
 	_rope.stop_retract()
 	var reach: float = stats.max_distance if is_swing else stats.launch_range
@@ -308,7 +331,7 @@ func _try_fire(is_swing: bool) -> void:
 		return
 
 	var point: Vector3 = hit["position"]
-	if _is_ground(point):
+	if _is_ground(point) or (not is_swing and _is_on_player_wall(point)):
 		return
 
 	# A hit on a face just below a rooftop is moved onto the roof, so the hook grabs the rim.

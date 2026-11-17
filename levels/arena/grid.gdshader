@@ -12,27 +12,27 @@ render_mode unshaded, cull_front;
 const float ROOM = 100.0;
 const float CENTRE = 50.0;
 
-uniform vec4 wall_color : source_color = vec4(0.83, 0.81, 0.77, 1.0);
-uniform float noise_scale = 0.6;
-uniform float noise_strength = 0.08;
-uniform float grain_strength = 0.03;
-uniform float corner_shade = 0.25;
-uniform float corner_shade_range = 14.0;
+uniform vec4 wall_color : source_color = vec4(0.97, 0.97, 0.96, 1.0);
+uniform float noise_scale = 0.15;
+uniform float noise_strength = 0.03;
+uniform float grain_strength = 0.015;
+uniform float corner_shade = 0.21;
+uniform float corner_shade_range = 7.2;
 
 uniform vec4 bar_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float major_spacing = 10.0;
 uniform float minor_spacing = 5.0;
-uniform float major_width = 0.14;
+uniform float major_width = 0.15;
 uniform float minor_width = 0.06;
-uniform float central_width = 0.3;
-uniform float notch_width = 0.05;
-uniform float notch_width_mid = 0.09;
-uniform float notch_width_long = 0.14;
-uniform float notch_length = 0.5;
+uniform float central_width = 0.29;
+uniform float notch_width = 0.06;
+uniform float notch_width_mid = 0.08;
+uniform float notch_width_long = 0.13;
+uniform float notch_length = 0.51;
 uniform float notch_length_mid = 1.0;
 uniform float notch_length_long = 1.6;
 uniform float notch_clear = 3.5;
-uniform float clear_band = 5.0;
+uniform float clear_band = 4.9;
 
 varying vec3 world_pos;
 varying vec3 face;
@@ -76,13 +76,12 @@ void fragment() {
 	float pixel = max(fw.x, max(fw.y, fw.z));
 	vec3 along = 1.0 - step(0.5, face); // 1 on the two axes that lie in this surface
 
-	// Wall texture: three octaves of value noise and a fine grain.
+	// Wall texture: two octaves of value noise and a fine grain.
 	float cell = max(noise_scale, 0.01);
 	float f1 = octave_fade(cell, pixel);
 	float f2 = octave_fade(cell / 2.7, pixel);
-	float f3 = octave_fade(cell / 7.1, pixel);
-	float n = 0.5 * value_noise(p / cell) + 0.3 * f2 * value_noise(p / (cell / 2.7)) + 0.2 * f3 * value_noise(p / (cell / 7.1));
-	n = n / (0.5 + 0.3 * f2 + 0.2 * f3);
+	float n = 0.6 * value_noise(p / cell) + 0.4 * f2 * value_noise(p / (cell / 2.7));
+	n = n / (0.6 + 0.4 * f2);
 	float grain = hash31(floor(p * 40.0)) * (1.0 - smoothstep(0.01, 0.05, pixel));
 	vec3 colour = wall_color.rgb * (1.0 + noise_strength * (n - 0.5) * 2.0 * f1 + grain_strength * (grain - 0.5) * 2.0);
 
@@ -121,6 +120,10 @@ void fragment() {
 
 		// Notches across the central bar that runs along axis j: every metre, bigger every minor step, biggest
 		// every major step. Left out right at the crossing, to leave room for its labels.
+		// Only pixels within reach of the central bar can be on a notch, so everything else skips the loop.
+		if (abs(p[i] - CENTRE) > notch_length_long + fw[i]) {
+			continue;
+		}
 		for (int j = 0; j < 3; j++) {
 			if (j == i || along[j] < 0.5) {
 				continue;

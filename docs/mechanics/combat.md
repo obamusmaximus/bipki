@@ -32,6 +32,6 @@ There is no gun. Enemies are thrown, punched at speed, or used as anchors, so co
 
 ## Known issues and parked
 - Melee slow-mo and the throw's bullet time are separate `BulletTime` instances. Starting a throw inside the half-second melee slow-mo can make the two fight over `Engine.time_scale` for a moment.
-- Killed enemies don't respawn in normal levels (only `EnemySpawner` respawns them; see `levels_and_hud.md`).
-- The respawn model is tied to the rewind idea in `GAME_DESIGN.md`. Design enemies so their state can be captured.
+- Killed enemies don't respawn in normal levels (only `EnemySpawner` respawns them; see `levels_and_hud.md`), except through a rewind.
+- A new enemy type adds its own state to the rewind (`_capture_ai` / `_restore_ai`, see `rewind.md`).
 - Next: enemy variants as extra `.tres` files, a melee impact effect.

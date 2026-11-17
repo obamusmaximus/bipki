@@ -1,6 +1,6 @@
 class_name TuningFields
 extends RefCounted
-## Builds editing controls for a tuning Resource (PlayerStats, DroneStats, ...) by reflecting on its
+## Debug: builds editing controls for a tuning Resource (PlayerStats, DroneStats, ...) by reflecting on its
 ## exported properties. Each `@export_group` becomes a foldable sub-label; each property a row with a
 ## slider and number box (floats, ints), a checkbox, a colour button, or a box per element (float arrays).
 ## Edits write straight into the resource and call `emit_changed()`, so parts that listen can refresh.

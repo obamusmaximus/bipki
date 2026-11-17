@@ -47,6 +47,8 @@ Derive map size from a target end-to-end traversal time at full speed, not the o
 - **One core verb:** the grapple. New tools are sidegrades that interact with it, not stat boosts (stat changes would shift the feel being tuned).
 
 ## Death and respawn: rewind (leaning yes)
+**Built (basic):** a fixed `rewind_seconds` window and `lives`, no checkpoints or calm snapshot yet. How it works is in `docs/mechanics/rewind.md`; this section stays the design.
+
 **Idea:** dying sets the player back in time. They restart where they were about a minute earlier, with progress in that window reverted and killed enemies respawned. After 3 deaths it's game over and the level restarts. Checkpoints restore lives.
 
 **Why it fits:** cheap failure, lets the player change approach (information carries over, the world doesn't), suits open order, and matches the game's existing time theme (bullet time). Precedent: Prince of Persia: The Sands of Time (rewind with limited charges), Hitman (limited saves).

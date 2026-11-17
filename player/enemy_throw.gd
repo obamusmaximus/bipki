@@ -101,6 +101,12 @@ func cancel() -> void:
 	_finish()
 
 
+## Ends the throw and bullet time without touching the enemy (a rewind puts the enemy back itself).
+func abort() -> void:
+	if _active:
+		_finish()
+
+
 func _physics_process(delta: float) -> void:
 	if not _active:
 		return

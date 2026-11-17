@@ -3,6 +3,11 @@ extends CharacterBody3D
 ## Ground and air movement for the first-person player. Mouse look lives in HeadLook,
 ## the grappling hook in GrappleHook.
 
+## Debug: a moment worth seeing in the playtest log (debug/playtest_log/), e.g. a launch or a wall run start.
+signal playtest_event(event: StringName, data: Dictionary)
+## The player died and spent a life. The level rewinds (see `Rewind`). With nothing connected, a death is game over.
+signal rewind_requested
+
 ## Tunable numbers (see the stats resources in tuning/). Edited live from the pause menu's tuning panel.
 @export var stats: PlayerStats
 @export var grapple_stats: GrappleStats
@@ -16,6 +21,8 @@ const STRIKE_GRAVITY_MARGIN: float = 0.25
 
 ## The player's own gravity (PlayerStats "Gravity"), shared with the TrajectoryPredictor.
 var _gravity: BodyGravity
+## Grace window after a fast landing that lets a jump keep the speed (see Bunnyhop).
+var _bunnyhop: Bunnyhop
 ## True after a launch fires or a swing releases: velocity is preserved (no input override) until landing.
 var _keeps_momentum: bool = false
 ## Steers a launch at an enemy into it (see StrikeGuidance).
@@ -24,6 +31,8 @@ var _strike: StrikeGuidance
 var _double_jump_ready: bool = true
 ## True while rising from a jump or double jump, so releasing jump can cut it short.
 var _jump_rising: bool = false
+## True once the player has left the floor during the current swing. Landing after that ends the swing.
+var _swing_airborne: bool = false
 
 @onready var _head: HeadLook = $Head
 @onready var _grapple: GrappleHook = $GrappleHook
@@ -46,11 +55,20 @@ var _jump_rising: bool = false
 
 ## Wall normals beside the body from the last frame, as [left, right]. ZERO means no wall.
 var _walls: PackedVector3Array = PackedVector3Array([Vector3.ZERO, Vector3.ZERO])
+## Debug: this frame's velocity change split by cause, for the playtest log.
+var _forces := VelocityLedger.new()
+var _lives: Lives
+## True from a death that rewinds until the restore: the body coasts with no input while time slows to a stop.
+var _downed: bool = false
 
 
 func _ready() -> void:
+	add_to_group(&"playtest_probe")
+	add_to_group(Rewind.GROUP)
+	_lives = Lives.new(stats.lives)
 	# Hand the tuning resources down first: later setup calls and the HUD read them.
 	_gravity = BodyGravity.new(stats)
+	_bunnyhop = Bunnyhop.new(stats)
 	_strike = StrikeGuidance.new(grapple_stats, _gravity)
 	_health.setup(stats.max_health)
 	_head.setup(feel)
@@ -82,6 +100,7 @@ func _ready() -> void:
 	_hud.setup_arc(_camera, _predictor, self, arc_stats)
 	_hud.setup_throw(_grapple.get_throw(), _camera, arc_stats)
 	_hud.setup_damage_numbers(_camera)
+	_hud.setup_lives(_lives)
 	_health.died.connect(_on_died)
 	_effects.setup(self, _grapple, _landing, _camera)
 
@@ -92,12 +111,18 @@ func show_city(boxes: Array[AABB]) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_forces.begin(velocity)
+	if _downed:
+		_coast(delta)
+		return
 	if is_on_floor():
 		_double_jump_ready = true
 		# A launch fired while standing still reports the floor this frame; it isn't a landing.
 		if velocity.y <= 0.0:
 			_gravity.end_launch()
 	_gravity.tick(delta)
+	_bunnyhop.tick(delta, is_on_floor())
+	_grapple.wall_normals = PackedVector3Array([_walls[0], _walls[1], _wall_run.get_normal() if _wall_run.is_active() else Vector3.ZERO])
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
 
@@ -112,81 +137,147 @@ func _physics_process(delta: float) -> void:
 		_strike.stop()
 		_jump_rising = false
 		_wall_run.step(delta)
+		_forces.mark(&"wall_run", velocity)
 		return
 
 	if _grapple.is_swinging():
 		_gravity.end_launch()
 		_strike.stop()
 		_jump_rising = false
-		# Standing on the floor at walking pace (not reeling): walk and jump as usual, the rope only stops
-		# the player going further than its length. Faster (a swing grazing the ground) keeps sliding.
+		# A swing and walking are exclusive: landing after having been in the air ends the swing, and the
+		# frame is a walking one.
 		var grounded: bool = is_on_floor() and velocity.y <= 0.0
+		if not is_on_floor():
+			_swing_airborne = true
+		elif grounded and _swing_airborne:
+			_grapple.release()
+			_swing_airborne = false
+			# The swing's speed doesn't carry into walking, which is hard capped: this is a walking frame.
+			_keeps_momentum = false
+			_bunnyhop.land(velocity)
+			_ground_step(direction)
+			_forces.mark(&"walk", velocity)
+			move_and_slide()
+			_forces.mark(&"collision", velocity)
+			_set_walking(not direction.is_zero_approx())
+			return
+		# A swing started from the floor (never airborne yet): walk and jump as usual at walking pace, the rope
+		# only stops the player going further than its length. Faster (a swing grazing the ground) keeps sliding.
 		if grounded and Vector2(velocity.x, velocity.z).length() <= stats.move_speed \
 				and not Input.is_action_pressed("reel"):
 			_ground_move(direction)
 		else:
 			# Plain airborne physics with no input: momentum is kept and the rope does the steering.
-			velocity.y -= _gravity.swing() * delta
+			velocity.y -= _gravity.swing(velocity.y) * delta
+			_forces.mark(&"gravity", velocity)
 			# Don't carry velocity into a wall beside the body (the rope can push it there).
 			for wall: Vector3 in _walls:
 				if wall != Vector3.ZERO and velocity.dot(wall) < 0.0:
 					velocity = velocity.slide(wall)
+			_forces.mark(&"wall_slide", velocity)
 			velocity = Steering.swing(velocity, direction, global_position, _grapple.get_swing_anchor(), delta, stats)
+			_forces.mark(&"steering", velocity)
 			velocity += _assist.get_acceleration(direction) * delta
+			_forces.mark(&"assist", velocity)
+			velocity = AirDrag.apply(velocity, delta, stats)
+			_forces.mark(&"drag", velocity)
 			velocity = SoftSpeedLimit.apply(velocity, delta, stats)
-		var velocity_before: Vector3 = velocity
+			_forces.mark(&"soft_limit", velocity)
+		_forces.mark(&"walk", velocity)
 		move_and_slide()
-		if _wall_run.try_start(velocity_before):
-			_grapple.release()
-			return
+		_forces.mark(&"collision", velocity)
 		var correction: SwingRope.Correction = _grapple.constrain_swing(velocity, is_on_floor(), delta)
 		# The rope correction respects walls: it stops at a face instead of passing through it.
 		var collision: KinematicCollision3D = move_and_collide(correction.offset)
 		velocity = correction.velocity
+		_forces.mark(&"rope", velocity)
 		if collision:
-			if _wall_run.try_start(velocity_before, collision.get_normal()):
-				_grapple.release()
-				return
+			# A swing never wall runs: it just slides along the wall.
 			velocity = velocity.slide(collision.get_normal())
+			_forces.mark(&"collision", velocity)
 		_set_walking(is_on_floor() and not direction.is_zero_approx())
 		return
 
 	if _keeps_momentum:
 		velocity.y -= _gravity.air(velocity.y) * delta
+		_forces.mark(&"gravity", velocity)
 		_try_double_jump(input_dir.x)
 		_cut_jump()
+		_forces.mark(&"jump", velocity)
 		# Air steering turns the velocity or adds speed toward the input, so it never cuts the momentum.
 		velocity = Steering.air(velocity, direction, delta, stats)
+		_forces.mark(&"steering", velocity)
 		# A strike at an enemy flies into it on purpose, so the obstacle assist stays out of it.
 		if _strike.is_active():
 			velocity = _strike.steer(velocity, global_position + Vector3.UP * Melee.MID_BODY, direction, delta)
+			_forces.mark(&"strike", velocity)
 		else:
 			velocity += _assist.get_acceleration(direction) * delta
+			_forces.mark(&"assist", velocity)
+		velocity = AirDrag.apply(velocity, delta, stats)
+		_forces.mark(&"drag", velocity)
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
+		_forces.mark(&"soft_limit", velocity)
 		var velocity_before: Vector3 = velocity
 		move_and_slide()
+		_forces.mark(&"collision", velocity)
 		if _wall_run.try_start(velocity_before):
 			return
 		if is_on_floor() and velocity.y <= 0.0:
 			_keeps_momentum = false
 			_strike.stop()
+			_bunnyhop.land(velocity)
 		_set_walking(false)
 		return
 
 	if is_on_floor():
-		_ground_move(direction)
+		_ground_step(direction)
+		_forces.mark(&"walk", velocity)
 	else:
 		velocity.y -= _gravity.air(velocity.y) * delta
+		_forces.mark(&"gravity", velocity)
 		_try_double_jump(input_dir.x)
 		_cut_jump()
+		_forces.mark(&"jump", velocity)
 		velocity = Steering.air(velocity, direction, delta, stats)
+		_forces.mark(&"steering", velocity)
 	if not is_on_floor():
 		velocity += _assist.get_acceleration(direction) * delta
+		_forces.mark(&"assist", velocity)
+		velocity = AirDrag.apply(velocity, delta, stats)
+		_forces.mark(&"drag", velocity)
 		velocity = SoftSpeedLimit.apply(velocity, delta, stats)
+		_forces.mark(&"soft_limit", velocity)
 	var velocity_before: Vector3 = velocity
 	move_and_slide()
+	_forces.mark(&"collision", velocity)
 	_wall_run.try_start(velocity_before)
-	_set_walking(is_on_floor() and not direction.is_zero_approx())
+	_set_walking(is_on_floor() and not direction.is_zero_approx() and not _bunnyhop.is_open())
+
+
+## Dead, waiting for the rewind: falls and keeps its momentum with no input, so the slow-down shows the body carrying on.
+func _coast(delta: float) -> void:
+	if is_on_floor():
+		velocity.x = 0.0
+		velocity.z = 0.0
+	else:
+		velocity.y -= _gravity.air(velocity.y) * delta
+		velocity = AirDrag.apply(velocity, delta, stats)
+	move_and_slide()
+	_forces.mark(&"coast", velocity)
+
+
+## On the floor: inside the bunnyhop window the speed is kept and a jump hops with it, otherwise walk as usual.
+func _ground_step(direction: Vector3) -> void:
+	if not _bunnyhop.is_open():
+		_ground_move(direction)
+		return
+	velocity.y = 0.0
+	if _bunnyhop.wants_hop():
+		velocity = _bunnyhop.hop(velocity)
+		_keeps_momentum = true
+		_jump_rising = true
+		playtest_event.emit(&"bunnyhop", {"velocity": velocity})
 
 
 ## On the floor: walk at move_speed in the input direction, and jump.
@@ -231,6 +322,7 @@ func _on_walls_beside(left: Vector3, right: Vector3) -> void:
 
 
 func _on_wall_run_started(side: float) -> void:
+	playtest_event.emit(&"wall_run_started", {"side": side, "head_on": _wall_run.is_head_on()})
 	if not _wall_run.is_head_on():
 		_double_jump_ready = true
 	_lean.set_wall_side(side)
@@ -238,23 +330,32 @@ func _on_wall_run_started(side: float) -> void:
 
 ## Leaving the wall keeps the momentum, like leaving a swing.
 func _on_wall_run_ended() -> void:
+	playtest_event.emit(&"wall_run_ended", {})
 	_keeps_momentum = true
 	_lean.set_wall_side(0.0)
 
 
 func _on_grapple_attached() -> void:
+	playtest_event.emit(&"grapple_attached", {"hit_point": _grapple.get_hit_point()})
+	if _grapple.get_mode() == GrappleHook.Mode.SWING:
+		_swing_airborne = false
+		# A swing and a wall run are exclusive. Letting go of the swing can latch a wall again at once.
+		_wall_run.cancel(false)
 	_camera.shake(feel.grapple_shake)
 	if grapple_stats.hit_stop_enabled:
 		_hit_stop.trigger(grapple_stats.hit_stop_scale, grapple_stats.hit_stop_time)
 
 
 func _on_grapple_detached() -> void:
+	playtest_event.emit(&"grapple_detached", {})
 	_keeps_momentum = true
 	_camera.shake(feel.grapple_shake)
 
 
 ## The launch adds its boost on top of the momentum the player keeps.
 func _on_grapple_launched(launch_velocity: Vector3) -> void:
+	playtest_event.emit(&"launched", {"launch_velocity": launch_velocity})
+	_wall_run.cancel() # A launch sends the player flying; it isn't spent running along a wall.
 	velocity = velocity * stats.momentum_carry + launch_velocity
 	# Fired while standing, lift off the floor, or a launch aimed slightly down would stop dead on it.
 	if is_on_floor() and velocity.y < stats.launch_ground_lift:
@@ -265,6 +366,8 @@ func _on_grapple_launched(launch_velocity: Vector3) -> void:
 ## Launched at an enemy: at the speed a launch straight at it would give (never faster), aimed by StrikeGuidance
 ## along an arc into it. The launch gravity lasts the whole flight, which the aim assumes. The body hit is armed.
 func _on_grapple_launched_at_enemy(enemy: Enemy) -> void:
+	playtest_event.emit(&"launched_at_enemy", {"enemy": enemy.name, "enemy_center": enemy.get_center()})
+	_wall_run.cancel()
 	var mid: Vector3 = global_position + Vector3.UP * Melee.MID_BODY
 	var toward: Vector3 = (enemy.get_center() - mid).normalized()
 	var speed: float = (velocity * stats.momentum_carry + toward * grapple_stats.launch_speed).length()
@@ -282,7 +385,8 @@ func _start_launch_flight(gravity_time: float = 0.0) -> void:
 
 
 ## The punch stops the player nearly dead, so the enemy gets the momentum. The double jump comes back.
-func _on_melee_hit(enemy: Enemy, _impact_velocity: Vector3) -> void:
+func _on_melee_hit(enemy: Enemy, impact_velocity: Vector3) -> void:
+	playtest_event.emit(&"melee_hit", {"enemy": enemy.name, "impact_velocity": impact_velocity})
 	_strike.stop()
 	velocity *= stats.melee_momentum_keep
 	_keeps_momentum = true
@@ -294,11 +398,113 @@ func _on_melee_hit(enemy: Enemy, _impact_velocity: Vector3) -> void:
 
 
 ## A thrown enemy leaves the rope with a kick, harder for a harder throw.
-func _on_grapple_thrown(_launch_velocity: Vector3, power: float) -> void:
+func _on_grapple_thrown(launch_velocity: Vector3, power: float) -> void:
+	playtest_event.emit(&"thrown", {"launch_velocity": launch_velocity, "power": power})
 	_camera.shake(feel.grapple_shake * lerpf(0.5, 1.0, power))
 
 
-## The Hud's death screen freezes the game; ESC must not unpause it again.
+## A death spends a life and the level rewinds. With none left to spend it is game over: the Hud's death screen freezes
+## the game, and ESC must not unpause it again.
 func _on_died() -> void:
+	var rewinding: bool = _lives.spend() and not rewind_requested.get_connections().is_empty()
+	playtest_event.emit(&"died", {"lives_left": _lives.get_left(), "rewinding": rewinding})
+	if rewinding:
+		_go_down()
+		rewind_requested.emit()
+		return
 	_grapple.get_throw().cancel()
 	_pause_menu.set_process_unhandled_input(false)
+	_hud.show_death_screen()
+
+
+## A death that rewinds: the hook goes away, input and the body hit stop until the restore (`_set_active` brings them back).
+func _go_down() -> void:
+	_downed = true
+	_grapple.abort()
+	_strike.stop()
+	_melee.reset()
+	_wall_run.cancel(false)
+	_set_walking(false)
+	_set_active(false)
+
+
+## Mouse look, firing the hook, the pause menu and the body hit (a dead body coasting into an enemy doesn't punch it).
+func _set_active(enabled: bool) -> void:
+	_head.set_process_unhandled_input(enabled)
+	_melee.set_physics_process(enabled)
+	_grapple.set_physics_process(enabled)
+	_pause_menu.set_process_unhandled_input(enabled)
+
+
+## The player's part of a rewind snapshot (see `Rewind`). Lives are not in it. Neither is the hook: the buttons that
+## held a swing or a throw are rarely still held after a death, so the player comes back with the hook put away.
+func rewind_capture() -> Dictionary:
+	return {
+		&"transform": global_transform,
+		&"pitch": _head.get_pitch(),
+		&"velocity": velocity,
+		&"keeps_momentum": _keeps_momentum,
+		&"double_jump_ready": _double_jump_ready,
+		&"jump_rising": _jump_rising,
+		&"launch_gravity_left": _gravity.get_launch_left(),
+		&"bunnyhop_window_left": _bunnyhop.get_window_left(),
+		&"health": _health.get_current(),
+		&"wall_run": _wall_run.rewind_capture(),
+	}
+
+
+func rewind_restore(state: Dictionary, _rewind: Rewind) -> void:
+	# Hook first: putting it away would otherwise set the momentum flag through `detached`.
+	_grapple.abort()
+	_strike.stop()
+	_melee.reset()
+	_landing.reset()
+	global_transform = state[&"transform"]
+	_head.set_pitch(state[&"pitch"])
+	velocity = state[&"velocity"]
+	_keeps_momentum = state[&"keeps_momentum"]
+	_double_jump_ready = state[&"double_jump_ready"]
+	_jump_rising = state[&"jump_rising"]
+	_swing_airborne = false
+	_gravity.restore_launch(state[&"launch_gravity_left"])
+	_bunnyhop.restore(state[&"bunnyhop_window_left"])
+	_health.restore(state[&"health"])
+	_wall_run.rewind_restore(state[&"wall_run"])
+	_lean.set_wall_side(_wall_run.get_side() if _wall_run.is_active() else 0.0)
+	_downed = false
+	_set_active(true)
+	playtest_event.emit(&"rewound", {"lives_left": _lives.get_left()})
+
+
+## Where the playback of a rewind has the player between two snapshots: the body and the look's pitch.
+func rewind_pose(from: Dictionary, to: Dictionary, weight: float, span: float) -> void:
+	global_transform = RewindScrub.transform_between(from, to, weight, span)
+	_head.set_pitch(lerpf(from[&"pitch"], to[&"pitch"], weight))
+
+
+## Debug: what the playtest log records about the player each physics frame (debug/playtest_log/).
+func playtest_snapshot() -> Dictionary:
+	var snapshot: Dictionary = {
+		"pos": global_position,
+		"vel": velocity,
+		"speed": velocity.length(),
+		"forces": _forces.parts,
+	}
+	snapshot["look"] = -_camera.global_basis.z
+	snapshot["input"] = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	snapshot["jump_held"] = Input.is_action_pressed("jump")
+	snapshot["reel_held"] = Input.is_action_pressed("reel")
+	snapshot["on_floor"] = is_on_floor()
+	snapshot["keeps_momentum"] = _keeps_momentum
+	snapshot["double_jump_ready"] = _double_jump_ready
+	snapshot["strike"] = _strike.is_active()
+	if _wall_run.is_active():
+		snapshot["wall_run"] = {"side": _wall_run.get_side(), "head_on": _wall_run.is_head_on()}
+	if _grapple.get_state() != GrappleHook.State.IDLE:
+		snapshot["grapple"] = {
+			"state": GrappleHook.State.find_key(_grapple.get_state()),
+			"mode": GrappleHook.Mode.find_key(_grapple.get_mode()),
+			"anchor": _grapple.get_swing_anchor(),
+			"rope_length": _grapple.get_rope_length(),
+		}
+	return snapshot
