@@ -37,7 +37,7 @@ extends Resource
 @export var ability_letter_color: Color = Color(1.0, 1.0, 1.0, 0.9)
 ## Text size of the letter on an ability indicator (px, before HUD scale).
 @export var ability_letter_size: int = 18
-## Thickness of the outline that runs round the throw indicator while the throw's bullet time lasts (px, before HUD scale).
+## Thickness of the outline that runs round an ability indicator: the throw's bullet time left, the surge's charge (px, before HUD scale).
 @export var throw_outline_width: float = 3.0
 
 @export_group("Speedometer")

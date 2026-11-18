@@ -1,8 +1,9 @@
 class_name AbilityIndicator
 extends Control
 ## One ability on the HUD: a grey rounded rectangle with the ability's letter that flashes orange when the ability
-## is used. It can also show an orange outline running round it (the throw's time left). Colours and sizes are in
-## HudStats ("Abilities"). It doesn't know which ability it is; AbilityBar tells it when to flash.
+## is used, or stays orange while lit (an ability that is on). It can also show an orange outline running round it:
+## shrinking (the throw's time left) or growing clockwise (a charge). Colours and sizes are in HudStats ("Abilities").
+## It doesn't know which ability it is; its bar (AbilityBar, JetAbilityBar) tells it what to show.
 
 var _stats: HudStats
 var _letter: String = ""
@@ -11,6 +12,10 @@ var _box := StyleBoxFlat.new()
 var _flash_started_ms: int = -1
 ## Share of the outline shown, 0 to 1. 0 hides it.
 var _outline: float = 0.0
+## The outline grows clockwise from the top middle, instead of shrinking toward it.
+var _outline_grows: bool = false
+## Orange for as long as the ability is on.
+var _lit: bool = false
 
 
 func setup(letter: String, hud_stats: HudStats) -> void:
@@ -29,12 +34,21 @@ func flash() -> void:
 	set_process(true)
 
 
-## Shows the outline over the last `share` of the way round (0 hides it).
-func set_outline(share: float) -> void:
-	if is_equal_approx(share, _outline):
+## Shows the outline over `share` of the way round (0 hides it): the last part of the way, which shrinks toward the
+## top middle as the share drops, or with `grows` the first part, which grows clockwise from it.
+func set_outline(share: float, grows: bool = false) -> void:
+	if is_equal_approx(share, _outline) and grows == _outline_grows:
 		return
 	_outline = share
+	_outline_grows = grows
 	queue_redraw()
+
+
+## On: orange until switched off.
+func set_lit(lit: bool) -> void:
+	if lit != _lit:
+		_lit = lit
+		queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -61,7 +75,7 @@ func _draw() -> void:
 		return
 	var rect := Rect2(Vector2.ZERO, size)
 	var flash: float = _flash_amount()
-	_box.bg_color = _stats.ability_color.lerp(_stats.ability_flash_color, flash * flash)
+	_box.bg_color = _stats.ability_color.lerp(_stats.ability_flash_color, 1.0 if _lit else flash * flash)
 	draw_style_box(_box, rect)
 	var font: Font = ThemeDB.fallback_font
 	var font_size: int = _stats.ability_letter_size
@@ -70,6 +84,9 @@ func _draw() -> void:
 	if _outline > 0.001:
 		var width: float = _stats.throw_outline_width
 		# Drawn just outside the box, so it frames the indicator instead of covering it.
-		var path: PackedVector2Array = RoundedRectPath.tail(rect.grow(width * 0.5), _stats.ability_corner_radius + width * 0.5, _outline)
+		var outer: Rect2 = rect.grow(width * 0.5)
+		var radius: float = _stats.ability_corner_radius + width * 0.5
+		var path: PackedVector2Array = RoundedRectPath.head(outer, radius, _outline) if _outline_grows \
+				else RoundedRectPath.tail(outer, radius, _outline)
 		if path.size() >= 2:
 			draw_polyline(path, _stats.ability_flash_color, width, true)

@@ -2,7 +2,7 @@
 
 Read this before working on player movement. Update it at the end of the task (see `docs/mechanics/README.md`). Name tunables, never their values.
 
-**Scripts:** `player/player.gd` (`Player`: ground and air movement, momentum, wiring), `body_gravity.gd`, `bunnyhop.gd`, `steering.gd`, `air_drag.gd`, `soft_speed_limit.gd`, `wall_run.gd`, `avoidance_assist.gd`, `trajectory_predictor.gd`, `camera_lean.gd`, `dynamic_fov.gd`, `walk_bob.gd`, `landing_watcher.gd`, `edge_detector.gd`, `edge_probe.gd`, `footsteps.gd`, `hud/trajectory_arc.gd`, `hud/speed_readout.gd`. Tunables: `PlayerStats` (body, gravity, air and swing steering, bunnyhop, wall run, obstacle assist, trajectory prediction, edges), `CameraFeel`, `TrajectoryArcStats`.
+**Scripts:** `player/player.gd` (`Player`: ground and air movement, momentum, wiring; the grapple's parts are in `GrappleLoadout`, see `loadouts.md`), `body_gravity.gd`, `bunnyhop.gd`, `steering.gd`, `air_drag.gd`, `soft_speed_limit.gd`, `wall_run.gd`, `avoidance_assist.gd`, `trajectory_predictor.gd`, `camera_lean.gd`, `dynamic_fov.gd`, `walk_bob.gd`, `landing_watcher.gd`, `edge_detector.gd`, `edge_probe.gd`, `footsteps.gd`, `hud/trajectory_arc.gd`, `hud/speed_readout.gd`. Tunables: `PlayerStats` (body, gravity, air and swing steering, bunnyhop, wall run, obstacle assist, trajectory prediction, edges), `CameraFeel`, `TrajectoryArcStats`.
 **Related:** the grapple is in `grapple.md`.
 
 ## Intent

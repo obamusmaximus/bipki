@@ -18,6 +18,8 @@ var _stats: HudStats
 var _shown_speed: float = 0.0
 var _drawn_ratio: float = -1.0
 var _drawn_number: int = -1
+## A short tag under the unit (a loadout's speed mode, e.g. the jet's "A/B"). Empty draws nothing.
+var _tag: String = ""
 
 
 func setup(body: CharacterBody3D, player_stats: PlayerStats, hud_stats: HudStats) -> void:
@@ -81,6 +83,16 @@ func _draw() -> void:
 	var unit_pos := Vector2(center.x - radius, center.y + number_size * 0.3 + unit_size + 3.0)
 	draw_string_outline(font, unit_pos, "m/s", HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, unit_size, 3, Color(0.0, 0.0, 0.0, 0.8))
 	draw_string(font, unit_pos, "m/s", HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, unit_size, Color(1.0, 1.0, 1.0, 0.7))
+	if not _tag.is_empty():
+		var tag_pos := Vector2(unit_pos.x, unit_pos.y + unit_size + 4.0)
+		draw_string_outline(font, tag_pos, _tag, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, unit_size, 3, Color(0.0, 0.0, 0.0, 0.8))
+		draw_string(font, tag_pos, _tag, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, unit_size, s.speedometer_warn_color)
+
+
+func set_tag(text: String) -> void:
+	if text != _tag:
+		_tag = text
+		queue_redraw()
 
 
 ## The speed along the ground plane (X and Z): climbing and falling don't count.

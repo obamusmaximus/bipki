@@ -15,6 +15,7 @@ const TABS: Dictionary = {
 	"Player": ["PlayerStats"],
 	"Camera": ["CameraFeel", "HudStats"],
 	"Grapple": ["GrappleStats"],
+	"Jet": ["JetStats", "TrackingStats"],
 	"Drone": ["DroneStats", "AttackCoordinatorStats"],
 	"HUD": ["MinimapStats", "TrajectoryArcStats"],
 	"Level": ["ArenaStats", "SpawnerStats", "RewindStats"],

@@ -1,14 +1,31 @@
 class_name Hud
 extends CanvasLayer
-## The first-person HUD. Each element has its own script; this node only hands them what they read and lays out
-## the groups.
-## Layout: every element lives in one anchor group. The centre group (crosshair, speedometer) and the full-screen
-## overlays that track the world (trajectory arc, throw readout, damage numbers, damage flash) sit on this layer
-## directly. The edge groups (TopLeft, TopCenter, Right, BottomLeft, BottomCenter, BottomRight and the top-right
-## Minimap) sit in Visor's viewport, which a shader bends like the inside of a helmet visor (visor.gdshader).
+## The first-person HUD shell: what every loadout shares (health, lives, speedometer, minimap, damage flash and
+## numbers, the death screen). The loadout's own elements come in a LoadoutHud module, mounted into the slots
+## (`mount`). Each element has its own script; this node only hands them what they read and lays out the groups.
+## Layout: every element lives in one anchor group. The centre group (`Center`: crosshair, speedometer) and the
+## full-screen overlays that track the world sit on this layer directly, `Underlay` below the visor (trajectory arc)
+## and `Overlay` on top (throw readout, damage numbers). The edge groups (TopLeft, TopCenter, Right, BottomLeft,
+## BottomCenter, BottomRight and the top-right Minimap) sit in Visor's viewport, which a shader bends like the inside
+## of a helmet visor (visor.gdshader).
 
-@onready var _crosshair: Crosshair = $Crosshair
-@onready var _speed: SpeedReadout = $SpeedReadout
+## Slot name (a LoadoutHud holder's name) to the group's path. `AbilityRow` is the row right of the health bar.
+const SLOTS: Dictionary = {
+	&"Underlay": ^"Underlay",
+	&"Center": ^"Center",
+	&"Overlay": ^"Overlay",
+	&"TopLeft": ^"Visor/Viewport/TopLeft",
+	&"TopCenter": ^"Visor/Viewport/TopCenter",
+	&"Right": ^"Visor/Viewport/Right",
+	&"BottomLeft": ^"Visor/Viewport/BottomLeft",
+	&"AbilityRow": ^"Visor/Viewport/BottomLeft/Row",
+	&"BottomCenter": ^"Visor/Viewport/BottomCenter",
+	&"BottomRight": ^"Visor/Viewport/BottomRight",
+}
+
+@onready var _center: Control = $Center
+@onready var _overlay: Control = $Overlay
+@onready var _speed: SpeedReadout = $Center/SpeedReadout
 @onready var _visor: SubViewportContainer = $Visor
 @onready var _top_left: Control = $Visor/Viewport/TopLeft
 @onready var _top_center: Control = $Visor/Viewport/TopCenter
@@ -16,51 +33,50 @@ extends CanvasLayer
 @onready var _bottom_left: VBoxContainer = $Visor/Viewport/BottomLeft
 @onready var _bottom_center: Control = $Visor/Viewport/BottomCenter
 @onready var _bottom_right: Control = $Visor/Viewport/BottomRight
-@onready var _mode_label: ModeLabel = $Visor/Viewport/BottomCenter/ModeLabel
-@onready var _reel_bar: ReelBar = $Visor/Viewport/Right/ReelBar
 @onready var _health_bar: HealthBar = $Visor/Viewport/BottomLeft/Row/HealthBar
-@onready var _abilities: AbilityBar = $Visor/Viewport/BottomLeft/Row/Abilities
 @onready var _minimap: Minimap = $Visor/Viewport/Minimap
 @onready var _damage_flash: DamageFlash = $DamageFlash
 @onready var _death_screen: DeathScreen = $DeathScreen
-@onready var _arc: TrajectoryArc = $TrajectoryArc
 
 var stats: HudStats
 
 
-func setup(body: CharacterBody3D, hook: GrappleHook, health: Health, player_stats: PlayerStats, hud_stats: HudStats, minimap_stats: MinimapStats) -> void:
+func setup(body: CharacterBody3D, health: Health, player_stats: PlayerStats, hud_stats: HudStats, minimap_stats: MinimapStats) -> void:
 	stats = hud_stats
 	_minimap.setup(body, minimap_stats)
 	stats.changed.connect(_apply_layout)
 	_apply_layout()
 	_damage_flash.setup(health)
 	_health_bar.setup(health)
-	_abilities.setup(hook, hud_stats)
 	_death_screen.setup(stats)
-	_crosshair.setup(hook)
-	_mode_label.setup(hook)
-	_reel_bar.setup(hook)
 	_speed.setup(body, player_stats, hud_stats)
 
 
-## Gives the trajectory arc what it needs. A separate call from setup() because the predictor is set up later.
-func setup_arc(camera: Camera3D, predictor: TrajectoryPredictor, body: CharacterBody3D, arc_stats: TrajectoryArcStats) -> void:
-	_arc.setup(camera, predictor, body, arc_stats)
-
-
-## Gives the throw's HUD what it reads: the aiming gauges, and the release prediction on the trajectory arc.
-func setup_throw(throw: EnemyThrow, camera: Camera3D, arc_stats: TrajectoryArcStats) -> void:
-	var readout := ThrowReadout.new()
-	add_child(readout)
-	readout.setup(throw, camera, arc_stats, stats)
-	_arc.set_throw(throw)
+## Mounts a loadout's HUD module: adds it (resolving its `@onready` references), then moves each holder's elements
+## into the slot of the holder's name, after anything already there. The module sets its elements up afterwards.
+func mount(module: LoadoutHud) -> void:
+	add_child(module)
+	for holder: Node in module.get_children():
+		if not SLOTS.has(holder.name):
+			push_error("LoadoutHud holder '%s' names no Hud slot" % holder.name)
+			continue
+		var slot: Node = get_node(SLOTS[holder.name])
+		for element: Node in holder.get_children():
+			element.reparent(slot, false)
+			module.adopt(element)
+		holder.queue_free()
 
 
 ## Floating damage numbers over enemies. They project from world points, so like the arc they are full screen.
 func setup_damage_numbers(camera: Camera3D) -> void:
 	var numbers := DamageNumbers.new()
-	add_child(numbers)
+	_overlay.add_child(numbers)
 	numbers.setup(camera, stats)
+
+
+## A short tag under the speedometer's number (the jet's "A/B" while the afterburner burns). Empty hides it.
+func set_speed_tag(text: String) -> void:
+	_speed.set_tag(text)
 
 
 ## Pips for the lives left, above the health bar.
@@ -87,8 +103,7 @@ func set_city(boxes: Array[AABB]) -> void:
 ## own content.
 func _apply_layout() -> void:
 	var anchors: Dictionary = {
-		_crosshair: Vector2(0.5, 0.5),
-		_speed: Vector2(0.5, 0.5),
+		_center: Vector2(0.5, 0.5),
 		_top_left: Vector2(0.0, 0.0),
 		_top_center: Vector2(0.5, 0.0),
 		_right: Vector2(1.0, 0.5),
@@ -101,8 +116,8 @@ func _apply_layout() -> void:
 		var anchor: Vector2 = anchors[element]
 		element.pivot_offset_ratio = anchor
 		element.scale = Vector2.ONE * stats.hud_scale
-		if element == _crosshair or element == _speed or element == _minimap:
-			continue # Full-screen centre elements, and the minimap's own margin.
+		if element == _center or element == _minimap:
+			continue # The full-screen centre group, and the minimap's own margin.
 		# 0 at a left/top anchor gives +margin, 1 gives -margin, the middle gives 0.
 		var inset: Vector2 = (Vector2.ONE - anchor * 2.0) * stats.edge_margin
 		element.offset_left = inset.x

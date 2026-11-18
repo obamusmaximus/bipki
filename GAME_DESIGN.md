@@ -2,10 +2,10 @@
 
 **Optional reading.** Not needed at the start of a session; `CLAUDE.md` and `STATUS.md` are enough for coding work. Open this when discussing game design, level structure or progression. It records where a design discussion got to, so it holds decisions, leanings and open questions. Nothing here is final unless marked **Decided**. No tunable values belong here (name the parameter, the value lives in `tuning/`).
 
-_Last updated: 2026-11-16_
+_Last updated: 2026-11-18_
 
 ## Vision
-A first-person momentum game, a love letter to the Titanfall movement feel, built around a grappling hook (launch, swing, reel, wall run) and a combat model with no gun: enemies are thrown, punched at speed, or used as anchors. Visual target is a stylized look (see "Aesthetic plan"). The current dense city is a placeholder for tuning movement.
+A first-person momentum game, a love letter to the Titanfall movement feel, built around a grappling hook (launch, swing, reel, wall run) and a combat model with no gun: enemies are thrown, punched at speed, or used as anchors. An alternate jetpack kit is being tried next to it (see "Loadouts", not settled). Visual target is a stylized look (see "Aesthetic plan"). The current dense city is a placeholder for tuning movement.
 
 ## Decided
 - **Not an arena shooter.** No hard-locked sequence of arenas, no linear gauntlet.
@@ -44,7 +44,15 @@ Derive map size from a target end-to-end traversal time at full speed, not the o
 - **Guidance without hand-holding:** landmarks, sightlines and enemy silhouettes suggest an order; no waypoint markers.
 - **Cheap failure:** retrying should put the player back in motion quickly, never on a long run-back.
 - **Systems, not scripts:** enemy behaviour reacts to the player (alert propagation, regrouping), so the same level plays differently each time.
-- **One core verb:** the grapple. New tools are sidegrades that interact with it, not stat boosts (stat changes would shift the feel being tuned).
+- **One core verb:** the grapple. New tools are sidegrades that interact with it, not stat boosts (stat changes would shift the feel being tuned). The jetpack experiment ("Loadouts") may change this.
+
+## Loadouts (NOT SETTLED, an experiment)
+We may build the game around two or more whole ability sets, or revert to the grapple alone. Mechanics: `docs/mechanics/loadouts.md`, `jet.md`.
+- **Grapple kit:** one target at a time, movement is the combat (swing, launch at an enemy, throw).
+- **Jetpack kit:** many targets at once (tracking), more firepower, and a fuel tank shared by thrust and weapons. Spending fuel on weapons leaves less for movement, and most enemies punish standing still, so the player plays around cover and wall run as well as flying. Levels must therefore work for a grounded player, a swinging one and a flying one. Hover and surge are the close-combat flow; the afterburner is travel between objectives and scouts nearby enemies; its weapon is the bombardment (`bombardment.md`).
+- **Weapon rule:** no plain guns. Every weapon needs a mechanic of its own.
+- **In level design:** the kit is one more way to approach a level, next to the insertion point and the order of objectives. Some areas may suit one kit better. How it is chosen (before a level, or at a "Power" lever) is open, as is a third kit.
+- **Open:** whether kits are balanced to each other or each kit gets its own levels and enemy mix; whether the experiment survives playtesting.
 
 ## Death and respawn: rewind (leaning yes)
 **Built (basic):** a fixed `rewind_seconds` window and `lives`, no checkpoints or calm snapshot yet. How it works is in `docs/mechanics/rewind.md`; this section stays the design.

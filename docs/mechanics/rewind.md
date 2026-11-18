@@ -2,7 +2,7 @@
 
 Read this before working on death, lives, or anything that must survive a rewind (a new enemy type, an objective, a moving part). Update it at the end of the task (see `docs/mechanics/README.md`). Name tunables, never their values.
 
-**Scripts:** `rewind/rewind.gd` (`Rewind`: snapshots, restore, remaking freed nodes), `rewind/rewind_snapshot.gd`, `rewind/rewind_sequence.gd` (the timing: slow, trip back, resume), `rewind/rewind_scrub.gd` (posing the level between snapshots), `rewind/rewind_screen.gd` + `.gdshader`, `player/lives.gd`, `hud/lives_readout.gd`, `hud/death_screen.gd`. The capture, restore and pose methods live on each taking part: `Player`, `WallRun`, `Enemy` (`Drone`, `BeamAttack`), `EnemySpawner`. Tunables: `RewindStats` (Level tab, "Rewind" and "Playback"), `PlayerStats.lives` ("Health").
+**Scripts:** `rewind/rewind.gd` (`Rewind`: snapshots, restore, remaking freed nodes), `rewind/rewind_snapshot.gd`, `rewind/rewind_sequence.gd` (the timing: slow, trip back, resume), `rewind/rewind_scrub.gd` (posing the level between snapshots), `rewind/rewind_screen.gd` + `.gdshader`, `player/lives.gd`, `hud/lives_readout.gd`, `hud/death_screen.gd`. The capture, restore and pose methods live on each taking part: `Player` (and its `Loadout`, under `&"loadout"`), `WallRun`, `Enemy` (`Drone`, `BeamAttack`), `EnemySpawner`. Tunables: `RewindStats` (Level tab, "Rewind" and "Playback"), `PlayerStats.lives` ("Health").
 **Related:** the design behind it (calm snapshots, checkpoints, lost progress) is in `GAME_DESIGN.md` under "Death and respawn".
 
 ## Intent
