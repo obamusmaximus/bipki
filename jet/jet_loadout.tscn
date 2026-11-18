@@ -4,13 +4,19 @@
 [ext_resource type="Script" path="res://jet/jet_motor.gd" id="2_motor"]
 [ext_resource type="Script" path="res://jet/jet_sfx.gd" id="3_sfx"]
 [ext_resource type="Resource" path="res://tuning/jet_default.tres" id="4_stats"]
+[ext_resource type="Script" path="res://jet/tracking.gd" id="5_tracking"]
+[ext_resource type="Resource" path="res://tuning/tracking_default.tres" id="6_tracking_stats"]
 
 [node name="JetLoadout" type="Node3D"]
 script = ExtResource("1_loadout")
 jet_stats = ExtResource("4_stats")
+tracking_stats = ExtResource("6_tracking_stats")
 
 [node name="JetMotor" type="Node" parent="."]
 script = ExtResource("2_motor")
 
 [node name="JetSfx" type="Node" parent="."]
 script = ExtResource("3_sfx")
+
+[node name="Tracking" type="Node" parent="."]
+script = ExtResource("5_tracking")

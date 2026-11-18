@@ -4,9 +4,33 @@
 [ext_resource type="Script" path="res://jet/hud/jet_crosshair.gd" id="2_cross"]
 [ext_resource type="Script" path="res://jet/hud/fuel_gauge.gd" id="3_fuel"]
 [ext_resource type="Script" path="res://jet/hud/jet_ability_bar.gd" id="4_abilities"]
+[ext_resource type="Script" path="res://jet/hud/scanner_frame.gd" id="5_scanner"]
+[ext_resource type="Script" path="res://jet/hud/track_markers.gd" id="6_markers"]
 
 [node name="JetHud" type="Node"]
 script = ExtResource("1_module")
+
+[node name="Underlay" type="Node" parent="."]
+
+[node name="ScannerFrame" type="Control" parent="Underlay"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_scanner")
+
+[node name="TrackMarkers" type="Control" parent="Underlay"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_markers")
 
 [node name="Center" type="Node" parent="."]
 
