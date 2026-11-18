@@ -38,7 +38,9 @@ Game-specific terms. Use them consistently in code, comments and conversation. E
 - **[`movement.md`]** player gravity, momentum, air steering, soft speed limit, wall run, head-on latch, obstacle assist, trajectory prediction, trajectory arc, camera lean, dynamic FOV, walk bob
 - **[`rewind.md`]** rewind, snapshot, rewindable (rewind id), recreate, lives, game over
 - **[`loadouts.md`]** loadout, loadout API, hand (socket), HUD module, slot
-- **[`jet.md`]** jetpack, jet key, hover, surge, afterburner (A/B), fuel, afterburner carry
+- **[`jet.md`]** jetpack, jet key, hover, surge, afterburner (A/B), fuel, afterburner carry, tracking (track), scanner, scanner frame, scouting, track marker
+- **[`bombardment.md`]** bombardment, salvo, owner, ownerless missile, terminal phase (designed, not built)
+- **[`island.md`]** island, moon glitter, shore factor (planned, not built)
 - **[`levels_and_hud.md`]** arena, city, enemy spawner, HUD scale, speedometer, minimap, effects, pause menu, tuning panel
 
 - **Dev-only tools live in `debug/`** (one subfolder per tool) and their scripts start their doc comment with "Debug:". Gameplay must never depend on them; they hook in through groups and signals.
