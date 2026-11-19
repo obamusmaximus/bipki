@@ -27,13 +27,20 @@ const CENTRE_START: float = 0.3
 const CENTRE_DROP: float = 0.4
 
 var _stats: ArenaStats
+## Only the floor's labels, for a level whose grid is a single walkable top (the island).
+var _floor_only: bool = false
+## Height of the floor surface (m); 0 in the arena.
+var _floor_height: float = 0.0
 var _material: StandardMaterial3D
 var _digit_meshes: Array[TextMesh] = []
 var _digit_instances: Array[MultiMeshInstance3D] = []
 
 
-func setup(stats: ArenaStats) -> void:
+## `floor_only` keeps just the floor's labels, raised to `floor_height`: the island's top uses the same scale bars.
+func setup(stats: ArenaStats, floor_only: bool = false, floor_height: float = 0.0) -> void:
 	_stats = stats
+	_floor_only = floor_only
+	_floor_height = floor_height
 	_material = StandardMaterial3D.new()
 	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_material.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -67,9 +74,12 @@ func _build() -> void:
 	# How far from the vertical bar the widest small label reaches. Bigger labels sit beyond it, so they never touch.
 	var small_reach: float = lengths[0] + GAP_X + 2.0 * DIGIT_ADVANCE * sizes[0] + 0.1
 	var centre: Vector3 = Vector3.ONE * (ROOM * 0.5)
-	for face: Basis in _face_bases():
+	var faces: Array[Basis] = _face_bases()
+	if _floor_only:
+		faces = [faces[0]]
+	for face: Basis in faces:
 		var normal: Vector3 = face.z
-		var origin: Vector3 = centre - normal * (ROOM * 0.5) + normal * SURFACE_OFFSET
+		var origin: Vector3 = centre - normal * (ROOM * 0.5) + normal * SURFACE_OFFSET + Vector3.UP * _floor_height
 		# The number rises along the world axis, which may run against the local direction, so the sign of the axis
 		# component (+1 or -1) is applied to get the notch's local position.
 		var sign_a: float = face.x.x + face.x.y + face.x.z

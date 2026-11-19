@@ -40,7 +40,7 @@ Game-specific terms. Use them consistently in code, comments and conversation. E
 - **[`loadouts.md`]** loadout, loadout API, hand (socket), HUD module, slot
 - **[`jet.md`]** jetpack, jet key, hover, surge, afterburner (A/B), fuel, afterburner carry, tracking (track), scanner, scanner frame, scouting, track marker
 - **[`bombardment.md`]** bombardment, salvo, owner, ownerless missile, terminal phase (designed, not built)
-- **[`island.md`]** island, moon glitter, shore factor (planned, not built)
+- **[`island.md`]** island, moon glitter (glitter), shore factor, shore bands, shore calm
 - **[`levels_and_hud.md`]** arena, city, enemy spawner, HUD scale, speedometer, minimap, effects, pause menu, tuning panel
 
 - **Dev-only tools live in `debug/`** (one subfolder per tool) and their scripts start their doc comment with "Debug:". Gameplay must never depend on them; they hook in through groups and signals.
@@ -49,7 +49,7 @@ Game-specific terms. Use them consistently in code, comments and conversation. E
 - **Ask before adding any addon or plugin** (Asset Library, `addons/` folder, GDExtension). Prefer built-in engine features.
 
 ## Notes
-- **Two levels share principles.** `levels/arena/` (the main scene, a hand-built testing box) and `levels/city/`. A change to how levels in general work (wiring, what they hand the player or enemies, conventions) goes into both. Level-specific geometry doesn't.
+- **Levels share principles.** `levels/island/` (the main scene, the open night test level), `levels/arena/` (a hand-built testing box) and `levels/city/`. A change to how levels in general work (wiring, what they hand the player or enemies, conventions) goes into all of them. Level-specific geometry doesn't.
 - Don't edit files in `.godot/`. It's generated cache.
 
 @STATUS.md

@@ -20,9 +20,10 @@ static func from_plan(plan: CityPlan, cell_xz: float = 4.0, cell_y: float = 6.0,
 	return from_boxes(boxes, cell_xz, cell_y, margin, headroom)
 
 
-static func from_boxes(boxes: Array[AABB], cell_xz: float, cell_y: float, margin: float, headroom: float) -> FlightGrid:
+## The grid covers the boxes' footprint plus `pad` on every side (m), from y = 0 to `headroom` above the tallest.
+static func from_boxes(boxes: Array[AABB], cell_xz: float, cell_y: float, margin: float, headroom: float, pad: float = 20.0) -> FlightGrid:
 	var grid := FlightGrid.new()
-	grid._build(boxes, Vector3(cell_xz, cell_y, cell_xz), margin, headroom)
+	grid._build(boxes, Vector3(cell_xz, cell_y, cell_xz), margin, headroom, pad)
 	return grid
 
 
@@ -93,12 +94,11 @@ func cell_index(pos: Vector3) -> int:
 	return _flat(c)
 
 
-func _build(boxes: Array[AABB], cell: Vector3, margin: float, headroom: float) -> void:
+func _build(boxes: Array[AABB], cell: Vector3, margin: float, headroom: float, pad: float) -> void:
 	_cell = cell
 	var area := AABB(Vector3.ZERO, Vector3.ZERO)
 	for i: int in boxes.size():
 		area = boxes[i] if i == 0 else area.merge(boxes[i])
-	var pad: float = 20.0
 	_origin = Vector3(area.position.x - pad, 0.0, area.position.z - pad)
 	var top: float = area.end.y + headroom
 	var size := Vector3(area.size.x + pad * 2.0, top, area.size.z + pad * 2.0)

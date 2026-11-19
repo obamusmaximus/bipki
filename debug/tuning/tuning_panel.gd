@@ -18,7 +18,8 @@ const TABS: Dictionary = {
 	"Jet": ["JetStats", "TrackingStats"],
 	"Drone": ["DroneStats", "AttackCoordinatorStats"],
 	"HUD": ["MinimapStats", "TrajectoryArcStats"],
-	"Level": ["ArenaStats", "SpawnerStats", "RewindStats"],
+	"Level": ["ArenaStats", "NightStats", "SpawnerStats", "RewindStats"],
+	"Water": ["WaterStats"],
 	"Debug": ["PlaytestLogStats"],
 }
 const MAX_TAB_HEIGHT: float = 460.0
