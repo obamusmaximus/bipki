@@ -7,10 +7,16 @@
 [ext_resource type="Script" path="res://jet/tracking.gd" id="5_tracking"]
 [ext_resource type="Resource" path="res://tuning/tracking_default.tres" id="6_tracking_stats"]
 
+[ext_resource type="Script" path="res://jet/seeker_shotgun.gd" id="7_shotgun"]
+[ext_resource type="Script" path="res://jet/pellets.gd" id="8_pellets"]
+[ext_resource type="Script" path="res://jet/pellet_tracers.gd" id="9_tracers"]
+[ext_resource type="Resource" path="res://tuning/seeker_shotgun_default.tres" id="10_shotgun_stats"]
+
 [node name="JetLoadout" type="Node3D"]
 script = ExtResource("1_loadout")
 jet_stats = ExtResource("4_stats")
 tracking_stats = ExtResource("6_tracking_stats")
+seeker_shotgun_stats = ExtResource("10_shotgun_stats")
 
 [node name="JetMotor" type="Node" parent="."]
 script = ExtResource("2_motor")
@@ -20,3 +26,13 @@ script = ExtResource("3_sfx")
 
 [node name="Tracking" type="Node" parent="."]
 script = ExtResource("5_tracking")
+
+[node name="SeekerShotgun" type="Node" parent="."]
+script = ExtResource("7_shotgun")
+
+[node name="Pellets" type="Node3D" parent="SeekerShotgun"]
+top_level = true
+script = ExtResource("8_pellets")
+
+[node name="Tracers" type="MeshInstance3D" parent="SeekerShotgun/Pellets"]
+script = ExtResource("9_tracers")

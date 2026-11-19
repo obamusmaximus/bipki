@@ -28,6 +28,7 @@ func setup(camera: Camera3D, motor: JetMotor, tracking_stats: TrackingStats) -> 
 	stats = tracking_stats
 
 
+## The tracked enemies in the order they were picked up, oldest first (a refresh keeps an enemy's place).
 func get_targets() -> Array[Enemy]:
 	var targets: Array[Enemy] = []
 	for enemy: Variant in _tracks:

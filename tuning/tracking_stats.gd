@@ -44,3 +44,19 @@ extends Resource
 @export var marker_blink_time: float = 1.5
 ## Blinks per second.
 @export var marker_blink_rate: float = 4.0
+
+@export_group("Health bar")
+## Segments in the health bar above a track marker. Each is an equal share of the enemy's max health.
+@export var health_bar_segments: int = 4
+## Colour of the bar's health left.
+@export var health_bar_color: Color = Color(0.3, 1.0, 0.4, 0.9)
+## Colour of the bar's health lost.
+@export var health_bar_empty_color: Color = Color(0.3, 1.0, 0.4, 0.2)
+## Height of the bar (px).
+@export var health_bar_height: float = 3.0
+## Gap between the segments (px).
+@export var health_bar_gap: float = 2.0
+## Gap between the bar and the top of the marker (px).
+@export var health_bar_offset: float = 3.0
+## Narrowest the bar gets (px). It is as wide as the marker otherwise, centred on it.
+@export var health_bar_min_width: float = 32.0
