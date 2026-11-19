@@ -26,10 +26,12 @@ extends Resource
 @export var homing_delay: float = 0.2
 ## How fast a homing pellet turns toward its enemy (degrees per second).
 @export var turn_rate: float = 540.0
-## A pellet that can't make the turn onto its enemy at its speed (the enemy is inside its turning circle) brakes just
-## enough to make it, down to this share of `speed` at the least.
+## Off: a pellet whose enemy is inside its turning circle (out of reach at its speed) gives up homing and flies straight
+## on until `lifetime`. On: it brakes into the turn instead, just enough to make it, so it nearly always lands.
+@export var brake_into_turns: bool = false
+## With `brake_into_turns`: the slowest a braking pellet goes, as a share of `speed`.
 @export_range(0.01, 1.0, 0.01) var min_speed_share: float = 0.1
-## How fast a braked pellet speeds back up to `speed` (m/s per second).
+## With `brake_into_turns`: how fast a braked pellet speeds back up to `speed` (m/s per second).
 @export var speed_recovery: float = 300.0
 
 @export_group("Tracers")

@@ -1,8 +1,9 @@
 class_name Pellets
 extends Node3D
 ## The seeker shotgun's pellets in flight (see docs/mechanics/jet.md). Each flies straight for `homing_delay`, then
-## turns toward its enemy at up to `turn_rate`. When its enemy is inside its turning circle it brakes into the turn
-## (`_steer`), then speeds back up to `speed`. One whose enemy is gone flies straight on. A pellet
+## turns toward its enemy at up to `turn_rate`. Once its enemy is inside its turning circle (out of reach) it gives up
+## and flies straight on; with `brake_into_turns` it slows into the turn instead, then speeds back up to `speed`. One
+## whose enemy is gone flies straight on too. A pellet
 ## that touches the world stops; one that touches an enemy deals `damage` and stops. Each keeps its recent path for its
 ## tracer (PelletTracers, its child), which fades out after the pellet stops. Game time. Top level, in world space.
 
@@ -69,10 +70,13 @@ func tick(delta: float) -> void:
 func _fly(pellet: Pellet, delta: float, space: PhysicsDirectSpaceState3D) -> void:
 	pellet.age += delta
 	var speed: float = minf(pellet.velocity.length() + stats.speed_recovery * delta, stats.speed)
+	var direction: Vector3 = pellet.velocity.normalized()
 	if pellet.age >= stats.homing_delay and is_instance_valid(pellet.target) and not pellet.target.health.is_dead():
-		pellet.velocity = _steer(pellet.velocity.normalized(), speed, pellet.target.get_center() - pellet.position, delta)
-	else:
-		pellet.velocity = pellet.velocity.normalized() * speed
+		direction = _steer(pellet, direction, speed, delta)
+		if stats.brake_into_turns and pellet.target != null:
+			speed = clampf(minf(speed, _arc_speed(direction, pellet.target.get_center() - pellet.position)),
+					stats.speed * stats.min_speed_share, stats.speed)
+	pellet.velocity = direction * speed
 	var motion: Vector3 = pellet.velocity * delta
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = _shape
@@ -91,24 +95,32 @@ func _fly(pellet: Pellet, delta: float, space: PhysicsDirectSpaceState3D) -> voi
 	pellet.trail_times.append(_clock)
 
 
-## Turns `direction` toward the enemy at up to `turn_rate` and returns the new velocity. The arc that reaches a point
-## `d` away and `angle` off the nose has radius d / (2 sin angle), so flying it at `speed` takes a turn rate of
-## 2 speed sin(angle) / d. Where that is more than `turn_rate` the pellet would circle the enemy forever, so it slows
-## to the speed that makes the arc. An enemy behind (past 90 degrees) asks for the tightest turn.
-func _steer(direction: Vector3, speed: float, to_target: Vector3, delta: float) -> Vector3:
-	var distance: float = to_target.length()
-	if distance < 0.0001:
-		return direction * speed
-	var wanted: Vector3 = to_target / distance
-	var angle: float = direction.angle_to(wanted)
-	var axis: Vector3 = direction.cross(wanted)
+## Turns `direction` toward the pellet's enemy at up to `turn_rate` and returns it. Without `brake_into_turns`, a
+## pellet that can no longer reach its enemy at its speed (`_arc_speed`) gives up: it drops the enemy and flies straight
+## on until `lifetime`, like a seeker out of fuel.
+func _steer(pellet: Pellet, direction: Vector3, speed: float, delta: float) -> Vector3:
+	var to_target: Vector3 = pellet.target.get_center() - pellet.position
+	if not stats.brake_into_turns and _arc_speed(direction, to_target) < speed:
+		pellet.target = null
+		return direction
+	var angle: float = direction.angle_to(to_target)
+	var axis: Vector3 = direction.cross(to_target)
 	if angle < 0.0001 or axis.is_zero_approx():
-		return direction * speed
-	var max_turn: float = deg_to_rad(stats.turn_rate)
+		return direction
+	return direction.rotated(axis.normalized(), minf(angle, deg_to_rad(stats.turn_rate) * delta))
+
+
+## The fastest a pellet heading along `direction` can fly and still turn onto a point `to_target` away. The arc that
+## reaches a point `d` away and `angle` off the nose has radius d / (2 sin angle), and flying it at turn_rate takes
+## that radius times turn_rate. Past 90 degrees the point needs the tightest turn, so it counts as 90. Faster than this,
+## the pellet would circle the point forever.
+func _arc_speed(direction: Vector3, to_target: Vector3) -> float:
+	var distance: float = to_target.length()
+	var angle: float = direction.angle_to(to_target)
+	if distance < 0.0001 or angle < 0.0001:
+		return INF
 	var bend: float = sin(angle) if angle < PI * 0.5 else 1.0
-	var arc_speed: float = max_turn * distance / (2.0 * bend)
-	speed = clampf(minf(speed, arc_speed), stats.speed * stats.min_speed_share, stats.speed)
-	return direction.rotated(axis.normalized(), minf(angle, max_turn * delta)) * speed
+	return deg_to_rad(stats.turn_rate) * distance / (2.0 * bend)
 
 
 func _hit(pellet: Pellet, space: PhysicsDirectSpaceState3D, query: PhysicsShapeQueryParameters3D) -> void:
