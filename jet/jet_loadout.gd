@@ -68,6 +68,7 @@ func set_active(enabled: bool) -> void:
 func go_down() -> void:
 	_motor.set_active(false)
 	_tracking.set_active(false)
+	_tracking.clear()
 	_shotgun.set_active(false)
 	_shotgun.clear()
 	_sfx.stop_all()

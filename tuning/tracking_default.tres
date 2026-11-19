@@ -8,6 +8,5 @@ scanner_pickup_time = 1.49
 frame_edge_curve = 0.034999999999999996
 marker_width = 1.49
 marker_blink_time = 1.49
-health_bar_segments = 3
 health_bar_height = 2.9899999999999998
 health_bar_offset = 2.9899999999999998

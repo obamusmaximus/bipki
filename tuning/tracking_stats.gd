@@ -46,8 +46,9 @@ extends Resource
 @export var marker_blink_rate: float = 4.0
 
 @export_group("Health bar")
-## Segments in the health bar above a track marker. Each is an equal share of the enemy's max health.
-@export var health_bar_segments: int = 4
+## Hit points per segment of the health bar above a track marker: an enemy shows max health / this many segments
+## (rounded up), so tougher enemy types get longer bars.
+@export var health_bar_segment_hp: float = 25.0
 ## Colour of the bar's health left.
 @export var health_bar_color: Color = Color(0.3, 1.0, 0.4, 0.9)
 ## Colour of the bar's health lost.

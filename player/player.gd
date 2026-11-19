@@ -342,7 +342,6 @@ func rewind_capture() -> Dictionary:
 		&"jump_rising": _jump_rising,
 		&"launch_gravity_left": _gravity.get_launch_left(),
 		&"bunnyhop_window_left": _bunnyhop.get_window_left(),
-		&"health": _health.get_current(),
 		&"wall_run": _wall_run.rewind_capture(),
 		&"loadout": _loadout.rewind_capture(),
 	}
@@ -360,7 +359,7 @@ func rewind_restore(state: Dictionary, _rewind: Rewind) -> void:
 	_jump_rising = state[&"jump_rising"]
 	_gravity.restore_launch(state[&"launch_gravity_left"])
 	_bunnyhop.restore(state[&"bunnyhop_window_left"])
-	_health.restore(state[&"health"])
+	_health.restore(_health.max_health) # A grace: a rewind always comes back at full health, so deaths don't loop.
 	_wall_run.rewind_restore(state[&"wall_run"])
 	_lean.set_wall_side(_wall_run.get_side() if _wall_run.is_active() else 0.0)
 	_downed = false

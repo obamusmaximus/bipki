@@ -1,7 +1,7 @@
 class_name TrackMarkers
 extends Control
 ## Thin red rectangles around the enemies the jet tracks (Tracking), sized in world metres so they shrink with
-## distance, each with a segmented green health bar above it. A marker blinks (bar included) during the last
+## distance, each with a green health bar above it, one segment per `health_bar_segment_hp` of max health. A marker blinks (bar included) during the last
 ## `marker_blink_time` of its track. Enemies behind the camera get none.
 ## Full screen and unscaled (in the Hud's Underlay), because it projects world points. Look in TrackingStats.
 
@@ -36,12 +36,15 @@ func _draw() -> void:
 		var side: float = maxf(_stats.marker_world_size * focal / depth, _stats.marker_min_px)
 		var rect := Rect2(_camera.unproject_position(center) - Vector2.ONE * side * 0.5, Vector2.ONE * side)
 		draw_rect(rect, _stats.marker_color, false, _stats.marker_width, true)
-		_draw_health_bar(rect, enemy.health.get_current() / maxf(enemy.health.max_health, 0.0001))
+		_draw_health_bar(rect, enemy.health)
 
 
-## Segments in a row above `marker`, each filled by its share of `ratio` (health left over max).
-func _draw_health_bar(marker: Rect2, ratio: float) -> void:
-	var count: int = maxi(_stats.health_bar_segments, 1)
+## Segments in a row above `marker`, one per `health_bar_segment_hp` of max health, each filled by the health left in it.
+## The bar keeps the marker's width (or `health_bar_min_width`), so more segments are narrower.
+func _draw_health_bar(marker: Rect2, health: Health) -> void:
+	var per: float = maxf(_stats.health_bar_segment_hp, 1.0)
+	var count: int = maxi(ceili(health.max_health / per - 0.001), 1)
+	var ratio: float = health.get_current() / (per * count)
 	var width: float = maxf(marker.size.x, _stats.health_bar_min_width)
 	var left: float = marker.get_center().x - width * 0.5
 	var top: float = marker.position.y - _stats.health_bar_offset - _stats.health_bar_height
