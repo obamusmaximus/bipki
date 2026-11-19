@@ -1,0 +1,144 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://levels/island/island_level.gd" id="1_level"]
+[ext_resource type="Script" path="res://levels/island/island_look.gd" id="2_look"]
+[ext_resource type="Shader" path="res://levels/island/island_grid.gdshader" id="3_shader"]
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://enemy/drone.tscn" id="5_drone"]
+[ext_resource type="Script" path="res://enemy/enemy_spawner.gd" id="6_spawner"]
+[ext_resource type="Resource" path="res://tuning/arena_default.tres" id="7_arena"]
+[ext_resource type="Resource" path="res://tuning/spawner_default.tres" id="8_spawner_stats"]
+[ext_resource type="Script" path="res://levels/arena/arena_scale.gd" id="9_scale"]
+[ext_resource type="Script" path="res://enemy/attack_coordinator.gd" id="10_coord"]
+[ext_resource type="Resource" path="res://tuning/attack_coordinator_default.tres" id="11_coord_stats"]
+[ext_resource type="Script" path="res://rewind/rewind.gd" id="rw_script"]
+[ext_resource type="Resource" path="res://tuning/rewind_default.tres" id="rw_stats"]
+[ext_resource type="Shader" path="res://levels/island/night_sky.gdshader" id="12_sky"]
+[ext_resource type="Resource" path="res://tuning/night_default.tres" id="13_night"]
+[ext_resource type="Shader" path="res://effects/water/water.gdshader" id="14_water"]
+[ext_resource type="Script" path="res://effects/water/water_look.gd" id="15_water_look"]
+[ext_resource type="Resource" path="res://tuning/water_default.tres" id="16_water_stats"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("12_sky")
+
+[sub_resource type="Sky" id="Sky_night"]
+sky_material = SubResource("ShaderMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_island"]
+background_mode = 2
+sky = SubResource("Sky_night")
+ambient_light_source = 3
+fog_enabled = true
+fog_mode = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
+render_priority = 0
+shader = ExtResource("3_shader")
+
+[sub_resource type="BoxMesh" id="BoxMesh_island"]
+size = Vector3(100, 20, 100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_island"]
+size = Vector3(100, 20, 100)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
+render_priority = 0
+shader = ExtResource("14_water")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_water"]
+size = Vector2(1100, 1100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_water"]
+size = Vector3(1100, 2, 1100)
+
+[node name="Island" type="Node3D"]
+script = ExtResource("1_level")
+grid_stats = ExtResource("7_arena")
+night_stats = ExtResource("13_night")
+water_stats = ExtResource("16_water_stats")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_island")
+
+[node name="Rewind" type="Node" parent="."]
+script = ExtResource("rw_script")
+stats = ExtResource("rw_stats")
+
+[node name="AttackCoordinator" type="Node" parent="."]
+script = ExtResource("10_coord")
+stats = ExtResource("11_coord_stats")
+
+[node name="Look" type="Node" parent="."]
+script = ExtResource("2_look")
+
+[node name="WaterLook" type="Node" parent="."]
+script = ExtResource("15_water_look")
+
+[node name="Scale" type="Node3D" parent="."]
+script = ExtResource("9_scale")
+
+[node name="Moon" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071, 0, -0.7071, -0.3536, 0.866, -0.3536, 0.6124, 0.5, 0.6124, 50, 60, 50)
+shadow_enabled = true
+
+[node name="WarmLights" type="Node3D" parent="."]
+
+[node name="LampA" type="OmniLight3D" parent="WarmLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 22.5, 30)
+
+[node name="LampB" type="OmniLight3D" parent="WarmLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 22.5, 70)
+
+[node name="LampSea" type="OmniLight3D" parent="WarmLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 22.5, 3)
+
+[node name="Island" type="StaticBody3D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="Mesh" type="MeshInstance3D" parent="Island"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 10, 50)
+material_override = SubResource("ShaderMaterial_grid")
+mesh = SubResource("BoxMesh_island")
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Island"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 10, 50)
+shape = SubResource("BoxShape3D_island")
+metadata/_edit_lock_ = true
+
+[node name="Water" type="StaticBody3D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="Mesh" type="MeshInstance3D" parent="Water"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50)
+material_override = SubResource("ShaderMaterial_water")
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_water")
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Water"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -1, 50)
+shape = SubResource("BoxShape3D_water")
+metadata/_edit_lock_ = true
+
+[node name="Player" parent="." instance=ExtResource("4_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 21, 85)
+
+[node name="SpawnerA" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 35, 30)
+script = ExtResource("6_spawner")
+enemy_scene = ExtResource("5_drone")
+stats = ExtResource("8_spawner_stats")
+
+[node name="SpawnerB" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 45, 70)
+script = ExtResource("6_spawner")
+enemy_scene = ExtResource("5_drone")
+stats = ExtResource("8_spawner_stats")
+
+[node name="SpawnerSea" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 30, -35)
+script = ExtResource("6_spawner")
+enemy_scene = ExtResource("5_drone")
+stats = ExtResource("8_spawner_stats")

@@ -28,6 +28,7 @@ func setup(camera: Camera3D, motor: JetMotor, tracking_stats: TrackingStats) -> 
 	stats = tracking_stats
 
 
+## The tracked enemies in the order they were picked up, oldest first (a refresh keeps an enemy's place).
 func get_targets() -> Array[Enemy]:
 	var targets: Array[Enemy] = []
 	for enemy: Variant in _tracks:
@@ -85,12 +86,17 @@ func set_active(enabled: bool) -> void:
 	_dwell.clear()
 
 
-## Nothing is saved: the player comes back with no tracks, like the grapple comes back with the hook put away.
-func rewind_restore() -> void:
+## Drops every track and pickup (a death: no markers during the rewind).
+func clear() -> void:
 	_dwell.clear()
 	if not _tracks.is_empty():
 		_tracks.clear()
 		tracks_changed.emit(get_targets())
+
+
+## Nothing is saved: the player comes back with no tracks, like the grapple comes back with the hook put away.
+func rewind_restore() -> void:
+	clear()
 
 
 ## Runs the tracks' time down and drops the ones that ran out or whose enemy is gone. True if any were dropped.

@@ -1,7 +1,8 @@
 class_name DamageNumbers
 extends Control
-## Floating damage numbers over enemies. Each hit an enemy takes spawns a number at the world point it
-## happened, which rises and fades on screen (bigger for harder hits, red for the killing blow). It listens
+## Floating damage numbers over enemies. An enemy's hits add up in one number per enemy: a hit while its number is
+## still showing adds to it, moves it to the hit and starts it over (pop, rise and fade). It rises and fades on screen
+## (bigger for a bigger total, red once the enemy is killed). It listens
 ## to every enemy's `damaged` signal, including ones that appear later, so nothing needs to register them.
 ## Full screen and real time (so the numbers stay readable in bullet time); text size follows the HUD scale.
 
@@ -9,13 +10,15 @@ const MAX_NUMBERS: int = 32
 ## Seconds a new number takes to settle from its pop size.
 const POP_TIME: float = 0.12
 const POP_EXTRA: float = 0.4
-## Sideways scatter of a number's start (px, before HUD scale), so simultaneous hits don't overlap.
+## Sideways scatter of a number's start (px, before HUD scale), so numbers on enemies close together don't overlap.
 const SCATTER: float = 28.0
 ## World height added above the hit point so the number starts over the enemy.
 const LIFT: float = 1.2
 
-## One floating number.
+## One floating number: the running total of one enemy's hits.
 class Pop:
+	var enemy: Enemy
+	var total: float = 0.0
 	var world: Vector3
 	var text: String
 	var size: float
@@ -42,22 +45,37 @@ func setup(camera: Camera3D, hud_stats: HudStats) -> void:
 func _watch(node: Node) -> void:
 	var enemy: Enemy = node as Enemy
 	if enemy != null and not enemy.damaged.is_connected(_on_damaged):
-		enemy.damaged.connect(_on_damaged)
+		enemy.damaged.connect(_on_damaged.bind(enemy))
 
 
-func _on_damaged(amount: float, point: Vector3, killed: bool) -> void:
+func _on_damaged(amount: float, point: Vector3, killed: bool, enemy: Enemy) -> void:
 	if not stats.damage_numbers_enabled or amount < 0.5:
 		return
-	var pop := Pop.new()
+	var pop: Pop = _pop_of(enemy)
+	if pop == null:
+		pop = Pop.new()
+		pop.enemy = enemy
+		pop.drift = randf_range(-SCATTER, SCATTER)
+		_pops.append(pop)
+		if _pops.size() > MAX_NUMBERS:
+			_pops.pop_front()
+	pop.total += amount
+	pop.age = 0.0
 	pop.world = point + Vector3.UP * LIFT
-	pop.text = str(roundi(amount))
+	pop.text = str(roundi(pop.total))
 	pop.size = lerpf(stats.damage_number_size, stats.damage_number_big_size,
-			clampf(amount / maxf(stats.damage_number_big_at, 0.01), 0.0, 1.0))
+			clampf(pop.total / maxf(stats.damage_number_big_at, 0.01), 0.0, 1.0))
 	pop.color = stats.damage_number_kill_color if killed else stats.damage_number_color
-	pop.drift = randf_range(-SCATTER, SCATTER)
-	_pops.append(pop)
-	if _pops.size() > MAX_NUMBERS:
-		_pops.pop_front()
+	if killed:
+		pop.enemy = null # Done adding up: the enemy is about to be freed.
+
+
+## The number still showing for `enemy`, or null.
+func _pop_of(enemy: Enemy) -> Pop:
+	for pop: Pop in _pops:
+		if pop.enemy == enemy:
+			return pop
+	return null
 
 
 func _process(delta: float) -> void:

@@ -4,3 +4,9 @@
 
 [resource]
 script = ExtResource("1_stats")
+hover_gravity_scale = 0.19
+hover_vertical_damping = 0.95
+surge_fov_kick = 5.8999999999999995
+afterburner_speed = 69.0
+fuel_seconds = 29.9
+thrust_bass_db = 3.5
